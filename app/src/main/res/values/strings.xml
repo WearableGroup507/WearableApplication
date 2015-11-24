@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">WearableApplication</string>
+    <string name="app_name">Wearable Application</string>
+    <string name="str_help">使用協助</string>
+    <string name="str_device_list">裝置清單</string>
 </resources>

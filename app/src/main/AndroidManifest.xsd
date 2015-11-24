@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="manifest" type="manifestType"/>
+  <xs:complexType name="categoryType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute ref="and:name" xmlns:and="http://schemas.android.com/apk/res/android"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="intent-filterType">
+    <xs:sequence>
+      <xs:element type="actionType" name="action"/>
+      <xs:element type="categoryType" name="category"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="actionType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute ref="and:name" xmlns:and="http://schemas.android.com/apk/res/android"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="applicationType">
+    <xs:sequence>
+      <xs:element type="activityType" name="activity"/>
+    </xs:sequence>
+    <xs:attribute ref="and:allowBackup" xmlns:and="http://schemas.android.com/apk/res/android"/>
+    <xs:attribute ref="and:icon" xmlns:and="http://schemas.android.com/apk/res/android"/>
+    <xs:attribute ref="and:label" xmlns:and="http://schemas.android.com/apk/res/android"/>
+    <xs:attribute ref="and:supportsRtl" xmlns:and="http://schemas.android.com/apk/res/android"/>
+    <xs:attribute ref="and:theme" xmlns:and="http://schemas.android.com/apk/res/android"/>
+  </xs:complexType>
+  <xs:complexType name="manifestType">
+    <xs:sequence>
+      <xs:element type="applicationType" name="application"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="package"/>
+  </xs:complexType>
+  <xs:complexType name="activityType">
+    <xs:sequence>
+      <xs:element type="intent-filterType" name="intent-filter"/>
+    </xs:sequence>
+    <xs:attribute ref="and:name" xmlns:and="http://schemas.android.com/apk/res/android"/>
+  </xs:complexType>
+</xs:schema>

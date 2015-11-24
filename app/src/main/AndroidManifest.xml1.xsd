@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://schemas.android.com/apk/res/android" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:attribute name="allowBackup" type="xs:string"/>
+  <xs:attribute name="supportsRtl" type="xs:string"/>
+  <xs:attribute name="icon" type="xs:string"/>
+  <xs:attribute name="name" type="xs:string"/>
+  <xs:attribute name="theme" type="xs:string"/>
+  <xs:attribute name="label" type="xs:string"/>
+</xs:schema>
