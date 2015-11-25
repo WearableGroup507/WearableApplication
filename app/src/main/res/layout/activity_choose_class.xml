@@ -20,7 +20,6 @@
         android:layout_centerHorizontal="true"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
-        android:onClick="OnGlassesClicked"
         android:background="#00ffffff" />
 
     <ImageButton
@@ -33,7 +32,6 @@
         android:layout_centerHorizontal="true"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
-        android:onClick="OnWristbandClicked"
         android:background="#00ffffff" />
 
     <Button
@@ -43,6 +41,6 @@
         android:text="@string/str_help"
         android:textSize="@dimen/btn_font_size"
         android:layout_alignParentBottom="true"
-        android:onClick="OnHelpClicked"
+        android:onClick="OnHelpClick"
         android:background="#ffffffff" />
 </RelativeLayout>

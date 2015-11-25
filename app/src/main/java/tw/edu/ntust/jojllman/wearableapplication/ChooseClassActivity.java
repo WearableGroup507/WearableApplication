@@ -14,25 +14,13 @@ public class ChooseClassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_choose_class);
     }
 
-    public void OnGlassesClicked(View view){
-        click_count=0;
-        Toast.makeText(this,"眼鏡裝置資訊",Toast.LENGTH_SHORT).show();
-    }
-
-    public void OnWristbandClicked(View view){
-        click_count=0;
-        Toast.makeText(this,"手環裝置資訊",Toast.LENGTH_SHORT).show();
-    }
-
-    public void OnHelpClicked(View view){
+    public void OnHelpClick(View view){
+        Toast.makeText(this,"說明訊息出現",Toast.LENGTH_SHORT).show();
         if(click_count++>2){
-            Toast.makeText(this,"開啟裝置設定頁",Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
             intent.setClass(this  , SettingActivity.class);
             startActivity(intent);
             click_count=0;
-        }else{
-            Toast.makeText(this,"說明訊息在這裡",Toast.LENGTH_SHORT).show();
         }
     }
 }
