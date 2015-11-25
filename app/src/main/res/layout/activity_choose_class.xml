@@ -14,31 +14,34 @@
         android:contentDescription="哈囉，你好嗎"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/img_btn_eye"
+        android:id="@+id/img_btn_visual"
         android:src="@drawable/img_btn_eye_selector"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
-        android:background="#00ffffff" />
+        android:background="#00ffffff"
+        android:onClick="OnVisualClick" />
 
     <ImageButton
         android:contentDescription="衷心感謝"
         android:layout_width="fill_parent"
         android:layout_height="260dp"
-        android:id="@+id/img_btn_ear"
+        android:id="@+id/img_btn_hearing"
         android:src="@drawable/img_btn_ear_selector"
-        android:layout_below="@id/img_btn_eye"
-        android:layout_centerHorizontal="true"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
-        android:background="#00ffffff" />
+        android:background="#00ffffff"
+        android:layout_below="@id/img_btn_visual"
+        android:layout_alignParentStart="true"
+        android:onClick="OnHearingClick" />
 
     <Button
-        android:contentDescription="@string/str_help"
+        android:contentDescription="@string/btn_help"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/str_help"
+        android:id="@+id/btn_help"
+        android:text="@string/btn_help"
         android:textSize="@dimen/btn_font_size"
         android:layout_alignParentBottom="true"
         android:onClick="OnHelpClick"

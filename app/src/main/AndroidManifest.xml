@@ -15,7 +15,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingActivity" >
+        <activity android:name=".AppManageActivity" >
+        </activity>
+        <activity android:name=".SearchDeviceActivity" >
+        </activity>
+        <activity android:name=".AppSettingActivity" >
+        </activity>
+        <activity android:name=".VisualSupportActivity" >
+        </activity>
+        <activity android:name=".HearingSupportActivity" >
         </activity>
     </application>
 
