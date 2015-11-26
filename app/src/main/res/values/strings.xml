@@ -25,5 +25,7 @@
     <string name="search_device">搜尋裝置頁面</string>
 
     <string name="app_setting">應用程式設定頁面</string>
-    <string name="set_vibrate_level">調整震動強度</string>
+    <string name="txt_set_vibrate_level">調整震動強度</string>
+    <string name="accept_dialog">是否儲存設定</string>
+    <string name="btn_cancel">取消</string>
 </resources>

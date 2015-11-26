@@ -49,7 +49,9 @@ public class HearingSupportActivity extends AppCompatActivity {
             @Override
             public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
                 if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-                    event.getText().add(HearingSupportActivity.this.getResources().getText(R.string.help_dialog));
+                    String contents=HearingSupportActivity.this.getResources().getText(R.string.help_dialog).toString()+"，";
+                    contents+=HearingSupportActivity.this.getResources().getText(R.string.help_message).toString();
+                    event.getText().add(contents);
                     return true;
                 }
                 return super.dispatchPopulateAccessibilityEvent(event);

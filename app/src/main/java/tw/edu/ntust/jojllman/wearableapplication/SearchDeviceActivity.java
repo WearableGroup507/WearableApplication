@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -29,13 +30,19 @@ public class SearchDeviceActivity extends AppCompatActivity {
         Button btn[] = new Button[count];
         while(count>0){
             btn[--count] = new Button(this);
-            btn[count].setText("裝置" + count);
+            btn[count].setText("裝置" + count + "   訊號：" + (100/(btn.length-count+1)));
             if(count<5) {
                 btn[count].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ((GlobalVariable) getApplicationContext()).vibrate(200);
                         SearchDeviceActivity.this.finish();
+                    }
+                });
+            }else{
+                btn[count].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ((GlobalVariable) getApplicationContext()).vibrate(200);
                     }
                 });
             }

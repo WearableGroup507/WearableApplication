@@ -65,7 +65,9 @@ public class VisualSupportActivity extends AppCompatActivity {
             @Override
             public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
                 if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-                    event.getText().add(VisualSupportActivity.this.getResources().getText(R.string.help_dialog));
+                    String contents=VisualSupportActivity.this.getResources().getText(R.string.help_dialog).toString()+"，";
+                    contents+=VisualSupportActivity.this.getResources().getText(R.string.help_message).toString();
+                    event.getText().add(contents);
                     return true;
                 }
                 return super.dispatchPopulateAccessibilityEvent(event);
