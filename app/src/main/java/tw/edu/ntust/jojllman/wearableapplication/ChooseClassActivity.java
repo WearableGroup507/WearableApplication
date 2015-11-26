@@ -41,7 +41,6 @@ public class ChooseClassActivity extends AppCompatActivity {
 
     public void OnVisualClick(View view){
         click_count=0;
-        view.announceForAccessibility("test test");
 
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , VisualSupportActivity.class);
