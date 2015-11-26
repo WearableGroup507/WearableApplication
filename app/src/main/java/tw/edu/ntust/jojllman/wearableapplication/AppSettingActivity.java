@@ -4,8 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 public class AppSettingActivity extends AppCompatActivity {
@@ -15,28 +15,18 @@ public class AppSettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_setting);
 
-        // 取得 LinearLayout 物件
-        LinearLayout ll = (LinearLayout)findViewById(R.id.view_setting);
+        GlobalVariable globalVariable = (GlobalVariable)getApplicationContext();
 
-//         將 TextView 加入到 LinearLayout 中
-        TextView tv = new TextView(this);
-        tv.setText(R.string.btn_app_setting);
-        tv.setTextSize(50);
-        ll.addView( tv );
-
-//         將 Button  加入到 LinearLayout 中
-        int count=10;
-        Button btn[] = new Button[count];
-        while(count>0){
-            btn[--count] = new Button(this);
-            btn[count].setText("裝置" + count);
-            btn[count].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AppSettingActivity.this.finish();
-                }
-            });
-            ll.addView( btn[count] );
+        switch(globalVariable.getVibrate_level()){
+            case GlobalVariable.VIBRATE_LIGHT:
+                ((RadioButton)findViewById(R.id.rdo_light)).setChecked(true);
+                break;
+            case GlobalVariable.VIBRATE_MID:
+                ((RadioButton)findViewById(R.id.rdo_mid)).setChecked(true);
+                break;
+            case GlobalVariable.VIBRATE_STRONG:
+                ((RadioButton)findViewById(R.id.rdo_strong)).setChecked(true);
+                break;
         }
     }
 
@@ -47,5 +37,21 @@ public class AppSettingActivity extends AppCompatActivity {
             return true;
         }
         return super.dispatchPopulateAccessibilityEvent(event);
+    }
+
+    public void OnRadioClick(View v) {
+        GlobalVariable globalVariable = (GlobalVariable)getApplicationContext();
+
+        switch(v.getId()){
+            case R.id.rdo_light:
+                globalVariable.setVibrate_level(GlobalVariable.VIBRATE_LIGHT);
+                break;
+            case R.id.rdo_mid:
+                globalVariable.setVibrate_level(GlobalVariable.VIBRATE_MID);
+                break;
+            case R.id.rdo_strong:
+                globalVariable.setVibrate_level(GlobalVariable.VIBRATE_STRONG);
+                break;
+        }
     }
 }
