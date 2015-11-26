@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -8,7 +9,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="tw.edu.ntust.jojllman.wearableapplication.ChooseClassActivity"
-    android:background="#ffffff">
+    android:background="#ffffff"
+    android:weightSum="10">
 
     <ImageButton
         android:contentDescription="哈囉，你好嗎"
@@ -16,12 +18,11 @@
         android:layout_height="wrap_content"
         android:id="@+id/img_btn_visual"
         android:src="@drawable/img_btn_eye_selector"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
-        android:background="#00ffffff"
-        android:onClick="OnVisualClick" />
+        android:background="@drawable/button_with_border"
+        android:onClick="OnVisualClick"
+        android:layout_weight="4"/>
 
     <ImageButton
         android:contentDescription="衷心感謝"
@@ -31,10 +32,9 @@
         android:src="@drawable/img_btn_ear_selector"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
-        android:background="#00ffffff"
-        android:layout_below="@id/img_btn_visual"
-        android:layout_alignParentStart="true"
-        android:onClick="OnHearingClick" />
+        android:background="@drawable/button_with_border"
+        android:onClick="OnHearingClick"
+        android:layout_weight="4"/>
 
     <Button
         android:contentDescription="@string/btn_help"
@@ -43,7 +43,7 @@
         android:id="@+id/btn_help"
         android:text="@string/btn_help"
         android:textSize="@dimen/btn_font_size"
-        android:layout_alignParentBottom="true"
         android:onClick="OnHelpClick"
-        android:background="#ffffffff" />
-</RelativeLayout>
+        android:background="@drawable/button_with_border"
+        android:layout_weight="2"/>
+</LinearLayout>
