@@ -1,11 +1,12 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
-import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,7 +16,6 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class VisualSupportActivity extends AppCompatActivity {
@@ -25,6 +25,17 @@ public class VisualSupportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visual_support);
+        
+        DeviceInfoView btn_device_glass = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_glass);
+        DeviceInfoView btn_device_bracelet = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_bracelet);
+
+        btn_device_glass.setDeviceType(DeviceInfoView.GLASS);
+        btn_device_bracelet.setDeviceType(DeviceInfoView.BRACELET);
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.eye);
+        Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ear);
+        btn_device_glass.setBitmapToDraw(bitmap);
+        btn_device_bracelet.setBitmapToDraw(bitmap2);
     }
 
     @Override
@@ -37,11 +48,11 @@ public class VisualSupportActivity extends AppCompatActivity {
     }
 
     public void OnDeviceClick(View view){
-        if(view.getId() == R.id.img_btn_visual_glass){
+        if(view.getId() == R.id.dev_info_btn_visual_glass){
             // TODO: 增加眼鏡按下動作
         }
 
-        if(view.getId() == R.id.img_btn_visual_bracelet){
+        if(view.getId() == R.id.dev_info_btn_visual_bracelet){
             // TODO: 增加手環按下動作
         }
     }

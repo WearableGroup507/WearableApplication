@@ -17,11 +17,11 @@
         android:layout_height="0dp"
         android:layout_weight="2.5"/>
 
-    <ImageButton
+    <tw.edu.ntust.jojllman.wearableapplication.DeviceInfoView
         android:contentDescription="@string/visual_button"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:id="@+id/img_btn_visual_bracelet"
+        android:id="@+id/dev_info_btn_visual_glove"
         android:src="@drawable/img_btn_eye_selector"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"

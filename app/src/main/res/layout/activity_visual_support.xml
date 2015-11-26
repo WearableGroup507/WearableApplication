@@ -12,11 +12,11 @@
     android:background="#ffffff"
     android:weightSum="12">
 
-    <ImageButton
-        android:contentDescription="@string/visual_button"
+    <tw.edu.ntust.jojllman.wearableapplication.DeviceInfoView
+        android:contentDescription=""
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:id="@+id/img_btn_visual_glass"
+        android:id="@+id/dev_info_btn_visual_glass"
         android:src="@drawable/img_btn_eye_selector"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
@@ -24,11 +24,11 @@
         android:onClick="OnDeviceClick"
         android:layout_weight="5"/>
 
-    <ImageButton
-        android:contentDescription="@string/visual_button"
+    <tw.edu.ntust.jojllman.wearableapplication.DeviceInfoView
+        android:contentDescription=""
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:id="@+id/img_btn_visual_bracelet"
+        android:id="@+id/dev_info_btn_visual_bracelet"
         android:src="@drawable/img_btn_eye_selector"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
