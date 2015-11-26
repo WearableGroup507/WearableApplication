@@ -4,10 +4,12 @@
     <string name="app_menu">應用程式選單</string>
     <string name="btn_help">使用協助</string>
 
+    <string name="visual_button">進入視障頁面</string>
     <string name="visual_main">視障穿戴式裝置</string>
     <string name="btn_glasses">眼鏡裝置</string>
     <string name="btn_wristband">手環裝置</string>
 
+    <string name="hearing_button">進入聽障頁面</string>
     <string name="hearing_main">聽障穿戴式裝置</string>
     <string name="btn_gloves">手套裝置</string>
 

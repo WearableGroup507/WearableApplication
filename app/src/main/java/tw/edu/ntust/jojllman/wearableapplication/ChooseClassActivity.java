@@ -42,10 +42,20 @@ public class ChooseClassActivity extends AppCompatActivity {
     public void OnVisualClick(View view){
         click_count=0;
         view.announceForAccessibility("test test");
+
+        Intent intent = new Intent();
+        intent.setClass(ChooseClassActivity.this  , VisualSupportActivity.class);
+        startActivity(intent);
+        this.finish();
     }
 
     public void OnHearingClick(View view){
         click_count=0;
+
+        Intent intent = new Intent();
+        intent.setClass(ChooseClassActivity.this  , HearingSupportActivity.class);
+        startActivity(intent);
+        this.finish();
     }
 
     public void OnHelpClick(View view){
@@ -84,8 +94,8 @@ public class ChooseClassActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(dialog.isShowing()) {
-                    click_count=0;
+                if (dialog.isShowing()) {
+                    click_count = 0;
                     dialog.hide();
                 }
             }

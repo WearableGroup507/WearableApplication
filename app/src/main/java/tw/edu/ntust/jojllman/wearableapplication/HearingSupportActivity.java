@@ -2,6 +2,7 @@ package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 
 public class HearingSupportActivity extends AppCompatActivity {
@@ -19,5 +20,9 @@ public class HearingSupportActivity extends AppCompatActivity {
             return true;
         }
         return super.dispatchPopulateAccessibilityEvent(event);
+    }
+
+    public void OnDeviceClick(View view){
+        // TODO: 增加手套按下動作
     }
 }
