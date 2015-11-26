@@ -1,19 +1,18 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
+import android.content.Intent;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 public class AppManageActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setting);
+        setContentView(R.layout.activity_app_manage);
     }
 
     @Override
@@ -26,10 +25,16 @@ public class AppManageActivity extends AppCompatActivity {
     }
 
     public void OnSearchDeviceClick(View view){
-
+        Vibrator vi=(Vibrator)getSystemService(VIBRATOR_SERVICE);
+        vi.vibrate(1000);
+//        Intent intent = new Intent();
+//        intent.setClass(AppManageActivity.this  , SearchDeviceActivity.class);
+//        startActivity(intent);
     }
 
     public void OnAppSettingClick(View view){
-
+        Intent intent = new Intent();
+        intent.setClass(AppManageActivity.this  , AppSettingActivity.class);
+        startActivity(intent);
     }
 }
