@@ -45,7 +45,7 @@ public class ChooseClassActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , VisualSupportActivity.class);
         startActivity(intent);
-        this.finish();
+//        this.finish();
     }
 
     public void OnHearingClick(View view){
@@ -54,7 +54,7 @@ public class ChooseClassActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , HearingSupportActivity.class);
         startActivity(intent);
-        this.finish();
+//        this.finish();
     }
 
     public void OnHelpClick(View view){

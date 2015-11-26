@@ -25,11 +25,9 @@ public class AppManageActivity extends AppCompatActivity {
     }
 
     public void OnSearchDeviceClick(View view){
-        Vibrator vi=(Vibrator)getSystemService(VIBRATOR_SERVICE);
-        vi.vibrate(1000);
-//        Intent intent = new Intent();
-//        intent.setClass(AppManageActivity.this  , SearchDeviceActivity.class);
-//        startActivity(intent);
+        Intent intent = new Intent();
+        intent.setClass(AppManageActivity.this  , SearchDeviceActivity.class);
+        startActivity(intent);
     }
 
     public void OnAppSettingClick(View view){

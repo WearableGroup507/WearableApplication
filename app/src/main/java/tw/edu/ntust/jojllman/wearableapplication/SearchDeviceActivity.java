@@ -30,12 +30,15 @@ public class SearchDeviceActivity extends AppCompatActivity {
         while(count>0){
             btn[--count] = new Button(this);
             btn[count].setText("裝置" + count);
-            btn[count].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    SearchDeviceActivity.this.finish();
-                }
-            });
+            if(count<5) {
+                btn[count].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ((GlobalVariable) getApplicationContext()).vibrate(200);
+                        SearchDeviceActivity.this.finish();
+                    }
+                });
+            }
             ll.addView( btn[count] );
         }
     }
