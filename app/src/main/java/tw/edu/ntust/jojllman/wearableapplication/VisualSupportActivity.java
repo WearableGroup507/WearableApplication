@@ -32,8 +32,8 @@ public class VisualSupportActivity extends AppCompatActivity {
         btn_device_glass.setDeviceType(DeviceInfoView.GLASS);
         btn_device_bracelet.setDeviceType(DeviceInfoView.BRACELET);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.eye);
-        Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ear);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.glass);
+        Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.bracelet);
         btn_device_glass.setBitmapToDraw(bitmap);
         btn_device_bracelet.setBitmapToDraw(bitmap2);
     }

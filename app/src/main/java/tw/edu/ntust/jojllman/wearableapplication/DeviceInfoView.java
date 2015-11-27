@@ -83,7 +83,7 @@ public class DeviceInfoView extends View {
     }
 
     public void setDeviceType(short type){
-        if(type > 1 && type < 3)
+        if(type >= 1 && type <= 3)
             this.deviceType = type;
 
         updateContentDescription();

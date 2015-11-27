@@ -20,11 +20,11 @@ public class HearingSupportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hearing_support);
 
-        DeviceInfoView btn_device_glove = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_glove);
+        DeviceInfoView btn_device_glove = (DeviceInfoView)findViewById(R.id.dev_info_btn_hearing_glove);
         
         btn_device_glove.setDeviceType(DeviceInfoView.GLOVE);
         
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.eye);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.glove);
         btn_device_glove.setBitmapToDraw(bitmap);
     }
 
