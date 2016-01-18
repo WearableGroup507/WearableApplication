@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="tw.edu.ntust.jojllman.wearableapplication.RecordGestureActivity">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="@string/textView_record_description"
+        android:textSize="@dimen/txt_font_size_large"
+        android:id="@+id/textView_record_description"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="130dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="@string/textView_saving_record"
+        android:textSize="@dimen/txt_font_size_large"
+        android:id="@+id/textView_saving_record"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="130dp"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="@string/textView_recording"
+        android:textSize="@dimen/txt_font_size_large"
+        android:id="@+id/textView_recording"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="130dp"
+        android:visibility="invisible"/>
+
+    <Button
+        android:contentDescription="@string/btn_start_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_start_record"
+        android:text="@string/btn_start_record"
+        android:textSize="@dimen/btn_font_size"
+        android:onClick="OnStartRecordClick"
+        android:background="@drawable/button_with_border"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="130dp" />
+
+    <Button
+        android:contentDescription="@string/btn_stop_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_stop_record"
+        android:text="@string/btn_stop_record"
+        android:textSize="@dimen/btn_font_size"
+        android:onClick="OnStopRecordClick"
+        android:background="@drawable/button_with_border"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="130dp"
+        android:visibility="invisible"/>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.ProgressBar.Large"
+        android:id="@+id/progressBar_record"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="150dp"
+        android:visibility="invisible"
+        android:max="100"
+        android:progress="50" />
+</RelativeLayout>

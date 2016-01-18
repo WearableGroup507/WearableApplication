@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/view_hearing_setting"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="tw.edu.ntust.jojllman.wearableapplication.HearingSettingActivity"
+    android:background="#ffffff"
+    android:weightSum="10">
+
+    <Button
+        android:contentDescription="@string/btn_record_gesture"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:id="@+id/btn_record_gesture"
+        android:text="@string/btn_record_gesture"
+        android:textSize="@dimen/btn_font_size"
+        android:onClick="OnRecordGestureClick"
+        android:background="@drawable/button_with_border"
+        android:layout_weight="5" />
+
+    <Button
+        android:contentDescription="@string/btn_gesture_db"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:id="@+id/btn_btn_gesture_db"
+        android:text="@string/btn_gesture_db"
+        android:textSize="@dimen/btn_font_size"
+        android:onClick="OnGestureDBClick"
+        android:background="@drawable/button_with_border"
+        android:layout_weight="5" />
+
+</LinearLayout>

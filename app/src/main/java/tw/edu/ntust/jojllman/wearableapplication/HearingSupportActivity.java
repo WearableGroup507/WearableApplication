@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -26,6 +27,28 @@ public class HearingSupportActivity extends AppCompatActivity {
         
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.glove);
         btn_device_glove.setBitmapToDraw(bitmap);
+
+        View decorView = getWindow().getDecorView();
+        /*decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);*/
+
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp(){
+        onBackPressed();
+        return true;
     }
 
     @Override
@@ -38,7 +61,9 @@ public class HearingSupportActivity extends AppCompatActivity {
     }
 
     public void OnDeviceClick(View view){
-        // TODO: 增加手套按下動作
+        Intent intent = new Intent();
+        intent.setClass(HearingSupportActivity.this  , HearingSettingActivity.class);
+        startActivity(intent);
     }
 
     public void OnHelpClick(View view){
@@ -57,7 +82,7 @@ public class HearingSupportActivity extends AppCompatActivity {
                 return super.dispatchPopulateAccessibilityEvent(event);
             }
         };
-        dialog.setContentView(R.layout.custom_dialog);
+        dialog.setContentView(R.layout.dialog_help);
 
         ImageButton ibtn = (ImageButton)dialog.findViewById(R.id.img_btn_setting);
         ibtn.setOnClickListener(new View.OnClickListener() {

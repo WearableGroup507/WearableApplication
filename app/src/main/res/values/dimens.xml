@@ -4,4 +4,5 @@
     <dimen name="activity_vertical_margin">5dp</dimen>
     <dimen name="btn_font_size">50sp</dimen>
     <dimen name="txt_font_size">30sp</dimen>
+    <dimen name="txt_font_size_large">46sp</dimen>
 </resources>

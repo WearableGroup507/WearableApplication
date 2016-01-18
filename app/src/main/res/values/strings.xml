@@ -28,4 +28,19 @@
     <string name="txt_set_vibrate_level">調整震動強度</string>
     <string name="accept_dialog">是否儲存設定</string>
     <string name="btn_cancel">取消</string>
+
+    <string name="hearing_setting">手勢管理頁面</string>
+    <string name="btn_record_gesture">錄製手勢</string>
+    <string name="btn_gesture_db">手勢資料庫</string>
+
+    <string name="record_gesture">錄製手勢頁面</string>
+    <string name="textView_record_description">手勢停止三秒後\n自動停止手語錄製</string>
+    <string name="textView_recording">錄製中</string>
+    <string name="textView_saving_record">儲存中</string>
+    <string name="btn_start_record">開始錄製</string>
+    <string name="btn_stop_record">停止錄製</string>
+    <string name="save_dialog">手勢詳細資料</string>
+
+    <string name="gesture_db">手勢資料庫頁面</string>
+
 </resources>
