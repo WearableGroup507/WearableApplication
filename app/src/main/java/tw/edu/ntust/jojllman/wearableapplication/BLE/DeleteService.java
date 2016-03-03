@@ -9,7 +9,7 @@ import android.util.Log;
  * Created by HuangYuChang on 15/5/25.
  */
 public class DeleteService extends Service {
-    private Intent transferIntent = new Intent("com.example.blunobasicdemo.RECEIVER_DELETE");
+    private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_DELETE");
 
     @Override
     public IBinder onBind(Intent arg0){
@@ -24,7 +24,6 @@ public class DeleteService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO Auto-generated method stub
         Log.i("DeleteService", "Start");
         transferIntent.putExtra("turnOff", true);
         sendBroadcast(transferIntent);

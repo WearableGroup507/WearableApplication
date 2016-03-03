@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +21,11 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.blunobasicdemo.R;
+import tw.edu.ntust.jojllman.wearableapplication.R;
 
 import java.util.ArrayList;
 
-public abstract class BlunoLibrary extends Activity{
+public abstract class BlunoLibrary extends AppCompatActivity {
 	private Context mainContext=this;
 
 	static class ViewHolder {
@@ -35,7 +36,7 @@ public abstract class BlunoLibrary extends Activity{
 	private LeDeviceListAdapter mLeDeviceListAdapter=null;
 	private BluetoothAdapter mBluetoothAdapter;
 	private boolean mScanning =false;
-	AlertDialog mScanDeviceDialog;
+	protected AlertDialog mScanDeviceDialog;
 	private String mDeviceName;
 	protected String mDeviceAddress;
 	public String connectionState = "isNull";
@@ -46,7 +47,7 @@ public abstract class BlunoLibrary extends Activity{
 
 	private final static String TAG = BlunoLibrary.class.getSimpleName();
 
-	public abstract void onConectionStateChange(theConnectionState mConnectionState);
+	public abstract void onConnectionStateChange(theConnectionState mConnectionState);
 
     public void onCreateProcess()
     {
@@ -73,22 +74,27 @@ public abstract class BlunoLibrary extends Activity{
 				if (device == null)
 					return;
 				scanLeDevice(false);
-				System.out.println("onListItemClick " + device.getName().toString());
+                System.out.println("onListItemClick " + which);
+				System.out.println("onListItemClick " + device.getName());
 				System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
 
-				mDeviceName = device.getName().toString();
-				mDeviceAddress = device.getAddress().toString();
+				mDeviceName = device.getName();
+				mDeviceAddress = device.getAddress();
 
-				if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
-					connectionState = "isToScan";
-					mConnectionState = theConnectionState.valueOf(connectionState);
-					onConectionStateChange(mConnectionState);
-				} else {
+                if(mDeviceName == null)
+                    mDeviceName = getString(R.string.unknown_device);
+
+                if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
+                    connectionState = "isToScan";
+                    mConnectionState = theConnectionState.valueOf(connectionState);
+                    onConnectionStateChange(mConnectionState);
+                }
+                else {
 					mainContext.unbindService(mServiceConnection);
 					mBluetoothLeService = null;
 					connectionState = "isConnecting";
 					mConnectionState = theConnectionState.valueOf(connectionState);
-					onConectionStateChange(mConnectionState);
+					onConnectionStateChange(mConnectionState);
 				}
 			}
 		})
@@ -100,7 +106,7 @@ public abstract class BlunoLibrary extends Activity{
 
 	        	connectionState="isToScan";
 				mConnectionState = theConnectionState.valueOf(connectionState);
-				onConectionStateChange(mConnectionState);
+				onConnectionStateChange(mConnectionState);
 				mScanDeviceDialog.dismiss();
 
 				scanLeDevice(false);
@@ -130,7 +136,7 @@ public abstract class BlunoLibrary extends Activity{
 		return true;
 	}
     
-	void scanLeDevice(final boolean enable) {
+	protected void scanLeDevice(final boolean enable) {
 		if (enable) {
 			// Stops scanning after a pre-defined scan period.
 
@@ -243,6 +249,7 @@ public abstract class BlunoLibrary extends Activity{
 						.findViewById(R.id.device_address);
 				viewHolder.deviceName = (TextView) view
 						.findViewById(R.id.device_name);
+
 				System.out.println("mInflator.inflate  getView");
 				view.setTag(viewHolder);
 			} else {

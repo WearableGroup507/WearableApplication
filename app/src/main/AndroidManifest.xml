@@ -2,7 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="tw.edu.ntust.jojllman.wearableapplication">
 
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:name=".GlobalVariable"
@@ -26,6 +30,10 @@
         <activity android:name=".HearingSettingActivity" />
         <activity android:name=".RecordGestureActivity" />
         <activity android:name=".GestureDBActivity"></activity>
+
+        <service android:name=".BLE.BluetoothLeService" android:enabled="true"/>
+        <service android:name=".BLE.BlunoService" android:enabled="true"/>
+        <service android:name=".BLE.DeleteService" android:enabled="true"/>
     </application>
 
 </manifest>

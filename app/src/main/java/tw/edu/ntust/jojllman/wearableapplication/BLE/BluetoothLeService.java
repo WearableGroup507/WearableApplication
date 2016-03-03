@@ -107,7 +107,7 @@ public class BluetoothLeService extends Service {
                 else{
                     Log.i(TAG, "Attempting to start service discovery:not success");
                 }
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            } else if (status != BluetoothProfile.STATE_DISCONNECTED && newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");

@@ -139,7 +139,6 @@ public class BlunoService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // TODO Auto-generated method stub
         Log.i("BlunoService", "Start");
         onStartProcess();
         return super.onStartCommand(intent, flags, startId);
@@ -147,7 +146,6 @@ public class BlunoService extends Service {
 
     @Override
     public void onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy();
         Log.i("BlunoService", "Destroy");
         onDestroyProcess();
@@ -164,17 +162,17 @@ public class BlunoService extends Service {
 
         msgReceiver = new MsgReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.example.blunobasicdemo.RECEIVER_SERVICE");
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
         registerReceiver(msgReceiver, intentFilter);
 
         thresholdReceiver = new ThresholdReceiver();
         IntentFilter thresholdIntentFilter = new IntentFilter();
-        thresholdIntentFilter.addAction("com.example.blunobasicdemo.RECEIVER_THRESHOLD");
+        thresholdIntentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
         registerReceiver(thresholdReceiver, thresholdIntentFilter);
 
         deleteReceiver = new DeleteReceiver();
         IntentFilter deleteIntentFilter = new IntentFilter();
-        deleteIntentFilter.addAction("com.example.blunobasicdemo.RECEIVER_DELETE");
+        deleteIntentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_DELETE");
         registerReceiver(deleteReceiver, deleteIntentFilter);
 
         System.out.println("BlunoService onCreate");
@@ -211,20 +209,22 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            System.out.println("mGattUpdateReceiver->onReceive->action=" + action);
+            //System.out.println("mGattUpdateReceiver->onReceive->action=" + action);
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 handler.removeCallbacks(mConnectingOverTimeRunnable);
 
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
-                connectionState = "isToScan";
-                transferIntent.putExtra("connectionState", connectionState);
-                sendBroadcast(intent);
-                mConnectionState = theConnectionState.valueOf(connectionState);
-                onConectionStateChange(mConnectionState);
-                handler.removeCallbacks(mDisonnectingOverTimeRunnable);
-                mBluetoothLeService.close();
+                if(mConnected) {
+                    mConnected = false;
+                    connectionState = "isToScan";
+                    transferIntent.putExtra("connectionState", connectionState);
+                    sendBroadcast(intent);
+                    mConnectionState = theConnectionState.valueOf(connectionState);
+                    onConectionStateChange(mConnectionState);
+                    handler.removeCallbacks(mDisonnectingOverTimeRunnable);
+                    mBluetoothLeService.close();
+                }
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices()) {
