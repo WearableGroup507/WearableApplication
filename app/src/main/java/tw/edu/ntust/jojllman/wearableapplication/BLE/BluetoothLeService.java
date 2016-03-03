@@ -47,6 +47,7 @@ public class BluetoothLeService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     BluetoothGatt mBluetoothGatt;
     public String mBluetoothDeviceAddress;
+    private boolean mInitialized = false;
     
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -75,15 +76,15 @@ public class BluetoothLeService extends Service {
     private RingBuffer<BluetoothGattCharacteristicHelper> mCharacteristicRingBuffer = new RingBuffer<BluetoothGattCharacteristicHelper>(8);
     
     public final static String ACTION_GATT_CONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+            "tw.edu.ntust.jojllman.wearableapplication.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+            "tw.edu.ntust.jojllman.wearableapplication.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+            "tw.edu.ntust.jojllman.wearableapplication.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+            "tw.edu.ntust.jojllman.wearableapplication.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
-            "com.example.bluetooth.le.EXTRA_DATA";
+            "tw.edu.ntust.jojllman.wearableapplication.EXTRA_DATA";
 //    public final static UUID UUID_HEART_RATE_MEASUREMENT =
 //            UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
@@ -107,7 +108,7 @@ public class BluetoothLeService extends Service {
                 else{
                     Log.i(TAG, "Attempting to start service discovery:not success");
                 }
-            } else if (status != BluetoothProfile.STATE_DISCONNECTED && newState == BluetoothProfile.STATE_DISCONNECTED) {
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");
@@ -286,13 +287,13 @@ public class BluetoothLeService extends Service {
     };
     
     private void broadcastUpdate(final String action) {
-        final Intent intent = new Intent(action);
+        Intent intent = new Intent(action);
         sendBroadcast(intent);
     }
 
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic){
-        final Intent intent = new Intent(action);
+        Intent intent = new Intent(action);
         System.out.println("BluetoothLeService broadcastUpdate");
         // This is special handling for the Heart Rate Measurement profile.  Data parsing is
         // carried out as per profile specifications:
@@ -350,6 +351,9 @@ public class BluetoothLeService extends Service {
     public boolean initialize() {
         // For API level 18 and above, get a reference to BluetoothAdapter through
         // BluetoothManager.
+        if(mInitialized)
+            return true;
+
     	System.out.println("BluetoothLeService initialize"+mBluetoothManager);
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -364,6 +368,8 @@ public class BluetoothLeService extends Service {
             Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
             return false;
         }
+
+        mInitialized = true;
 
         return true;
     }
@@ -437,7 +443,7 @@ public class BluetoothLeService extends Service {
      * released properly.
      */
     public void close() {
-    	System.out.println("BluetoothLeService close");
+    	System.out.println("BluetoothLeService close" + mBluetoothGatt);
         if (mBluetoothGatt == null) {
             return;
         }

@@ -67,7 +67,7 @@ public class AppManageActivity extends BlunoLibrary {
         //Register message receiver
         mMsgReceiver = new MsgReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.example.blunobasicdemo.RECEIVER_ACTIVITY");
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
         registerReceiver(mMsgReceiver, intentFilter);
 
         Intent intent = new Intent(AppManageActivity.this, BlunoService.class);

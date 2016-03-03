@@ -35,7 +35,7 @@ public class BlunoService extends Service {
     public static final String CommandUUID="0000dfb2-0000-1000-8000-00805f9b34fb";
     public static final String ModelNumberStringUUID="00002a24-0000-1000-8000-00805f9b34fb";
     private Handler handler = new Handler();
-    private Intent transferIntent = new Intent("com.example.blunobasicdemo.RECEIVER_ACTIVITY");
+    private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Context serviceContext=this;
     private MsgReceiver msgReceiver;
     private ThresholdReceiver thresholdReceiver;
@@ -209,22 +209,21 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            //System.out.println("mGattUpdateReceiver->onReceive->action=" + action);
+            System.out.println("mGattUpdateReceiver->onReceive->action=" + action);
+            //System.out.println("mGattUpdateReceiver->onReceive->context=" + context.toString());
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 handler.removeCallbacks(mConnectingOverTimeRunnable);
 
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                if(mConnected) {
-                    mConnected = false;
-                    connectionState = "isToScan";
-                    transferIntent.putExtra("connectionState", connectionState);
-                    sendBroadcast(intent);
-                    mConnectionState = theConnectionState.valueOf(connectionState);
-                    onConectionStateChange(mConnectionState);
-                    handler.removeCallbacks(mDisonnectingOverTimeRunnable);
-                    mBluetoothLeService.close();
-                }
+                mConnected = false;
+                connectionState = "isToScan";
+                transferIntent.putExtra("connectionState", connectionState);
+                sendBroadcast(transferIntent);
+                mConnectionState = theConnectionState.valueOf(connectionState);
+                onConectionStateChange(mConnectionState);
+                handler.removeCallbacks(mDisonnectingOverTimeRunnable);
+                mBluetoothLeService.close();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices()) {
@@ -246,7 +245,7 @@ public class BlunoService extends Service {
                         mBluetoothLeService.setCharacteristicNotification(mSCharacteristic, true);
                         connectionState = "isConnected";
                         transferIntent.putExtra("connectionState", connectionState);
-                        sendBroadcast(intent);
+                        sendBroadcast(transferIntent);
                         mConnectionState = theConnectionState.valueOf(connectionState);
                         onConectionStateChange(mConnectionState);
                     }
@@ -254,7 +253,7 @@ public class BlunoService extends Service {
                         Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
                         connectionState = "isToScan";
                         transferIntent.putExtra("connectionState", connectionState);
-                        sendBroadcast(intent);
+                        sendBroadcast(transferIntent);
                         mConnectionState = theConnectionState.valueOf(connectionState);
                         onConectionStateChange(mConnectionState);
                     }
@@ -609,7 +608,7 @@ public class BlunoService extends Service {
                 Log.d(TAG, "Connect request fail");
                 connectionState = "isToScan";
                 transferIntent.putExtra("connectionState", connectionState);
-                sendBroadcast(intent);
+                sendBroadcast(transferIntent);
                 mConnectionState = theConnectionState.valueOf(connectionState);
                 onConectionStateChange(mConnectionState);
             }
