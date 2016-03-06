@@ -1,37 +1,56 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.RadioButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 public class AppSettingActivity extends AppCompatActivity {
-    private GlobalVariable globalVariable;
+    private GlobalVariable mGlobalVariable;
+    private SeekBar mSeekBar_front;
+    private SeekBar mSeekBar_side;
+    private TextView mtxt_threshold_front;
+    private TextView mtxt_threshold_side;
+    private TextView mtxt_glass_connected;
+    private TextView mtxt_bracelet_connected;
+
+
+    private boolean mConnected_Glass = false;
+    private boolean mConnected_Bracelet = false;
+
+    private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
+    private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
+    private MsgReceiver mMsgReceiver;
+
+    public class MsgReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mConnected_Glass = intent.getBooleanExtra("Connected_Glass", false);
+            mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
+            mtxt_glass_connected.setText(mConnected_Glass?R.string.device_connected:R.string.device_disconnected);
+            //mtxt_bracelet_connected.setText(mConnected_Bracelet?R.string.device_connected:R.string.device_disconnected);
+            //TODO: add bracelet
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_setting);
 
-        globalVariable = (GlobalVariable)getApplicationContext();
-
-        switch(globalVariable.getVibrate_level()){
-            case GlobalVariable.VIBRATE_LIGHT:
-                ((RadioButton)findViewById(R.id.rdo_light)).setChecked(true);
-                break;
-            case GlobalVariable.VIBRATE_MID:
-                ((RadioButton)findViewById(R.id.rdo_mid)).setChecked(true);
-                break;
-            case GlobalVariable.VIBRATE_STRONG:
-                ((RadioButton)findViewById(R.id.rdo_strong)).setChecked(true);
-                break;
-        }
+        mGlobalVariable = (GlobalVariable)getApplicationContext();
 
         View decorView = getWindow().getDecorView();
         /*decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -48,31 +67,51 @@ public class AppSettingActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        findView();
+        initialize();
     }
 
     @Override
     public boolean onSupportNavigateUp(){
-        onBackPressed();
+
+        // Use the Builder class for convenient dialog construction
+        AlertDialog.Builder builder = new AlertDialog.Builder(AppSettingActivity.this);
+        builder.setMessage(R.string.accept_dialog)
+                .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        mGlobalVariable.saveSetting();
+                        AppSettingActivity.this.finish();
+                    }
+                })
+                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        mGlobalVariable.readSetting();
+                        AppSettingActivity.this.finish();
+                    }
+                });
+        builder.create().show();
+
         return true;
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-        if (keyCode == KeyEvent.KEYCODE_BACK && globalVariable.isSettingChanged())
+        if (keyCode == KeyEvent.KEYCODE_BACK && mGlobalVariable.isSettingChanged())
         {
             // Use the Builder class for convenient dialog construction
             AlertDialog.Builder builder = new AlertDialog.Builder(AppSettingActivity.this);
             builder.setMessage(R.string.accept_dialog)
                     .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            globalVariable.saveSetting();
+                            mGlobalVariable.saveSetting();
                             AppSettingActivity.this.finish();
                         }
                     })
                     .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            globalVariable.readSetting();
+                            mGlobalVariable.readSetting();
                             AppSettingActivity.this.finish();
                         }
                     });
@@ -89,7 +128,7 @@ public class AppSettingActivity extends AppCompatActivity {
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             String contents=AppSettingActivity.this.getResources().getText(R.string.app_setting).toString()+"，";
             contents+=AppSettingActivity.this.getResources().getText(R.string.txt_set_vibrate_level).toString()+"，";
-            switch(globalVariable.getVibrate_level()){
+            switch(mGlobalVariable.getVibrate_level()){
                 case GlobalVariable.VIBRATE_LIGHT:
                     contents+="目前強度，弱";
                     break;
@@ -109,14 +148,97 @@ public class AppSettingActivity extends AppCompatActivity {
     public void OnRadioClick(View v) {
         switch(v.getId()){
             case R.id.rdo_light:
-                globalVariable.setVibrate_level(GlobalVariable.VIBRATE_LIGHT);
+                mGlobalVariable.setVibrate_level(GlobalVariable.VIBRATE_LIGHT);
                 break;
             case R.id.rdo_mid:
-                globalVariable.setVibrate_level(GlobalVariable.VIBRATE_MID);
+                mGlobalVariable.setVibrate_level(GlobalVariable.VIBRATE_MID);
                 break;
             case R.id.rdo_strong:
-                globalVariable.setVibrate_level(GlobalVariable.VIBRATE_STRONG);
+                mGlobalVariable.setVibrate_level(GlobalVariable.VIBRATE_STRONG);
                 break;
         }
     }
+
+    private void findView() {
+        mSeekBar_front = (SeekBar)findViewById(R.id.seekBar_glass_front);
+        mSeekBar_side = (SeekBar)findViewById(R.id.seekBar_glass_side);
+        mtxt_threshold_front = (TextView)findViewById(R.id.txt_glass_front_threshold_current);
+        mtxt_threshold_side = (TextView)findViewById(R.id.txt_glass_side_threshold_current);
+        mtxt_glass_connected = (TextView)findViewById(R.id.txt_glass_connected);
+        //mtxt_bracelet_connected = (TextView)findViewById(R.id.txt_bracelet_connected);
+        //TODO: add bracelet
+    }
+
+    private void initialize() {
+        final int glass_threshold_front = mGlobalVariable.getGlassFrontThreshold();
+        final int glass_threshold_side = mGlobalVariable.getGlassSideThreshold();
+
+        switch(mGlobalVariable.getVibrate_level()){
+            case GlobalVariable.VIBRATE_LIGHT:
+                ((RadioButton)findViewById(R.id.rdo_light)).setChecked(true);
+                break;
+            case GlobalVariable.VIBRATE_MID:
+                ((RadioButton)findViewById(R.id.rdo_mid)).setChecked(true);
+                break;
+            case GlobalVariable.VIBRATE_STRONG:
+                ((RadioButton)findViewById(R.id.rdo_strong)).setChecked(true);
+                break;
+        }
+
+        mtxt_threshold_front.setText(glass_threshold_front + "");
+        mtxt_threshold_side.setText(glass_threshold_side + "");
+        mSeekBar_front.setProgress(glass_threshold_front);
+        mSeekBar_side.setProgress(glass_threshold_side);
+
+        mSeekBar_front.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                mGlobalVariable.setGlassFrontThreshold(i);
+                mtxt_threshold_front.setText(i + "");
+                mThresholdIntent.putExtra("frontThreshold", i);
+                mThresholdIntent.putExtra("sidesThreshold", mGlobalVariable.getGlassSideThreshold());
+                sendBroadcast(mThresholdIntent);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mSeekBar_side.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                mGlobalVariable.setGlassSideThreshold(i);
+                mtxt_threshold_side.setText(i + "");
+                mThresholdIntent.putExtra("frontThreshold", mGlobalVariable.getGlassFrontThreshold());
+                mThresholdIntent.putExtra("sidesThreshold", i);
+                sendBroadcast(mThresholdIntent);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mMsgReceiver = new MsgReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
+        registerReceiver(mMsgReceiver, intentFilter);
+
+        sendBroadcast(mRequestConnectedIntent);
+    }
+
+
 }

@@ -70,4 +70,169 @@
             android:text="強"
             android:textSize="@dimen/btn_font_size" />
     </RadioGroup>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+            android:id="@+id/txt_set_glass_threshold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:text="@string/txt_set_glass_threshold"
+            android:textSize="30sp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/txt_glass_connected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:layout_alignParentRight="true"
+            android:text="@string/device_disconnected"
+            android:textSize="15sp"
+            android:textColor="#000000" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:background="#666666" />
+
+    <TextView
+        android:id="@+id/txt_glass_front_threshold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="12dp"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/txt_glass_front_threshold"
+        android:textSize="20sp"
+        android:textColor="#000000" />
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+            android:id="@+id/txt_glass_front_threshold_min"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/txt_glass_front_threshold_current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:layout_centerHorizontal="true"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#FF0000FF"
+            android:background="@drawable/threshold" />
+
+        <TextView
+            android:id="@+id/txt_glass_front_threshold_max"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:layout_alignParentRight="true"
+            android:text="350"
+            android:textSize="15sp"
+            android:textColor="#000000" />
+
+
+    </RelativeLayout>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:id="@+id/seekBar_glass_front"
+        android:layout_gravity="center_horizontal"
+        android:max="350" />
+
+    <TextView
+        android:id="@+id/txt_glass_side_threshold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="12dp"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/txt_glass_side_threshold"
+        android:textSize="20sp"
+        android:textColor="#000000" />
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextView
+            android:id="@+id/txt_glass_side_threshold_min"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/txt_glass_side_threshold_current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:layout_centerHorizontal="true"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#FF0000FF"
+            android:background="@drawable/threshold" />
+
+        <TextView
+            android:id="@+id/txt_glass_side_threshold_max"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="12dp"
+            android:layout_alignParentRight="true"
+            android:text="350"
+            android:textSize="15sp"
+            android:textColor="#000000"/>
+
+    </RelativeLayout>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:id="@+id/seekBar_glass_side"
+        android:layout_gravity="center_horizontal"
+        android:max="350"/>
+
 </LinearLayout>

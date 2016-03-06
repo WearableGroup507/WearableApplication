@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
@@ -18,9 +19,10 @@ import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
 public class AppManageActivity extends BlunoLibrary {
 
+    private static String TAG = AppManageActivity.class.getSimpleName();
     private Button mButtonScan;
     private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
-    private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
+
     private MsgReceiver mMsgReceiver;
 
     public class MsgReceiver extends BroadcastReceiver {
@@ -70,14 +72,18 @@ public class AppManageActivity extends BlunoLibrary {
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
         registerReceiver(mMsgReceiver, intentFilter);
 
-        Intent intent = new Intent(AppManageActivity.this, BlunoService.class);
-        startService(intent);
+        if(!isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+            Intent intent = new Intent(AppManageActivity.this, BlunoService.class);
+            startService(intent);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mMsgReceiver);
+        unbindService(mServiceConnection);
+        Log.i(TAG, "onDestroy");
     }
 
     @Override

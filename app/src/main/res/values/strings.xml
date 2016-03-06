@@ -43,10 +43,15 @@
 
     <string name="gesture_db">手勢資料庫頁面</string>
 
+    <string name="device_connected">已連線</string>
+    <string name="device_disconnected">未連線</string>
     <!--
     Glasses
     -->
-    <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
-    <string name="unknown_device">Unknown device</string>
+    <string name="error_bluetooth_not_supported">裝置不支援藍芽</string>
+    <string name="unknown_device">未知裝置</string>
+    <string name="txt_set_glass_threshold">設定眼鏡偵測距離</string>
+    <string name="txt_glass_front_threshold">前方距離</string>
+    <string name="txt_glass_side_threshold">側邊距離</string>
 
 </resources>

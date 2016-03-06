@@ -11,6 +11,8 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+
 public class ChooseClassActivity extends AppCompatActivity {
     int click_count=0;
     @Override
@@ -48,6 +50,9 @@ public class ChooseClassActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(false);
+
+        Intent intent = new Intent(ChooseClassActivity.this, BlunoService.class);
+        startService(intent);
     }
 
     @Override

@@ -31,9 +31,9 @@ import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
  */
 
 public class BlunoService extends Service {
-    public static final String SerialPortUUID="0000dfb1-0000-1000-8000-00805f9b34fb";
-    public static final String CommandUUID="0000dfb2-0000-1000-8000-00805f9b34fb";
-    public static final String ModelNumberStringUUID="00002a24-0000-1000-8000-00805f9b34fb";
+    public final static String SerialPortUUID="0000dfb1-0000-1000-8000-00805f9b34fb";
+    public final static String CommandUUID="0000dfb2-0000-1000-8000-00805f9b34fb";
+    public final static String ModelNumberStringUUID="00002a24-0000-1000-8000-00805f9b34fb";
     private Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Context serviceContext=this;
@@ -42,6 +42,9 @@ public class BlunoService extends Service {
     private DeleteReceiver deleteReceiver;
     private int mBaudrate=115200;
     BluetoothLeService mBluetoothLeService;
+
+    private boolean mConnected_Glass = false;
+    private boolean mConnected_Bracelet = false;
     public String connectionState;
     private enum theConnectionState{
         isToScan, isScanning, isConnecting, isConnected, isDisconnecting
@@ -163,6 +166,7 @@ public class BlunoService extends Service {
         msgReceiver = new MsgReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
         registerReceiver(msgReceiver, intentFilter);
 
         thresholdReceiver = new ThresholdReceiver();
@@ -595,6 +599,15 @@ public class BlunoService extends Service {
     public class MsgReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
+
+            if(intent.getAction() == "tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES") {
+                Intent tempIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
+                tempIntent.putExtra("Connected_Glass", mConnected_Glass);
+                tempIntent.putExtra("Connected_Bracelet", mConnected_Bracelet);
+                sendBroadcast(tempIntent);
+                return;
+            }
+
             mDeviceAddress = intent.getStringExtra("mDeviceAddress");
             connectionState = intent.getStringExtra("connectionState");
             Log.d(TAG, "mDeviceAddress"+mDeviceAddress);

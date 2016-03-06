@@ -20,6 +20,8 @@ public class GlobalVariable extends Application {
 
     private boolean _isSettingChanged=false;
     private int vibrate_level=VIBRATE_MID;
+    private int glass_front_threshold = 100;
+    private int glass_side_threshold = 100;
 
     public void setVibrate_level(int new_vibrate_level){
         if(new_vibrate_level != vibrate_level) {
@@ -28,8 +30,30 @@ public class GlobalVariable extends Application {
         }
     }
 
+    public void setGlassFrontThreshold(int new_front_value){
+        if(new_front_value != glass_front_threshold) {
+            glass_front_threshold = new_front_value;
+            _isSettingChanged = true;
+        }
+    }
+
+    public void setGlassSideThreshold(int new_side_value){
+        if(new_side_value != glass_side_threshold) {
+            glass_side_threshold = new_side_value;
+            _isSettingChanged = true;
+        }
+    }
+
     public int getVibrate_level(){
         return vibrate_level;
+    }
+
+    public int getGlassFrontThreshold() {
+        return glass_front_threshold;
+    }
+
+    public int getGlassSideThreshold() {
+        return glass_side_threshold;
     }
 
     public boolean isSettingChanged(){
@@ -58,6 +82,8 @@ public class GlobalVariable extends Application {
 
             String outstr="";
             outstr+="VIBRATE_LEVEL="+vibrate_level+"\n";
+            outstr+="GLASS_FRONT_THRESHOLD="+glass_front_threshold+"\n";
+            outstr+="GLASS_SIDE_THRESHOLD="+glass_side_threshold+"\n";
 
             //將資料寫入檔案中
             out.write(outstr.getBytes());
@@ -92,7 +118,18 @@ public class GlobalVariable extends Application {
         int current_pos=data.indexOf("VIBRATE_LEVEL");
         if(current_pos>=0){
             vibrate_level=Integer.parseInt(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
-        }else return false;
+        }else vibrate_level = VIBRATE_MID;
+
+        current_pos=data.indexOf("GLASS_FRONT_THRESHOLD");
+        if(current_pos>=0){
+            glass_front_threshold=Integer.parseInt(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
+        }else glass_front_threshold = 100;
+
+        current_pos=data.indexOf("GLASS_SIDE_THRESHOLD");
+        if(current_pos>=0){
+            glass_side_threshold=Integer.parseInt(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
+        }else glass_side_threshold = 100;
+
         return true;
     }
 }

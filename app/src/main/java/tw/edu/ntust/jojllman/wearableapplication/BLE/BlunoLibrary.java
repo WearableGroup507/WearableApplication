@@ -163,7 +163,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 	}
 	
 	// Code to manage Service lifecycle.
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+    protected final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
