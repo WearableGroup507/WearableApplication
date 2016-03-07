@@ -3,6 +3,7 @@ package tw.edu.ntust.jojllman.wearableapplication.BLE;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -45,12 +46,21 @@ public class BlunoService extends Service {
 
     private boolean mConnected_Glass = false;
     private boolean mConnected_Bracelet = false;
+    private boolean mConnected_Glove = false;
+    private BluetoothDevice mGlassDevice;
+    private BluetoothDevice mBraceletDevice;
+    private BluetoothDevice mGloveDevice;
+
     public String connectionState;
     private enum theConnectionState{
         isToScan, isScanning, isConnecting, isConnected, isDisconnecting
     }
 
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGlassGattCharacteristics =
+            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mBraceletGattCharacteristics =
+            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGloveGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
     private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
                     mSerialPortCharacteristic, mCommandCharacteristic;
@@ -213,6 +223,7 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            BluetoothDevice device = intent.getParcelableExtra("DEVICE");
             System.out.println("mGattUpdateReceiver->onReceive->action=" + action);
             //System.out.println("mGattUpdateReceiver->onReceive->context=" + context.toString());
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
@@ -230,23 +241,23 @@ public class BlunoService extends Service {
                 mBluetoothLeService.close();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
-                for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices()) {
+                for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices(device)) {
                     System.out.println("ACTION_GATT_SERVICES_DISCOVERED  "+
                             gattService.getUuid().toString());
                 }
-                getGattServices(mBluetoothLeService.getSupportedGattServices());
+                getGattServices(device, mBluetoothLeService.getSupportedGattServices(device));
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 if(mSCharacteristic==mModelNumberCharacteristic)
                 {
                     if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
-                        mBluetoothLeService.setCharacteristicNotification(mSCharacteristic, false);
+                        mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, false);
                         mSCharacteristic=mCommandCharacteristic;
                         mSCharacteristic.setValue(mPassword);
-                        mBluetoothLeService.writeCharacteristic(mSCharacteristic);
+                        mBluetoothLeService.writeCharacteristic(device, mSCharacteristic);
                         mSCharacteristic.setValue(mBaudrateBuffer);
-                        mBluetoothLeService.writeCharacteristic(mSCharacteristic);
+                        mBluetoothLeService.writeCharacteristic(device, mSCharacteristic);
                         mSCharacteristic=mSerialPortCharacteristic;
-                        mBluetoothLeService.setCharacteristicNotification(mSCharacteristic, true);
+                        mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
                         connectionState = "isConnected";
                         transferIntent.putExtra("connectionState", connectionState);
                         sendBroadcast(transferIntent);
@@ -270,13 +281,15 @@ public class BlunoService extends Service {
         }
     };
 
-    private void getGattServices(List<BluetoothGattService> gattServices) {
+    private void getGattServices(BluetoothDevice device, List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid = null;
         mModelNumberCharacteristic=null;
         mSerialPortCharacteristic=null;
         mCommandCharacteristic=null;
-        mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+        mGlassGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+
+        short deviceType = -1; // 0:glass, 1:bracelet, 2:glove
 
         // Loops through available GATT Services.
         for (BluetoothGattService gattService : gattServices) {
@@ -294,20 +307,46 @@ public class BlunoService extends Service {
                 uuid = gattCharacteristic.getUuid().toString();
                 if(uuid.equals(ModelNumberStringUUID)){
                     mModelNumberCharacteristic=gattCharacteristic;
+                    deviceType = 0;
                     System.out.println("mModelNumberCharacteristic  "+mModelNumberCharacteristic.getUuid().toString());
                 }
                 else if(uuid.equals(SerialPortUUID)){
                     mSerialPortCharacteristic = gattCharacteristic;
+                    deviceType = 0;
                     System.out.println("mSerialPortCharacteristic  "+mSerialPortCharacteristic.getUuid().toString());
 //                    updateConnectionState(R.string.comm_establish);
                 }
                 else if(uuid.equals(CommandUUID)){
                     mCommandCharacteristic = gattCharacteristic;
+                    deviceType = 0;
                     System.out.println("mSerialPortCharacteristic  "+mSerialPortCharacteristic.getUuid().toString());
 //                    updateConnectionState(R.string.comm_establish);
                 }
             }
-            mGattCharacteristics.add(charas);
+
+            switch (deviceType) {
+                case 0:
+                    mConnected_Glass = true;
+                    mGlassDevice = device;
+                    mGlassGattCharacteristics.add(charas);
+                    mBluetoothLeService.setGlassGatt(mBluetoothLeService.getGattFromDevice(device));
+                    break;
+                case 1:
+                    mConnected_Bracelet = true;
+                    mBraceletDevice = device;
+                    mBraceletGattCharacteristics.add(charas);
+                    mBluetoothLeService.setBraceletGatt(mBluetoothLeService.getGattFromDevice(device));
+                    break;
+                case 2:
+                    mConnected_Glove = true;
+                    mGloveDevice = device;
+                    mGloveGattCharacteristics.add(charas);
+                    mBluetoothLeService.setGloveGatt(mBluetoothLeService.getGattFromDevice(device));
+                    break;
+                default:
+                    Log.d(TAG, "Connected to an unknown device.");
+                    break;
+            }
         }
 
         if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
@@ -320,8 +359,8 @@ public class BlunoService extends Service {
         }
         else {
             mSCharacteristic=mModelNumberCharacteristic;
-            mBluetoothLeService.setCharacteristicNotification(mSCharacteristic, true);
-            mBluetoothLeService.readCharacteristic(mSCharacteristic);
+            mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
+            mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
         }
     }
 
@@ -641,5 +680,17 @@ public class BlunoService extends Service {
         public void onReceive(Context context, Intent intent) {
             turnOff = intent.getBooleanExtra("turnOff", turnOff);
         }
+    }
+
+    public BluetoothDevice getGlassDevice() {
+        return mGlassDevice;
+    }
+
+    public BluetoothDevice getBraceletDevice() {
+        return mBraceletDevice;
+    }
+
+    public BluetoothDevice getGloveDevice() {
+        return mGloveDevice;
     }
 }

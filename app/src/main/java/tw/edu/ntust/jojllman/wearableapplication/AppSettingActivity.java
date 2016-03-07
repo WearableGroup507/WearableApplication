@@ -73,6 +73,12 @@ public class AppSettingActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        unregisterReceiver(mMsgReceiver);
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onSupportNavigateUp(){
 
         // Use the Builder class for convenient dialog construction
