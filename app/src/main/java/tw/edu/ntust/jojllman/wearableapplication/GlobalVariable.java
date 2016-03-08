@@ -23,6 +23,9 @@ public class GlobalVariable extends Application {
     private int glass_front_threshold = 100;
     private int glass_side_threshold = 100;
 
+    private boolean bracelet_distance_enabled = false;
+    private boolean bracelet_color_enabled = false;
+
     public void setVibrate_level(int new_vibrate_level){
         if(new_vibrate_level != vibrate_level) {
             vibrate_level = new_vibrate_level;
@@ -44,6 +47,20 @@ public class GlobalVariable extends Application {
         }
     }
 
+    public void setBraceletDistanceEnabled(boolean bracelet_distance_enabled) {
+        if(bracelet_distance_enabled != this.bracelet_distance_enabled) {
+            this.bracelet_distance_enabled = bracelet_distance_enabled;
+            _isSettingChanged = true;
+        }
+    }
+
+    public void setBraceletColorEnabled(boolean bracelet_color_enabled) {
+        if(bracelet_color_enabled != this.bracelet_color_enabled) {
+            this.bracelet_color_enabled = bracelet_color_enabled;
+            _isSettingChanged = true;
+        }
+    }
+
     public int getVibrate_level(){
         return vibrate_level;
     }
@@ -54,6 +71,14 @@ public class GlobalVariable extends Application {
 
     public int getGlassSideThreshold() {
         return glass_side_threshold;
+    }
+
+    public boolean isBraceletDistanceEnabled() {
+        return bracelet_distance_enabled;
+    }
+
+    public boolean isBraceletColorEnabled() {
+        return bracelet_color_enabled;
     }
 
     public boolean isSettingChanged(){
@@ -84,6 +109,8 @@ public class GlobalVariable extends Application {
             outstr+="VIBRATE_LEVEL="+vibrate_level+"\n";
             outstr+="GLASS_FRONT_THRESHOLD="+glass_front_threshold+"\n";
             outstr+="GLASS_SIDE_THRESHOLD="+glass_side_threshold+"\n";
+            outstr+="BRACELET_DISTANCE_ENABLED="+bracelet_distance_enabled+"\n";
+            outstr+="BRACELET_COLOR_ENABLED="+bracelet_color_enabled+"\n";
 
             //將資料寫入檔案中
             out.write(outstr.getBytes());
@@ -129,6 +156,16 @@ public class GlobalVariable extends Application {
         if(current_pos>=0){
             glass_side_threshold=Integer.parseInt(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
         }else glass_side_threshold = 100;
+
+        current_pos=data.indexOf("BRACELET_DISTANCE_ENABLED");
+        if(current_pos>=0){
+            bracelet_distance_enabled=Boolean.parseBoolean(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
+        }else bracelet_distance_enabled = false;
+
+        current_pos=data.indexOf("BRACELET_COLOR_ENABLED");
+        if(current_pos>=0){
+            bracelet_color_enabled=Boolean.parseBoolean(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
+        }else bracelet_color_enabled = false;
 
         return true;
     }

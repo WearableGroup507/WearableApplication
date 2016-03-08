@@ -46,12 +46,20 @@
     <string name="device_connected">已連線</string>
     <string name="device_disconnected">未連線</string>
     <!--
-    Glasses
+    Glass
     -->
     <string name="error_bluetooth_not_supported">裝置不支援藍芽</string>
     <string name="unknown_device">未知裝置</string>
     <string name="txt_set_glass_threshold">設定眼鏡偵測距離</string>
     <string name="txt_glass_front_threshold">前方距離</string>
     <string name="txt_glass_side_threshold">側邊距離</string>
+
+    <!--
+    Bracelet
+    -->
+    <string name="txt_set_bracelet_feature">設定手環功能</string>
+    <string name="txt_bracelet_distance">距離偵測</string>
+    <string name="txt_bracelet_color">顏色偵測</string>
+
 
 </resources>

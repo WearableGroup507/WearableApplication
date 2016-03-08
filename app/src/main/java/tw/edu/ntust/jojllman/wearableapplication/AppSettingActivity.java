@@ -13,8 +13,10 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 public class AppSettingActivity extends AppCompatActivity {
@@ -23,6 +25,8 @@ public class AppSettingActivity extends AppCompatActivity {
     private SeekBar mSeekBar_side;
     private TextView mtxt_threshold_front;
     private TextView mtxt_threshold_side;
+    private Switch mSwitch_distance;
+    private Switch mSwitch_color;
     private TextView mtxt_glass_connected;
     private TextView mtxt_bracelet_connected;
 
@@ -40,8 +44,7 @@ public class AppSettingActivity extends AppCompatActivity {
             mConnected_Glass = intent.getBooleanExtra("Connected_Glass", false);
             mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
             mtxt_glass_connected.setText(mConnected_Glass?R.string.device_connected:R.string.device_disconnected);
-            //mtxt_bracelet_connected.setText(mConnected_Bracelet?R.string.device_connected:R.string.device_disconnected);
-            //TODO: add bracelet
+            mtxt_bracelet_connected.setText(mConnected_Bracelet?R.string.device_connected:R.string.device_disconnected);
         }
     }
 
@@ -81,23 +84,28 @@ public class AppSettingActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp(){
 
-        // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(AppSettingActivity.this);
-        builder.setMessage(R.string.accept_dialog)
-                .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        mGlobalVariable.saveSetting();
-                        AppSettingActivity.this.finish();
-                    }
-                })
-                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        mGlobalVariable.readSetting();
-                        AppSettingActivity.this.finish();
-                    }
-                });
-        builder.create().show();
+        if(mGlobalVariable.isSettingChanged()) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(AppSettingActivity.this);
+            builder.setMessage(R.string.accept_dialog)
+                    .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            mGlobalVariable.saveSetting();
+                            AppSettingActivity.this.finish();
+                        }
+                    })
+                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            mGlobalVariable.readSetting();
+                            AppSettingActivity.this.finish();
+                        }
+                    });
+            builder.create().show();
 
+        }
+        else {
+            onBackPressed();
+        }
         return true;
     }
 
@@ -170,14 +178,17 @@ public class AppSettingActivity extends AppCompatActivity {
         mSeekBar_side = (SeekBar)findViewById(R.id.seekBar_glass_side);
         mtxt_threshold_front = (TextView)findViewById(R.id.txt_glass_front_threshold_current);
         mtxt_threshold_side = (TextView)findViewById(R.id.txt_glass_side_threshold_current);
+        mSwitch_distance = (Switch)findViewById(R.id.switch_distance);
+        mSwitch_color = (Switch)findViewById(R.id.switch_color);
         mtxt_glass_connected = (TextView)findViewById(R.id.txt_glass_connected);
-        //mtxt_bracelet_connected = (TextView)findViewById(R.id.txt_bracelet_connected);
-        //TODO: add bracelet
+        mtxt_bracelet_connected = (TextView)findViewById(R.id.txt_bracelet_connected);
     }
 
     private void initialize() {
         final int glass_threshold_front = mGlobalVariable.getGlassFrontThreshold();
         final int glass_threshold_side = mGlobalVariable.getGlassSideThreshold();
+        final boolean bracelet_distance_enabled = mGlobalVariable.isBraceletDistanceEnabled();
+        final boolean bracelet_color_enabled = mGlobalVariable.isBraceletColorEnabled();
 
         switch(mGlobalVariable.getVibrate_level()){
             case GlobalVariable.VIBRATE_LIGHT:
@@ -235,6 +246,23 @@ public class AppSettingActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+            }
+        });
+
+        mSwitch_distance.setChecked(bracelet_distance_enabled);
+        mSwitch_color.setChecked(bracelet_color_enabled);
+
+        mSwitch_distance.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                mGlobalVariable.setBraceletDistanceEnabled(b);
+            }
+        });
+
+        mSwitch_color.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                mGlobalVariable.setBraceletColorEnabled(b);
             }
         });
 
