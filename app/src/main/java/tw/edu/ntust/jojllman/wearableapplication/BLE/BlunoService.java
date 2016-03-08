@@ -16,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -286,6 +287,36 @@ public class BlunoService extends Service {
             }
             else if(device == mBraceletDevice) {
                 //TODO: add bracelet
+                if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                    Message msg;
+                    final byte[] data =  intent.getStringExtra(BluetoothLeService.EXTRA_DATA).getBytes();
+                    String datastring =new String(data);
+                    Log.e("", datastring);
+//                    PW=datastring;
+                    int aastart = datastring.indexOf("aa");
+                    int abstart = datastring.indexOf("ab");
+                    Log.e("bbbbbbb", aastart+"ab"+abstart);
+                    if (data != null && data.length > 0) {
+                        if(abstart!=-1){
+                            final StringBuilder stringR= new StringBuilder();
+                            final StringBuilder stringG= new StringBuilder();
+                            final StringBuilder stringB= new StringBuilder();
+//                            R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
+//                            G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
+//                            B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
+                            //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
+                        }
+                        if(aastart!=-1){
+                            final StringBuilder stringDT= new StringBuilder();
+                            //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
+//                            DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
+                            //	DT=String.valueOf(dt);
+                        }
+
+                    }
+//                    msg = Message.obtain(mActivityHandler , 1);
+//                    msg.sendToTarget();
+                }
             }
             else if(device == mGloveDevice) {
                 //TODO: add glove
