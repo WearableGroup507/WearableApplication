@@ -233,26 +233,29 @@ public class BlunoService extends Service {
             BluetoothDevice device = intent.getParcelableExtra("DEVICE");
             System.out.println("mGattUpdateReceiver->onReceive->action=" + action);
             //System.out.println("mGattUpdateReceiver->onReceive->context=" + context.toString());
-            if(device == mGlassDevice) {
-                if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                    handler.removeCallbacks(mConnectingOverTimeRunnable);
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                handler.removeCallbacks(mConnectingOverTimeRunnable);
 
-                } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                    connectionState = "isToScan";
-                    transferIntent.putExtra("connectionState", connectionState);
-                    sendBroadcast(transferIntent);
-                    mConnectionState = theConnectionState.valueOf(connectionState);
-                    onConectionStateChange(mConnectionState);
-                    handler.removeCallbacks(mDisonnectingOverTimeRunnable);
-                    mBluetoothLeService.close();
-                } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                    // Show all the supported services and characteristics on the user interface.
-                    for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices(device)) {
-                        System.out.println("ACTION_GATT_SERVICES_DISCOVERED  "+
-                                gattService.getUuid().toString());
-                    }
-                    getGattServices(device, mBluetoothLeService.getSupportedGattServices(device));
-                } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                connectionState = "isToScan";
+                transferIntent.putExtra("connectionState", connectionState);
+                sendBroadcast(transferIntent);
+                mConnectionState = theConnectionState.valueOf(connectionState);
+                onConectionStateChange(mConnectionState);
+                handler.removeCallbacks(mDisonnectingOverTimeRunnable);
+                mBluetoothLeService.close();
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices(device)) {
+                    System.out.println("ACTION_GATT_SERVICES_DISCOVERED  "+
+                            gattService.getUuid().toString());
+                }
+                getGattServices(device, mBluetoothLeService.getSupportedGattServices(device));
+            }
+
+            if(device.equals(mGlassDevice)) {
+                Log.d(TAG, "Device is glass");
+                if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                     if(mSCharacteristic==mModelNumberCharacteristic)
                     {
                         if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -285,31 +288,35 @@ public class BlunoService extends Service {
                     System.out.println("displayData "+intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }
             }
-            else if(device == mBraceletDevice) {
-                //TODO: add bracelet
+            else if(device.equals(mBraceletDevice)) {
+                Log.d(TAG, "Device is bracelet");
                 if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                     Message msg;
                     final byte[] data =  intent.getStringExtra(BluetoothLeService.EXTRA_DATA).getBytes();
                     String datastring =new String(data);
                     Log.e("", datastring);
-//                    PW=datastring;
+                    String PW=datastring;
                     int aastart = datastring.indexOf("aa");
                     int abstart = datastring.indexOf("ab");
-                    Log.e("bbbbbbb", aastart+"ab"+abstart);
+                    Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
+                    Log.d(TAG, "PW=" + PW);
+
                     if (data != null && data.length > 0) {
                         if(abstart!=-1){
                             final StringBuilder stringR= new StringBuilder();
                             final StringBuilder stringG= new StringBuilder();
                             final StringBuilder stringB= new StringBuilder();
-//                            R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
-//                            G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
-//                            B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
+                            int R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
+                            int G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
+                            int B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
+                            Log.d(TAG, "R:" + R + ", G:" + G + ", B:" + B);
                             //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
                         }
                         if(aastart!=-1){
                             final StringBuilder stringDT= new StringBuilder();
                             //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
-//                            DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
+                            String DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
+                            Log.d(TAG, "DT:" + DT);
                             //	DT=String.valueOf(dt);
                         }
 
@@ -348,9 +355,9 @@ public class BlunoService extends Service {
                 for (BluetoothGattCharacteristic gattCharacteristic :
                         gattCharacteristics)
                 {
-                    if(uuid.equalsIgnoreCase(UUID_BRACELET_NOTIFY.toString()))
+                    Log.i(TAG, gattCharacteristic.getUuid().toString());
+                    if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(UUID_BRACELET_NOTIFY.toString()))
                     {
-                        Log.i(TAG, gattCharacteristic.getUuid().toString());
                         Log.i(TAG, UUID_BRACELET_NOTIFY.toString());
                         mNotifyCharacteristic = gattCharacteristic;
                         //setCharacteristicNotification(gattCharacteristic, true);
@@ -378,7 +385,7 @@ public class BlunoService extends Service {
                     } else if (uuid.equals(CommandUUID)) {
                         mCommandCharacteristic = gattCharacteristic;
                         deviceType = 0;
-                        System.out.println("mSerialPortCharacteristic  " + mSerialPortCharacteristic.getUuid().toString());
+                        System.out.println("mCommandCharacteristic  " + mCommandCharacteristic.getUuid().toString());
 //                    updateConnectionState(R.string.comm_establish);
                     }
                 }
@@ -465,6 +472,7 @@ public class BlunoService extends Service {
             front  = Integer.parseInt(buffer[0]);
             left   = Integer.parseInt(buffer[1]);
             right  = Integer.parseInt(buffer[2]);
+            Log.i("BlunoService", "front:" + front + ", left:" + left + ", right:" + right);
             stateProcess();
             transferIntent.putExtra("front", front);
             transferIntent.putExtra("left", left);

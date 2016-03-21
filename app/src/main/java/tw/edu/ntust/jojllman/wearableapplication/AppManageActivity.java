@@ -82,7 +82,7 @@ public class AppManageActivity extends BlunoLibrary {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mMsgReceiver);
-        unbindService(mServiceConnection);
+//        unbindService(mServiceConnection);
         Log.i(TAG, "onDestroy");
     }
 

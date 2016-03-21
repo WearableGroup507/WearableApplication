@@ -171,7 +171,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
         	mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
             if (!mBluetoothLeService.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");
-                ((Activity) mainContext).finish();
+                //((Activity) mainContext).finish();
             }
         }
 

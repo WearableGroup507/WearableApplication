@@ -33,6 +33,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -348,7 +349,7 @@ public class BluetoothLeService extends Service {
         // After using a given device, you should make sure that BluetoothGatt.close() is called
         // such that resources are cleaned up properly.  In this particular example, close() is
         // invoked when the UI is disconnected from the Service.
-        close();
+        //close();
         return super.onUnbind(intent);
     }
 
@@ -380,6 +381,7 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
+        mBluetoothGatts = new ArrayList<>();
         mInitialized = true;
 
         return true;
