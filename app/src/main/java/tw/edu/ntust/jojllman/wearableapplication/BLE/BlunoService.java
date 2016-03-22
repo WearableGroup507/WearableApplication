@@ -84,6 +84,10 @@ public class BlunoService extends Service {
 
     static public int Bracelet_R, Bracelet_G, Bracelet_B;
     static public String Bracelet_DT;
+    private BraceletState m_braceletState = BraceletState.none;
+    private enum BraceletState{
+        none, distance, color
+    }
 
     private int front  = 100;
     private int left       = 100;
@@ -306,32 +310,80 @@ public class BlunoService extends Service {
                     int abstart = datastring.indexOf("ab");
                     Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
                     Log.d(TAG, "PW=" + PW);
-                    Log.d(TAG, "PW equals ad00001" + PW.startsWith("ad00001"));
-                    Log.d(TAG, "PW equals ad00010" + PW.startsWith("ad00010"));
-                    Log.d(TAG, "PW equals ad00100" + PW.startsWith("ad00100"));
+                    Log.d(TAG, "PW equals ad00001" + PW.startsWith("ad00001")); //距離
+                    Log.d(TAG, "PW equals ad00010" + PW.startsWith("ad00010")); //顏色
+                    Log.d(TAG, "PW equals ad00100" + PW.startsWith("ad00100")); //距離
+                    Log.d(TAG, "PW equals ad01000" + PW.startsWith("ad01000")); //尋找手機
 
-                    if (data != null && data.length > 0) {
-                        if(abstart!=-1){
-                            final StringBuilder stringR= new StringBuilder();
-                            final StringBuilder stringG= new StringBuilder();
-                            final StringBuilder stringB= new StringBuilder();
-                            Bracelet_R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
-                            Bracelet_G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
-                            Bracelet_B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
-                            Log.d(TAG, "R:" + Bracelet_R + ", G:" + Bracelet_G + ", B:" + Bracelet_B);
-                            //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
+                    if(m_braceletState == BraceletState.none) {
+                        if(PW.startsWith("ad00001")) {
+                            m_braceletState = BraceletState.distance;
+                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+                            String edtSend = "aa1";
+                            mNotifyCharacteristic.setValue(edtSend);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
+                            String edtSend3 = "ac1";
+                            mNotifyCharacteristic.setValue(edtSend3);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
                         }
-                        if(aastart!=-1){
-                            final StringBuilder stringDT= new StringBuilder();
-                            //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
-                            Bracelet_DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
-                            Log.d(TAG, "DT:" + Bracelet_DT);
-                            //	DT=String.valueOf(dt);
+                        else if(PW.startsWith("ad00010")) {
+                            m_braceletState = BraceletState.color;
+                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+                            String edtSend = "ab1";
+                            mNotifyCharacteristic.setValue(edtSend);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
                         }
-
+                        else if(PW.startsWith("ad00100")) {
+                            m_braceletState = BraceletState.distance;
+                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+                            String edtSend = "aa1";
+                            mNotifyCharacteristic.setValue(edtSend);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
+                            String edtSend3 = "ac1";
+                            mNotifyCharacteristic.setValue(edtSend3);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
+                        }
+                        else if(PW.startsWith("ad01000")) {
+                            //TODO: speak out I'm here
+                        }
                     }
-//                    msg = Message.obtain(mActivityHandler , 1);
-//                    msg.sendToTarget();
+                    else if(m_braceletState == BraceletState.distance) {
+                        if(PW.startsWith("ad10000")) {
+                            //TODO: speak out distance
+                        }
+                        else if(PW.startsWith("ad20000")) {
+                            m_braceletState = BraceletState.none;
+                        }
+                        else if (data != null && data.length > 0) {
+                            if(aastart!=-1){
+                                final StringBuilder stringDT= new StringBuilder();
+                                //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
+                                Bracelet_DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
+                                Log.d(TAG, "DT:" + Bracelet_DT);
+                                //	DT=String.valueOf(dt);
+                            }
+                        }
+                    }
+                    else if(m_braceletState == BraceletState.color) {
+                        if(PW.startsWith("ad10000")) {
+                            //TODO: speak out color
+                        }
+                        else if(PW.startsWith("ad20000")) {
+                            m_braceletState = BraceletState.none;
+                        }
+                        else if (data != null && data.length > 0) {
+                            if(abstart!=-1){
+                                final StringBuilder stringR= new StringBuilder();
+                                final StringBuilder stringG= new StringBuilder();
+                                final StringBuilder stringB= new StringBuilder();
+                                Bracelet_R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
+                                Bracelet_G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
+                                Bracelet_B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
+                                Log.d(TAG, "R:" + Bracelet_R + ", G:" + Bracelet_G + ", B:" + Bracelet_B);
+                                //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
+                            }
+                        }
+                    }
                 }
             }
             else if(device == mGloveDevice) {
