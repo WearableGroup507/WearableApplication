@@ -585,5 +585,10 @@ public class BluetoothLeService extends Service {
     public void setGloveGatt(BluetoothGatt GloveGatt) {
         this.mGloveGatt = GloveGatt;
     }
-    
+
+    public void removeDeviceGatt(BluetoothDevice device) {
+        BluetoothGatt gatt = getGattFromDevice(device);
+        if(gatt != null)
+            mBluetoothGatts.remove(gatt);
+    }
 }

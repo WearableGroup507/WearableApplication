@@ -47,6 +47,7 @@ public class AppSettingActivity extends AppCompatActivity {
     public class MsgReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
             mConnected_Glass = intent.getBooleanExtra("Connected_Glass", false);
             mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
             mtxt_glass_connected.setText(mConnected_Glass?R.string.device_connected:R.string.device_disconnected);
@@ -56,26 +57,29 @@ public class AppSettingActivity extends AppCompatActivity {
                 mThreadBracelet = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            while(true) {
-                                Thread.sleep(2000);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mtxt_bracelet_distance.setText("顏色偵測R:" + BlunoService.Bracelet_R + " G:" + BlunoService.Bracelet_G + " B" + BlunoService.Bracelet_B);
-                                        mtxt_bracelet_color.setText("距離偵測:" + BlunoService.Bracelet_DT + "mm");
-
-                                    }
-                                });
-                            }
+                    try {
+                        while(true) {
+                            Thread.sleep(2000);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mtxt_bracelet_distance.setText("顏色偵測R:" + BlunoService.Bracelet_R + " G:" + BlunoService.Bracelet_G + " B" + BlunoService.Bracelet_B);
+                                    mtxt_bracelet_color.setText("距離偵測:" + BlunoService.Bracelet_DT + "mm");
+                                }
+                            });
                         }
-                        catch (InterruptedException e1)
-                        {// TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
+                    }
+                    catch (InterruptedException e1)
+                    {
+                        e1.printStackTrace();
+                    }
                     }
                 });
                 mThreadBracelet.start();
+            }
+            else {
+                mtxt_bracelet_distance.setText("顏色偵測");
+                mtxt_bracelet_color.setText("距離偵測");
             }
         }
     }
@@ -303,6 +307,7 @@ public class AppSettingActivity extends AppCompatActivity {
         mMsgReceiver = new MsgReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
         registerReceiver(mMsgReceiver, intentFilter);
 
         sendBroadcast(mRequestConnectedIntent);
