@@ -31,7 +31,7 @@ import tw.edu.ntust.jojllman.wearableapplication.R;
 import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
 
 /**
- * Created by HuangYuChang on 15/5/6.
+ * This is a service class for manipulating data from bracelet and glass
  */
 
 public class BlunoService extends Service {
@@ -44,6 +44,7 @@ public class BlunoService extends Service {
             UUID.fromString(BraceletGattAttributes.SERVICE);
     private Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
+    private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
     private Context serviceContext=this;
     private MsgReceiver msgReceiver;
     private ThresholdReceiver thresholdReceiver;
@@ -253,7 +254,7 @@ public class BlunoService extends Service {
                 mConnectionState = theConnectionState.valueOf(connectionState);
                 onConectionStateChange(mConnectionState);
                 handler.removeCallbacks(mDisonnectingOverTimeRunnable);
-                mBluetoothLeService.close();
+                //mBluetoothLeService.close();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices(device)) {
@@ -849,5 +850,30 @@ public class BlunoService extends Service {
 
     public BluetoothDevice getGloveDevice() {
         return mGloveDevice;
+    }
+
+    private void removeDevice(BluetoothDevice device) {
+        mBluetoothLeService.removeDeviceGatt(device);
+
+        if(device == mGlassDevice) {
+            mGlassDevice = null;
+            mConnected_Glass = false;
+            mBluetoothLeService.setGlassGatt(null);
+        }
+        else if(device == mGloveDevice) {
+            mGloveDevice = null;
+            mConnected_Glove = false;
+            mBluetoothLeService.setGloveGatt(null);
+        }
+        else if(device == mBraceletDevice) {
+            mBraceletDevice = null;
+            mConnected_Bracelet = false;
+            mBluetoothLeService.setBraceletGatt(null);
+        }
+
+        disonnectIntent.putExtra("Connected_Glass", mConnected_Glass);
+        disonnectIntent.putExtra("Connected_Bracelet", mConnected_Bracelet);
+        disonnectIntent.putExtra("Connected_Glove", mConnected_Glove);
+        sendBroadcast(disonnectIntent);
     }
 }
