@@ -19,6 +19,8 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+
 public class AppSettingActivity extends AppCompatActivity {
     private GlobalVariable mGlobalVariable;
     private SeekBar mSeekBar_front;
@@ -29,6 +31,8 @@ public class AppSettingActivity extends AppCompatActivity {
     private Switch mSwitch_color;
     private TextView mtxt_glass_connected;
     private TextView mtxt_bracelet_connected;
+    private TextView mtxt_bracelet_color;
+    private TextView mtxt_bracelet_distance;
 
 
     private boolean mConnected_Glass = false;
@@ -38,6 +42,8 @@ public class AppSettingActivity extends AppCompatActivity {
     private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private MsgReceiver mMsgReceiver;
 
+    private Thread mThreadBracelet;
+
     public class MsgReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -45,6 +51,32 @@ public class AppSettingActivity extends AppCompatActivity {
             mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
             mtxt_glass_connected.setText(mConnected_Glass?R.string.device_connected:R.string.device_disconnected);
             mtxt_bracelet_connected.setText(mConnected_Bracelet?R.string.device_connected:R.string.device_disconnected);
+
+            if(mConnected_Bracelet) {
+                mThreadBracelet = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            while(true) {
+                                Thread.sleep(2000);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mtxt_bracelet_distance.setText("顏色偵測R:" + BlunoService.Bracelet_R + " G:" + BlunoService.Bracelet_G + " B" + BlunoService.Bracelet_B);
+                                        mtxt_bracelet_color.setText("距離偵測:" + BlunoService.Bracelet_DT + "mm");
+
+                                    }
+                                });
+                            }
+                        }
+                        catch (InterruptedException e1)
+                        {// TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+                mThreadBracelet.start();
+            }
         }
     }
 
@@ -182,6 +214,8 @@ public class AppSettingActivity extends AppCompatActivity {
         mSwitch_color = (Switch)findViewById(R.id.switch_color);
         mtxt_glass_connected = (TextView)findViewById(R.id.txt_glass_connected);
         mtxt_bracelet_connected = (TextView)findViewById(R.id.txt_bracelet_connected);
+        mtxt_bracelet_distance = (TextView)findViewById(R.id.txt_bracelet_distance);
+        mtxt_bracelet_color = (TextView)findViewById(R.id.txt_bracelet_color);
     }
 
     private void initialize() {

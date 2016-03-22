@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -57,6 +58,8 @@ public class BlunoService extends Service {
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDevice;
 
+    private Thread mThreadBracelet;
+
     public String connectionState;
     private enum theConnectionState{
         isToScan, isScanning, isConnecting, isConnected, isDisconnecting
@@ -78,6 +81,9 @@ public class BlunoService extends Service {
 
     public boolean mConnected = false;
     private final static String TAG = BlunoService.class.getSimpleName();
+
+    static public int Bracelet_R, Bracelet_G, Bracelet_B;
+    static public String Bracelet_DT;
 
     private int front  = 100;
     private int left       = 100;
@@ -285,38 +291,41 @@ public class BlunoService extends Service {
                     else if (mSCharacteristic==mSerialPortCharacteristic) {
                         onSerialReceived(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     }
-                    System.out.println("displayData "+intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }
             }
             else if(device.equals(mBraceletDevice)) {
                 Log.d(TAG, "Device is bracelet");
                 if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                     Message msg;
-                    final byte[] data =  intent.getStringExtra(BluetoothLeService.EXTRA_DATA).getBytes();
+                    final byte[] data =  intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
                     String datastring =new String(data);
-                    Log.e("", datastring);
+                    Log.d(TAG, datastring);
                     String PW=datastring;
                     int aastart = datastring.indexOf("aa");
                     int abstart = datastring.indexOf("ab");
                     Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
                     Log.d(TAG, "PW=" + PW);
+                    Log.d(TAG, "PW equals ad00001" + PW.startsWith("ad00001"));
+                    Log.d(TAG, "PW equals ad00010" + PW.startsWith("ad00010"));
+                    Log.d(TAG, "PW equals ad00100" + PW.startsWith("ad00100"));
 
                     if (data != null && data.length > 0) {
                         if(abstart!=-1){
                             final StringBuilder stringR= new StringBuilder();
                             final StringBuilder stringG= new StringBuilder();
                             final StringBuilder stringB= new StringBuilder();
-                            int R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
-                            int G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
-                            int B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
-                            Log.d(TAG, "R:" + R + ", G:" + G + ", B:" + B);
+                            Bracelet_R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
+                            Bracelet_G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
+                            Bracelet_B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
+                            Log.d(TAG, "R:" + Bracelet_R + ", G:" + Bracelet_G + ", B:" + Bracelet_B);
                             //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
                         }
                         if(aastart!=-1){
                             final StringBuilder stringDT= new StringBuilder();
                             //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
-                            String DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
-                            Log.d(TAG, "DT:" + DT);
+                            Bracelet_DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString())+"mm";
+                            Log.d(TAG, "DT:" + Bracelet_DT);
                             //	DT=String.valueOf(dt);
                         }
 
@@ -405,6 +414,31 @@ public class BlunoService extends Service {
                     mBraceletGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mBraceletGattCharacteristics.add(charas);
                     mBluetoothLeService.setBraceletGatt(mBluetoothLeService.getGattFromDevice(device));
+
+                    final BluetoothGatt gatt_temp = mBluetoothLeService.getGattFromDevice(device);
+                    mThreadBracelet = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+
+                                Thread.sleep(400);
+                                String edtSend = "aa1";
+                                mNotifyCharacteristic.setValue(edtSend);
+                                gatt_temp.writeCharacteristic(mNotifyCharacteristic);
+                                String edtSend2 = "ab1";
+                                mNotifyCharacteristic.setValue(edtSend2);
+                                gatt_temp.writeCharacteristic(mNotifyCharacteristic);
+                                String edtSend3 = "ac1";
+                                mNotifyCharacteristic.setValue(edtSend3);
+                                gatt_temp.writeCharacteristic(mNotifyCharacteristic);
+                            }
+                            catch (InterruptedException e1)
+                            {// TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        }
+                    });
+                    mThreadBracelet.start();
                     break;
                 case 2:
                     mConnected_Glove = true;

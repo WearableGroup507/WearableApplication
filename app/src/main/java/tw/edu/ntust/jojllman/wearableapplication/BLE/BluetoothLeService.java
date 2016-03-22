@@ -35,6 +35,7 @@ import android.util.Log;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -328,7 +329,11 @@ public class BluetoothLeService extends Service {
         // For all other profiles, writes the data formatted in HEX.
         final byte[] data = characteristic.getValue();
         if (data != null && data.length > 0) {
-            intent.putExtra(EXTRA_DATA, new String(data));
+            if(gatt == mGlassGatt)
+                intent.putExtra(EXTRA_DATA, new String(data));
+            else
+                intent.putExtra(EXTRA_DATA, data);
+
             sendBroadcast(intent);
         }
     }
@@ -535,6 +540,13 @@ public class BluetoothLeService extends Service {
         if (gatt == null) return;
 
         gatt.setCharacteristicNotification(characteristic, enabled);
+
+        if (BlunoService.UUID_BRACELET_SERVICE.equals(characteristic.getUuid())) {
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
+                    UUID.fromString(BraceletGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            getGattFromDevice(device).writeDescriptor(descriptor);
+        }
     }
 
     /**

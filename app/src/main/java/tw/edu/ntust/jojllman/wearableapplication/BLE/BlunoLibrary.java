@@ -90,8 +90,8 @@ public abstract class BlunoLibrary extends AppCompatActivity {
                     onConnectionStateChange(mConnectionState);
                 }
                 else {
-					mainContext.unbindService(mServiceConnection);
-					mBluetoothLeService = null;
+//					mainContext.unbindService(mServiceConnection);
+//					mBluetoothLeService = null;
 					connectionState = "isConnecting";
 					mConnectionState = theConnectionState.valueOf(connectionState);
 					onConnectionStateChange(mConnectionState);
