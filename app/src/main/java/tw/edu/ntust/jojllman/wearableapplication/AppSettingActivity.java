@@ -48,38 +48,66 @@ public class AppSettingActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            mConnected_Glass = intent.getBooleanExtra("Connected_Glass", false);
-            mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
-            mtxt_glass_connected.setText(mConnected_Glass?R.string.device_connected:R.string.device_disconnected);
-            mtxt_bracelet_connected.setText(mConnected_Bracelet?R.string.device_connected:R.string.device_disconnected);
+            if(action.compareTo("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES") == 0 ||
+                    action.compareTo("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES") == 0) {
+                mConnected_Glass = intent.getBooleanExtra("Connected_Glass", false);
+                mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
+                mtxt_glass_connected.setText(mConnected_Glass ? R.string.device_connected : R.string.device_disconnected);
+                mtxt_bracelet_connected.setText(mConnected_Bracelet ? R.string.device_connected : R.string.device_disconnected);
 
-            if(mConnected_Bracelet) {
-                mThreadBracelet = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                    try {
-                        while(true) {
-                            Thread.sleep(2000);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mtxt_bracelet_distance.setText("顏色偵測R:" + BlunoService.Bracelet_R + " G:" + BlunoService.Bracelet_G + " B" + BlunoService.Bracelet_B);
-                                    mtxt_bracelet_color.setText("距離偵測:" + BlunoService.Bracelet_DT + "mm");
+                if (mConnected_Bracelet) {
+                    mThreadBracelet = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                while (true) {
+                                    Thread.sleep(2000);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mtxt_bracelet_distance.setText("距離偵測:" + BlunoService.Bracelet_DT);
+                                            mtxt_bracelet_color.setText("顏色偵測R:" + BlunoService.Bracelet_R + " G:" + BlunoService.Bracelet_G + " B" + BlunoService.Bracelet_B);
+                                        }
+                                    });
                                 }
-                            });
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
                         }
-                    }
-                    catch (InterruptedException e1)
-                    {
-                        e1.printStackTrace();
-                    }
-                    }
-                });
-                mThreadBracelet.start();
+                    });
+                    mThreadBracelet.start();
+                } else {
+                    mtxt_bracelet_distance.setText("顏色偵測");
+                    mtxt_bracelet_color.setText("距離偵測");
+                }
             }
             else {
-                mtxt_bracelet_distance.setText("顏色偵測");
-                mtxt_bracelet_color.setText("距離偵測");
+                BlunoService.BraceletState state = BlunoService.BraceletState.valueOf(intent.getStringExtra("BraceletState"));
+                if(state == BlunoService.BraceletState.none) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSwitch_distance.setChecked(false);
+                            mSwitch_color.setChecked(false);
+                        }
+                    });
+                }
+                else if(state == BlunoService.BraceletState.distance) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSwitch_distance.setChecked(true);
+                        }
+                    });
+                }
+                else if(state == BlunoService.BraceletState.color) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSwitch_color.setChecked(true);
+                        }
+                    });
+                }
             }
         }
     }
@@ -308,6 +336,7 @@ public class AppSettingActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
         registerReceiver(mMsgReceiver, intentFilter);
 
         sendBroadcast(mRequestConnectedIntent);

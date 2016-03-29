@@ -45,6 +45,7 @@ public class BlunoService extends Service {
     private Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
+    private Intent braceletIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
     private Context serviceContext=this;
     private MsgReceiver msgReceiver;
     private ThresholdReceiver thresholdReceiver;
@@ -58,8 +59,6 @@ public class BlunoService extends Service {
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDevice;
-
-    private Thread mThreadBracelet;
 
     public String connectionState;
     private enum theConnectionState{
@@ -86,7 +85,7 @@ public class BlunoService extends Service {
     static public int Bracelet_R, Bracelet_G, Bracelet_B;
     static public String Bracelet_DT;
     private BraceletState m_braceletState = BraceletState.none;
-    private enum BraceletState{
+    public enum BraceletState{
         none, distance, color
     }
 
@@ -311,10 +310,11 @@ public class BlunoService extends Service {
                     int abstart = datastring.indexOf("ab");
                     Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
                     Log.d(TAG, "PW=" + PW);
-                    Log.d(TAG, "PW equals ad00001" + PW.startsWith("ad00001")); //距離
-                    Log.d(TAG, "PW equals ad00010" + PW.startsWith("ad00010")); //顏色
-                    Log.d(TAG, "PW equals ad00100" + PW.startsWith("ad00100")); //距離
-                    Log.d(TAG, "PW equals ad01000" + PW.startsWith("ad01000")); //尋找手機
+                    Log.i(TAG, "State: " + m_braceletState);
+                    Log.i(TAG, "PW equals ad00001" + PW.startsWith("ad00001")); //距離
+                    Log.i(TAG, "PW equals ad00010" + PW.startsWith("ad00010")); //重置
+                    Log.i(TAG, "PW equals ad00100" + PW.startsWith("ad00100")); //距離
+                    Log.i(TAG, "PW equals ad01000" + PW.startsWith("ad01000")); //尋找手機
 
                     if(m_braceletState == BraceletState.none) {
                         if(PW.startsWith("ad00001")) {
@@ -328,20 +328,13 @@ public class BlunoService extends Service {
                             gatt.writeCharacteristic(mNotifyCharacteristic);
                         }
                         else if(PW.startsWith("ad00010")) {
+
+                        }
+                        else if(PW.startsWith("ad00100")) {
                             m_braceletState = BraceletState.color;
                             BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
                             String edtSend = "ab1";
                             mNotifyCharacteristic.setValue(edtSend);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
-                        }
-                        else if(PW.startsWith("ad00100")) {
-                            m_braceletState = BraceletState.distance;
-                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-                            String edtSend = "aa1";
-                            mNotifyCharacteristic.setValue(edtSend);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
-                            String edtSend3 = "ac1";
-                            mNotifyCharacteristic.setValue(edtSend3);
                             gatt.writeCharacteristic(mNotifyCharacteristic);
                         }
                         else if(PW.startsWith("ad01000")) {
@@ -352,8 +345,15 @@ public class BlunoService extends Service {
                         if(PW.startsWith("ad10000")) {
                             //TODO: speak out distance
                         }
-                        else if(PW.startsWith("ad20000")) {
+                        else if(PW.startsWith("ad00010")) {
                             m_braceletState = BraceletState.none;
+                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+                            String edtSend = "aa0";
+                            mNotifyCharacteristic.setValue(edtSend);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
+                            String edtSend3 = "ac0";
+                            mNotifyCharacteristic.setValue(edtSend3);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
                         }
                         else if (data != null && data.length > 0) {
                             if(aastart!=-1){
@@ -369,8 +369,12 @@ public class BlunoService extends Service {
                         if(PW.startsWith("ad10000")) {
                             //TODO: speak out color
                         }
-                        else if(PW.startsWith("ad20000")) {
+                        else if(PW.startsWith("ad00010")) {
                             m_braceletState = BraceletState.none;
+                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+                            String edtSend = "ab0";
+                            mNotifyCharacteristic.setValue(edtSend);
+                            gatt.writeCharacteristic(mNotifyCharacteristic);
                         }
                         else if (data != null && data.length > 0) {
                             if(abstart!=-1){
@@ -385,6 +389,9 @@ public class BlunoService extends Service {
                             }
                         }
                     }
+
+                    braceletIntent.putExtra("BraceletState", m_braceletState + "");
+                    sendBroadcast(braceletIntent);
                 }
             }
             else if(device == mGloveDevice) {
@@ -460,6 +467,21 @@ public class BlunoService extends Service {
                     mGlassGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mGlassGattCharacteristics.add(charas);
                     mBluetoothLeService.setGlassGatt(mBluetoothLeService.getGattFromDevice(device));
+
+                    if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
+                        Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
+                        connectionState = "isToScan";
+                        transferIntent.putExtra("connectionState", connectionState);
+                        sendBroadcast(transferIntent);
+                        mConnectionState = theConnectionState.valueOf(connectionState);
+                        onConectionStateChange(mConnectionState);
+                    }
+                    else {
+                        mSCharacteristic=mModelNumberCharacteristic;
+                        mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
+                        mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
+                    }
+                    Log.d(TAG, "Connected to glass device.");
                     break;
                 case 1:
                     mConnected_Bracelet = true;
@@ -467,31 +489,7 @@ public class BlunoService extends Service {
                     mBraceletGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mBraceletGattCharacteristics.add(charas);
                     mBluetoothLeService.setBraceletGatt(mBluetoothLeService.getGattFromDevice(device));
-
-                    final BluetoothGatt gatt_temp = mBluetoothLeService.getGattFromDevice(device);
-                    mThreadBracelet = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-
-                                Thread.sleep(400);
-                                String edtSend = "aa1";
-                                mNotifyCharacteristic.setValue(edtSend);
-                                gatt_temp.writeCharacteristic(mNotifyCharacteristic);
-                                String edtSend2 = "ab1";
-                                mNotifyCharacteristic.setValue(edtSend2);
-                                gatt_temp.writeCharacteristic(mNotifyCharacteristic);
-                                String edtSend3 = "ac1";
-                                mNotifyCharacteristic.setValue(edtSend3);
-                                gatt_temp.writeCharacteristic(mNotifyCharacteristic);
-                            }
-                            catch (InterruptedException e1)
-                            {// TODO Auto-generated catch block
-                                e1.printStackTrace();
-                            }
-                        }
-                    });
-                    mThreadBracelet.start();
+                    Log.d(TAG, "Connected to bracelet device.");
                     break;
                 case 2:
                     mConnected_Glove = true;
@@ -499,25 +497,12 @@ public class BlunoService extends Service {
                     mGloveGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mGloveGattCharacteristics.add(charas);
                     mBluetoothLeService.setGloveGatt(mBluetoothLeService.getGattFromDevice(device));
+                    Log.d(TAG, "Connected to glove device.");
                     break;
                 default:
                     Log.d(TAG, "Connected to an unknown device.");
                     break;
             }
-        }
-
-        if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
-            Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
-            connectionState = "isToScan";
-            transferIntent.putExtra("connectionState", connectionState);
-            sendBroadcast(transferIntent);
-            mConnectionState = theConnectionState.valueOf(connectionState);
-            onConectionStateChange(mConnectionState);
-        }
-        else {
-            mSCharacteristic=mModelNumberCharacteristic;
-            mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
-            mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
         }
     }
 
