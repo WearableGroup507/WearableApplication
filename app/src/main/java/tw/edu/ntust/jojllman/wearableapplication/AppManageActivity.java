@@ -102,9 +102,6 @@ public class AppManageActivity extends BlunoLibrary {
     }
 
     public void OnSearchDeviceClick(View view){
-//        Intent intent = new Intent();
-//        intent.setClass(AppManageActivity.this  , SearchDeviceActivity.class);
-//        startActivity(intent);
 
         if(!isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
             onCreateProcess();

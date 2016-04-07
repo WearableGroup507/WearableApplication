@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -23,7 +24,10 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +46,7 @@ public class BlunoService extends Service {
             UUID.fromString(BraceletGattAttributes.NOTIFY);
     public final static UUID UUID_BRACELET_SERVICE =
             UUID.fromString(BraceletGattAttributes.SERVICE);
+    private final static int NUM_DEVICE = 2;
     private Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
@@ -55,10 +60,11 @@ public class BlunoService extends Service {
 
     private boolean mConnected_Glass = false;
     private boolean mConnected_Bracelet = false;
-    private boolean mConnected_Glove = false;
+    private boolean mConnected_GloveLeft = false;
+    private boolean mConnected_GloveRight = false;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
-    private BluetoothDevice mGloveDevice;
+    private BluetoothDevice mGloveDeviceLeft, mGloveDeviceRight;
 
     public String connectionState;
     private enum theConnectionState{
@@ -71,6 +77,10 @@ public class BlunoService extends Service {
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGloveGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private BluetoothLeServiceListener mBluetoothLeServiceListener;
+    private HashMap<String, BluetoothGattCharacteristic> mSendNotificationCharacteristics;
+    private HashMap<String, BluetoothGattCharacteristic> mSendCommandCharacteristics;
+    private HashMap<String, BluetoothGattCharacteristic> mSetNotificationCharacteristics;
     private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
                     mSerialPortCharacteristic, mCommandCharacteristic;
     private static BluetoothGattCharacteristic mNotifyCharacteristic;
@@ -159,6 +169,25 @@ public class BlunoService extends Service {
         }
     };
 
+    private RecognitionService		   mRecognitionService;
+    private RecognitionServiceListener mRecognitionServiceListener;
+    private ServiceConnection mRecognitionServiceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            mRecognitionService = ((RecognitionService.ServiceBinder) service).getService();
+            mRecognitionService.registerListener(mRecognitionServiceListener);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            mRecognitionService.unregisterListener(mRecognitionServiceListener);
+            mRecognitionService = null;
+        }
+    };
+
     @Override
     public void onCreate(){
         super.onCreate();
@@ -206,7 +235,25 @@ public class BlunoService extends Service {
         deleteIntentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_DELETE");
         registerReceiver(deleteReceiver, deleteIntentFilter);
 
+        gloveInit();
+
         System.out.println("BlunoService onCreate");
+    }
+
+    private void gloveInit()
+    {
+        GloveService gloveService = new GloveService();
+        mBluetoothLeServiceListener = gloveService;
+        mRecognitionServiceListener = gloveService;
+
+        // Bind recognition service
+        Intent recServiceIntent = new Intent(serviceContext, RecognitionService.class);
+        boolean status = bindService(recServiceIntent, mRecognitionServiceConnection, BIND_AUTO_CREATE);
+        Log.d(TAG, "Connect to RecognitionService: " + status);
+
+        mSendNotificationCharacteristics = new HashMap<>(NUM_DEVICE);
+        mSendCommandCharacteristics = new HashMap<>(NUM_DEVICE);
+        mSetNotificationCharacteristics = new HashMap<>(NUM_DEVICE);
     }
 
     public void onStartProcess() {
@@ -394,8 +441,9 @@ public class BlunoService extends Service {
                     sendBroadcast(braceletIntent);
                 }
             }
-            else if(device == mGloveDevice) {
-                //TODO: add glove
+            else if(device == mGloveDeviceLeft || device == mGloveDeviceRight) {
+                Log.d(TAG, "Device is bracelet");
+                gloveUpdate(device, intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA));
             }
         }
     };
@@ -421,8 +469,7 @@ public class BlunoService extends Service {
             if(uuid.equalsIgnoreCase(UUID_BRACELET_SERVICE.toString()))
             {
                 Log.i(TAG, "Count is:" + gattCharacteristics.size());
-                for (BluetoothGattCharacteristic gattCharacteristic :
-                        gattCharacteristics)
+                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics)
                 {
                     Log.i(TAG, gattCharacteristic.getUuid().toString());
                     if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(UUID_BRACELET_NOTIFY.toString()))
@@ -457,9 +504,31 @@ public class BlunoService extends Service {
                         System.out.println("mCommandCharacteristic  " + mCommandCharacteristic.getUuid().toString());
 //                    updateConnectionState(R.string.comm_establish);
                     }
+
+                    /***********Gloves***********/
+                    // Add discovered characteristics to correspond map.
+                    if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SEND_NOTIFICATION))
+                    {
+                        mSendNotificationCharacteristics.put(device.getAddress(), gattCharacteristic);
+                        deviceType = 2;
+                    }
+                    else if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SEND_COMMAND))
+                    {
+                        mSendCommandCharacteristics.put(device.getAddress(), gattCharacteristic);
+                        deviceType = 2;
+                    }
+                    else if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SET_NOTIFICATION))
+                    {
+                        mSetNotificationCharacteristics.put(device.getAddress(), gattCharacteristic);
+                        deviceType = 2;
+                    }
+                    boolean sts = (mSendCommandCharacteristics.get(device.getAddress()) != null) && (mSetNotificationCharacteristics.get(device.getAddress()) != null) && (mSendNotificationCharacteristics.get(device.getAddress()) != null);
+                    startNotification(mGloveDeviceLeft);
+                    startNotification(mGloveDeviceRight);
+                    mBluetoothLeServiceListener.onLeServiceDiscovered(sts);
                 }
             }
-
+            // 0:glass, 1:bracelet, 2:glove
             switch (deviceType) {
                 case 0:
                     mConnected_Glass = true;
@@ -492,12 +561,21 @@ public class BlunoService extends Service {
                     Log.d(TAG, "Connected to bracelet device.");
                     break;
                 case 2:
-                    mConnected_Glove = true;
-                    mGloveDevice = device;
+                    if(!mConnected_GloveLeft)
+                    {
+                        mConnected_GloveLeft = true;
+                        mGloveDeviceLeft = device;
+                        Log.d(TAG, "Connected to glove device left.");
+                    }
+                    else if(!mConnected_GloveRight)
+                    {
+                        mConnected_GloveRight = true;
+                        mGloveDeviceRight = device;
+                        Log.d(TAG, "Connected to glove device right.");
+                    }
                     mGloveGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mGloveGattCharacteristics.add(charas);
                     mBluetoothLeService.setGloveGatt(mBluetoothLeService.getGattFromDevice(device));
-                    Log.d(TAG, "Connected to glove device.");
                     break;
                 default:
                     Log.d(TAG, "Connected to an unknown device.");
@@ -786,6 +864,8 @@ public class BlunoService extends Service {
                 Intent tempIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
                 tempIntent.putExtra("Connected_Glass", mConnected_Glass);
                 tempIntent.putExtra("Connected_Bracelet", mConnected_Bracelet);
+                tempIntent.putExtra("Connected_GloveLeft", mConnected_GloveLeft);
+                tempIntent.putExtra("Connected_GloveRight", mConnected_GloveRight);
                 sendBroadcast(tempIntent);
                 return;
             }
@@ -833,8 +913,9 @@ public class BlunoService extends Service {
         return mBraceletDevice;
     }
 
-    public BluetoothDevice getGloveDevice() {
-        return mGloveDevice;
+    public BluetoothDevice getGloveDevice(boolean isLeft) {
+        if(isLeft)return mGloveDeviceLeft;
+        return mGloveDeviceRight;
     }
 
     private void removeDevice(BluetoothDevice device) {
@@ -845,9 +926,14 @@ public class BlunoService extends Service {
             mConnected_Glass = false;
             mBluetoothLeService.setGlassGatt(null);
         }
-        else if(device == mGloveDevice) {
-            mGloveDevice = null;
-            mConnected_Glove = false;
+        else if(device == mGloveDeviceLeft) {
+            mGloveDeviceLeft = null;
+            mConnected_GloveLeft = false;
+            mBluetoothLeService.setGloveGatt(null);
+        }
+        else if(device == mGloveDeviceRight) {
+            mGloveDeviceRight = null;
+            mConnected_GloveRight = false;
             mBluetoothLeService.setGloveGatt(null);
         }
         else if(device == mBraceletDevice) {
@@ -858,7 +944,139 @@ public class BlunoService extends Service {
 
         disonnectIntent.putExtra("Connected_Glass", mConnected_Glass);
         disonnectIntent.putExtra("Connected_Bracelet", mConnected_Bracelet);
-        disonnectIntent.putExtra("Connected_Glove", mConnected_Glove);
+        disonnectIntent.putExtra("Connected_GloveLeft", mConnected_GloveLeft);
+        disonnectIntent.putExtra("Connected_GloveRight", mConnected_GloveRight);
         sendBroadcast(disonnectIntent);
+    }
+
+    public void swapGloves()
+    {
+        BluetoothDevice tempDev = mGloveDeviceLeft;
+        mGloveDeviceLeft = mGloveDeviceRight;
+        mGloveDeviceRight = tempDev;
+        if(mConnected_GloveLeft != mConnected_GloveRight)
+        {
+            boolean tempB = mConnected_GloveLeft;
+            mConnected_GloveLeft = mConnected_GloveRight;
+            mConnected_GloveRight = tempB;
+        }
+    }
+
+    private void gloveUpdate (final BluetoothDevice device, final byte[] data)
+    {
+        // Get package identifier
+        byte ident = (byte)(data[0] & 0x0F);
+
+        // Get package index
+        byte index = (byte)((data[0] >> 4) & 0x0F);
+
+        if (ident == GloveGattAttributes.IDENTIFIER_QUATERNION)
+        {
+            float[] q = new float[4]; // w,x,y,z
+            q[0] = ByteBuffer.wrap(data, 1, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+            q[1] = ByteBuffer.wrap(data, 5, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+            q[2] = ByteBuffer.wrap(data, 9, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+            q[3] = ByteBuffer.wrap(data, 13, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+
+            //Log.d(TAG, device.getAddress() + " " + q[0] + " " + q[1] + " " + q[2] + " " + q[3]);
+
+            mBluetoothLeServiceListener.onQuaternionChanged(device, q);
+        }
+        else if (ident == GloveGattAttributes.IDENTIFIER_GESTURE_N_ACCELERATION)
+        {
+            float[] flex = new float[10];
+            //float[] touch = new float[10];
+            float[] acce = new float[3];
+
+            if (device.equals(mGloveDeviceLeft))
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    flex[i] = (float)((data[i/2+1]>>(4*((i^0x01)&0x01))) & 0x0F) * 6.0f;
+                    //touch[i] = (float)((data[i/2+6]>>(4*((i^0x01)&0x01))) & 0x0F);
+                }
+            }
+            else if (device.equals(mGloveDeviceRight))
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    flex[9-i] = (float)((data[i/2+1]>>(4*((i^0x01)&0x01))) & 0x0F) * 6.0f;
+                    //touch[9-i] = (float)((data[i/2+6]>>(4*((i^0x01)&0x01))) & 0x0F);
+                }
+            }
+
+            acce[0] = (ByteBuffer.wrap(data, 11, 2).order(ByteOrder.LITTLE_ENDIAN).getShort() >> 4) * 2.0f / 1000.0f;
+            acce[1] = (ByteBuffer.wrap(data, 13, 2).order(ByteOrder.LITTLE_ENDIAN).getShort() >> 4) * 2.0f / 1000.0f;
+            acce[2] = (ByteBuffer.wrap(data, 15, 2).order(ByteOrder.LITTLE_ENDIAN).getShort() >> 4) * 2.0f / 1000.0f;
+
+            mBluetoothLeServiceListener.onGestureChanged(device, flex);
+            //mBluetoothLeServiceListener.onTouchChanged(device, touch);
+            mBluetoothLeServiceListener.onAccelerationChanged(device, acce);
+        }
+    }
+
+    public boolean startNotification (BluetoothDevice device)
+    {
+        String address = device.getAddress();
+        BluetoothGatt gatt = mBluetoothLeService.mBluetoothGatts.get(address);
+        BluetoothGattCharacteristic sendGattCharacteristic = mSendNotificationCharacteristics.get(address);
+        BluetoothGattCharacteristic setGattCharacteristic = mSetNotificationCharacteristics.get(address);
+
+        boolean sts;
+        byte[] value = new byte[1];
+        value[0] = GloveGattAttributes.NOTIFICATION_START;
+        sendGattCharacteristic.setValue(value);
+        sts = gatt.writeCharacteristic(sendGattCharacteristic);
+        Log.d(TAG, "startNotification (Write): " + sts);
+
+        if (sts)
+        {
+            sts = gatt.setCharacteristicNotification(setGattCharacteristic, true);
+            Log.d(TAG, "startNotification (Set): " + sts);
+
+            return sts;
+        }
+
+        return false;
+    }
+
+    public boolean stopNotification (BluetoothDevice device)
+    {
+        String address = device.getAddress();
+        BluetoothGatt gatt = mBluetoothLeService.mBluetoothGatts.get(address);
+        BluetoothGattCharacteristic sendGattCharacteristic = mSendNotificationCharacteristics.get(address);
+        BluetoothGattCharacteristic setGattCharacteristic = mSetNotificationCharacteristics.get(address);
+
+        boolean sts;
+        byte[] value = new byte[1];
+        value[0] = GloveGattAttributes.NOTIFICATION_STOP;
+        sendGattCharacteristic.setValue(value);
+        sts = gatt.writeCharacteristic(sendGattCharacteristic);
+        Log.d(TAG, "stopNotification (Write): " + sts);
+
+        if (sts)
+        {
+            sts = gatt.setCharacteristicNotification(setGattCharacteristic, false);
+            Log.d(TAG, "stopNotification (Set): " + sts);
+
+            return sts;
+        }
+
+        return false;
+    }
+
+    public boolean resetRemoteDevice (BluetoothDevice device)
+    {
+        String address = device.getAddress();
+        BluetoothGatt gatt = mBluetoothLeService.mBluetoothGatts.get(address);
+        BluetoothGattCharacteristic sendGattCharacteristic = mSendCommandCharacteristics.get(address);
+
+        boolean sts;
+        byte[] value = new byte[1];
+        value[0] = GloveGattAttributes.COMMAND_RESET;
+        sendGattCharacteristic.setValue(value);
+        sts = gatt.writeCharacteristic(sendGattCharacteristic);
+
+        return sts;
     }
 }

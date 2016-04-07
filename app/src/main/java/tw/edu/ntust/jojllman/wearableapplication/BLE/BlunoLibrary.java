@@ -186,8 +186,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 	private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
 
 		@Override
-		public void onLeScan(final BluetoothDevice device, int rssi,
-				byte[] scanRecord) {
+		public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
 			((Activity) mainContext).runOnUiThread(new Runnable() {
 				@Override
 				public void run() {

@@ -5,4 +5,7 @@
     <dimen name="btn_font_size">50sp</dimen>
     <dimen name="txt_font_size">30sp</dimen>
     <dimen name="txt_font_size_large">46sp</dimen>
+    <dimen name="font_size_large">50sp</dimen>
+    <dimen name="font_size_mid">30sp</dimen>
+    <dimen name="font_size_small">15sp</dimen>
 </resources>

@@ -33,7 +33,10 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +50,7 @@ public class BluetoothLeService extends Service {
 
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
-    List<BluetoothGatt> mBluetoothGatts;
+    HashMap<String, BluetoothGatt> mBluetoothGatts;
     private BluetoothGatt mGlassGatt;
     private BluetoothGatt mBraceletGatt;
     private BluetoothGatt mGloveGatt;
@@ -386,7 +389,7 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
-        mBluetoothGatts = new ArrayList<>();
+        mBluetoothGatts = new HashMap<>();
         mInitialized = true;
 
         return true;
@@ -434,7 +437,7 @@ public class BluetoothLeService extends Service {
 		synchronized(this)
 		{
 			BluetoothGatt gatt = device.connectGatt(this, false, mGattCallback);
-            mBluetoothGatts.add(gatt);
+            mBluetoothGatts.put(device.getAddress(), gatt);
 		}
         Log.d(TAG, "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
@@ -455,7 +458,7 @@ public class BluetoothLeService extends Service {
             return;
         }
 
-        for(BluetoothGatt gatt : mBluetoothGatts) {
+        for(BluetoothGatt gatt : mBluetoothGatts.values()) {
             gatt.disconnect();
         }
 
@@ -473,7 +476,7 @@ public class BluetoothLeService extends Service {
             return;
         }
 
-        for(BluetoothGatt gatt : mBluetoothGatts) {
+        for(BluetoothGatt gatt : mBluetoothGatts.values()) {
             gatt.close();
         }
 
@@ -565,13 +568,7 @@ public class BluetoothLeService extends Service {
     public BluetoothGatt getGattFromDevice(BluetoothDevice device) {
         if (mBluetoothGatts == null || mBluetoothGatts.size() == 0) return null;
 
-        for(BluetoothGatt gatt : mBluetoothGatts) {
-            if(gatt.getDevice().equals(device)) {
-                return gatt;
-            }
-        }
-
-        return null;
+        return mBluetoothGatts.get(device.getAddress());
     }
 
     public void setGlassGatt(BluetoothGatt GlassGatt) {
@@ -590,5 +587,13 @@ public class BluetoothLeService extends Service {
         BluetoothGatt gatt = getGattFromDevice(device);
         if(gatt != null)
             mBluetoothGatts.remove(gatt);
+    }
+
+    public void readRemoteRssi ()
+    {
+        for (BluetoothGatt gatt : mBluetoothGatts.values())
+        {
+            boolean sts = gatt.readRemoteRssi();
+        }
     }
 }

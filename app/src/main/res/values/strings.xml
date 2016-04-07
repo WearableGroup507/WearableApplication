@@ -61,5 +61,33 @@
     <string name="txt_bracelet_distance">距離偵測</string>
     <string name="txt_bracelet_color">顏色偵測</string>
 
+    <!--
+    Glove
+    -->
+    <string name="txt_glove_setting">進入手套設定頁</string>
+
+    <string name="ui_text_connection">Connection</string>
+    <string name="ui_text_recognition">Recognition</string>
+    <string name="ui_text_reset">Reset</string>
+    <string name="ui_text_record">Record</string>
+    <string name="ui_text_recording">Recording</string>
+    <string name="ui_text_recognize">Recognize</string>
+    <string name="ui_text_recognizing">Recognizing</string>
+    <string name="ui_text_database">Database</string>
+    <string name="ui_text_datarecord">Data Records</string>
+    <string name="ui_text_lefthand">Left Hand</string>
+    <string name="ui_text_righthand">Right Hand</string>
+    <string name="ui_text_leftposition">Left Position</string>
+    <string name="ui_text_rightposition">Right Position</string>
+    <string name="ui_text_leftrssi">Left RSSI</string>
+    <string name="ui_text_rightrssi">Right RSSI</string>
+    <string name="ui_text_result">Result: </string>
+
+    <string name="str_string_filename">Filename</string>
+    <string name="str_extension_csv">.csv</string>
+
+    <string name="error_ble_not_supported">BLE is not supported.</string>
+    <string name="error_no_devices_found">No devices found</string>
+    <string name="error_same_device">Pls select different devices.</string>
 
 </resources>

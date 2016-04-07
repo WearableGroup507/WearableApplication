@@ -22,11 +22,11 @@ import java.util.HashMap;
  * This class includes a small subset of standard GATT attributes for demonstration purposes.
  */
 public class BraceletGattAttributes {
-    private static HashMap<String, String> attributes = new HashMap();
+    //private static HashMap<String, String> attributes = new HashMap();
     public static String NOTIFY = "0000ffe1-0000-1000-8000-00805f9b34fb"; 
     public static String SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb";
     public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
-
+/*
     static {
         // Sample Services.
         attributes.put("0000ffe1-0000-1000-8000-00805f9b34fb", "Heart Rate Service");
@@ -42,4 +42,5 @@ public class BraceletGattAttributes {
         String name = attributes.get(uuid);
         return name == null ? defaultName : name;
     }
+    */
 }

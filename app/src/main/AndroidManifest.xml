@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="tw.edu.ntust.jojllman.wearableapplication">
+    package="tw.edu.ntust.jojllman.wearableapplication" >
 
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".GlobalVariable"
@@ -14,8 +16,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-        <activity android:name=".ChooseClassActivity">
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
+        <activity android:name=".ChooseClassActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,17 +25,25 @@
             </intent-filter>
         </activity>
         <activity android:name=".AppManageActivity" />
-        <activity android:name=".SearchDeviceActivity" />
         <activity android:name=".AppSettingActivity" />
         <activity android:name=".VisualSupportActivity" />
         <activity android:name=".HearingSupportActivity" />
         <activity android:name=".HearingSettingActivity" />
         <activity android:name=".RecordGestureActivity" />
-        <activity android:name=".GestureDBActivity"></activity>
+        <activity android:name=".GestureDBActivity" />
 
-        <service android:name=".BLE.BluetoothLeService" android:enabled="true"/>
-        <service android:name=".BLE.BlunoService" android:enabled="true"/>
-        <service android:name=".BLE.DeleteService" android:enabled="true"/>
+        <service
+            android:name=".BLE.BluetoothLeService"
+            android:enabled="true" />
+        <service
+            android:name=".BLE.BlunoService"
+            android:enabled="true" />
+        <service
+            android:name=".BLE.DeleteService"
+            android:enabled="true" />
+
+        <activity android:name=".GloveSettingActivity" >
+        </activity>
     </application>
 
 </manifest>

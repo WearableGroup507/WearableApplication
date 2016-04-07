@@ -33,10 +33,14 @@ public class AppSettingActivity extends AppCompatActivity {
     private TextView mtxt_bracelet_connected;
     private TextView mtxt_bracelet_color;
     private TextView mtxt_bracelet_distance;
+    private TextView mtxt_glove_left_connected;
+    private TextView mtxt_glove_right_connected;
 
 
     private boolean mConnected_Glass = false;
     private boolean mConnected_Bracelet = false;
+    private boolean mConnected_Glove_Left = false;
+    private boolean mConnected_Glove_Right = false;
 
     private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
     private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
@@ -52,8 +56,12 @@ public class AppSettingActivity extends AppCompatActivity {
                     action.compareTo("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES") == 0) {
                 mConnected_Glass = intent.getBooleanExtra("Connected_Glass", false);
                 mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
+                mConnected_Glove_Left = intent.getBooleanExtra("Connected_Glove_Left", false);
+                mConnected_Glove_Right = intent.getBooleanExtra("Connected_Glove_Right", false);
                 mtxt_glass_connected.setText(mConnected_Glass ? R.string.device_connected : R.string.device_disconnected);
                 mtxt_bracelet_connected.setText(mConnected_Bracelet ? R.string.device_connected : R.string.device_disconnected);
+                mtxt_glove_left_connected.setText(mConnected_Glove_Left ? R.string.device_connected : R.string.device_disconnected);
+                mtxt_glove_right_connected.setText(mConnected_Glove_Right ? R.string.device_connected : R.string.device_disconnected);
 
                 if (mConnected_Bracelet) {
                     mThreadBracelet = new Thread(new Runnable() {
@@ -237,6 +245,14 @@ public class AppSettingActivity extends AppCompatActivity {
         }
     }
 
+    public void OnGloveSettingClick(View view){
+        if(mConnected_Glove_Left && mConnected_Glove_Right) {
+            Intent intent = new Intent();
+            intent.setClass(AppSettingActivity.this, GloveSettingActivity.class);
+            startActivity(intent);
+        }
+    }
+
     private void findView() {
         mSeekBar_front = (SeekBar)findViewById(R.id.seekBar_glass_front);
         mSeekBar_side = (SeekBar)findViewById(R.id.seekBar_glass_side);
@@ -248,6 +264,8 @@ public class AppSettingActivity extends AppCompatActivity {
         mtxt_bracelet_connected = (TextView)findViewById(R.id.txt_bracelet_connected);
         mtxt_bracelet_distance = (TextView)findViewById(R.id.txt_bracelet_distance);
         mtxt_bracelet_color = (TextView)findViewById(R.id.txt_bracelet_color);
+        mtxt_glove_left_connected = (TextView)findViewById(R.id.txt_glove_left_connected);
+        mtxt_glove_right_connected = (TextView)findViewById(R.id.txt_glove_right_connected);
     }
 
     private void initialize() {
