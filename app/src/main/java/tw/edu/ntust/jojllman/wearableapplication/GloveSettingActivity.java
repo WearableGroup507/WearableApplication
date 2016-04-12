@@ -1,5 +1,8 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.media.MediaScannerConnection;
 import android.os.Handler;
@@ -15,16 +18,18 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.GloveService;
 
 public class GloveSettingActivity extends AppCompatActivity {
+    private static GloveService gloveService;
+    public static void setGloveService(GloveService gs){gloveService=gs;}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_glove_setting);
 
-        GloveService.setGloveSettingActivity(this);
+        gloveService.initUI(this);
     }
-
 }

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public abstract class GloveGattAttributes
 {
+    public static final UUID UUID_GLOVE_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
     // The characteristic's UUID of sending notifications from server (glove MCU) to client (Android device).
     // Write (writeCharacteristic) 0x01 to start sending notifications; 0x00 to stop.
     public static final UUID UUID_SEND_NOTIFICATION = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb");

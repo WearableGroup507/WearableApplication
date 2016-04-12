@@ -300,6 +300,7 @@ public class BlunoService extends Service {
                 mConnectionState = theConnectionState.valueOf(connectionState);
                 onConectionStateChange(mConnectionState);
                 handler.removeCallbacks(mDisonnectingOverTimeRunnable);
+                sendBroadcast(disonnectIntent);
                 //mBluetoothLeService.close();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
@@ -441,9 +442,11 @@ public class BlunoService extends Service {
                     sendBroadcast(braceletIntent);
                 }
             }
-            else if(device == mGloveDeviceLeft || device == mGloveDeviceRight) {
-                Log.d(TAG, "Device is bracelet");
-                gloveUpdate(device, intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA));
+            else if(device.equals(mGloveDeviceLeft) || device.equals(mGloveDeviceRight)) {
+                Log.d(TAG, "Device is glove.");
+                if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                    gloveUpdate(device, intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA));
+                }
             }
         }
     };
@@ -484,11 +487,32 @@ public class BlunoService extends Service {
                     }
                 }
             }
-            else {
+            else if(uuid.equalsIgnoreCase(GloveGattAttributes.UUID_GLOVE_SERVICE.toString()))
+            {
+                Log.d(TAG, "GET GLOVE SERVICE.");
+                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                    /***********Gloves***********/
+                    // Add discovered characteristics to correspond map.
+                    if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SEND_NOTIFICATION)) {
+                        mSendNotificationCharacteristics.put(device.getAddress(), gattCharacteristic);
+                        deviceType = 2;
+                    } else if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SEND_COMMAND)) {
+                        mSendCommandCharacteristics.put(device.getAddress(), gattCharacteristic);
+                        deviceType = 2;
+                    } else if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SET_NOTIFICATION)) {
+                        mSetNotificationCharacteristics.put(device.getAddress(), gattCharacteristic);
+                        deviceType = 2;
+                    }
+                    boolean sts = (mSendCommandCharacteristics.get(device.getAddress()) != null) && (mSetNotificationCharacteristics.get(device.getAddress()) != null) && (mSendNotificationCharacteristics.get(device.getAddress()) != null);
+                    mBluetoothLeServiceListener.onLeServiceDiscovered(sts);
+                }
+            }
+            else
+            {
                 // Loops through available Characteristics.
                 for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
                     charas.add(gattCharacteristic);
-                    uuid = gattCharacteristic.getUuid().toString();
+                    //uuid = gattCharacteristic.getUuid().toString();
                     if (uuid.equals(ModelNumberStringUUID)) {
                         mModelNumberCharacteristic = gattCharacteristic;
                         deviceType = 0;
@@ -504,28 +528,6 @@ public class BlunoService extends Service {
                         System.out.println("mCommandCharacteristic  " + mCommandCharacteristic.getUuid().toString());
 //                    updateConnectionState(R.string.comm_establish);
                     }
-
-                    /***********Gloves***********/
-                    // Add discovered characteristics to correspond map.
-                    if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SEND_NOTIFICATION))
-                    {
-                        mSendNotificationCharacteristics.put(device.getAddress(), gattCharacteristic);
-                        deviceType = 2;
-                    }
-                    else if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SEND_COMMAND))
-                    {
-                        mSendCommandCharacteristics.put(device.getAddress(), gattCharacteristic);
-                        deviceType = 2;
-                    }
-                    else if (gattCharacteristic.getUuid().equals(GloveGattAttributes.UUID_SET_NOTIFICATION))
-                    {
-                        mSetNotificationCharacteristics.put(device.getAddress(), gattCharacteristic);
-                        deviceType = 2;
-                    }
-                    boolean sts = (mSendCommandCharacteristics.get(device.getAddress()) != null) && (mSetNotificationCharacteristics.get(device.getAddress()) != null) && (mSendNotificationCharacteristics.get(device.getAddress()) != null);
-                    startNotification(mGloveDeviceLeft);
-                    startNotification(mGloveDeviceRight);
-                    mBluetoothLeServiceListener.onLeServiceDiscovered(sts);
                 }
             }
             // 0:glass, 1:bracelet, 2:glove
@@ -572,6 +574,12 @@ public class BlunoService extends Service {
                         mConnected_GloveRight = true;
                         mGloveDeviceRight = device;
                         Log.d(TAG, "Connected to glove device right.");
+                    }
+                    if(mConnected_GloveLeft){
+                        startNotification(mGloveDeviceLeft);
+                    }
+                    if(mConnected_GloveRight) {
+                        startNotification(mGloveDeviceRight);
                     }
                     mGloveGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mGloveGattCharacteristics.add(charas);
@@ -864,8 +872,8 @@ public class BlunoService extends Service {
                 Intent tempIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
                 tempIntent.putExtra("Connected_Glass", mConnected_Glass);
                 tempIntent.putExtra("Connected_Bracelet", mConnected_Bracelet);
-                tempIntent.putExtra("Connected_GloveLeft", mConnected_GloveLeft);
-                tempIntent.putExtra("Connected_GloveRight", mConnected_GloveRight);
+                tempIntent.putExtra("Connected_Glove_Left", mConnected_GloveLeft);
+                tempIntent.putExtra("Connected_Glove_Right", mConnected_GloveRight);
                 sendBroadcast(tempIntent);
                 return;
             }

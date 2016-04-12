@@ -6,11 +6,16 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -35,6 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import tw.edu.ntust.jojllman.wearableapplication.GloveSettingActivity;
 import tw.edu.ntust.jojllman.wearableapplication.R;
 
 /**
@@ -44,12 +50,10 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
 {
     private final static String TAG = "GloveService";
 
-    private static Activity gloveSettingActivity;
-    public static void setGloveSettingActivity(Activity activity){gloveSettingActivity = activity;}
-
     /***********************************************************
      * Common Components
      */
+    private Activity gloveSettingActivity;
     private Resources mResources;
     private MediaPlayer mMediaPlayer;
     List<String> databaseList;
@@ -82,7 +86,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     private List<ScanFilter> 		mLeScanFilters;
     private ScanSettings mLeScanSettings;
 
-    private Thread					mReadRssiThread;
+    private Thread			    mReadRssiThread;
     private boolean				mReadRssiThreadRunning;
 
     /***********************************************************
@@ -104,16 +108,15 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
      * Recognition Components
      */
     private RecognitionService			mRecognitionService;
-    private boolean 					mIsRecognizing;
+    private boolean 					    mIsRecognizing;
     private Thread						mDataPushThread;
-    private GloveSignData					mCurSignData;
+    private GloveSignData				mCurSignData;
 
 
     public GloveService()
     {
         startReadingRssi();
-        initRecognition();
-        initUI();
+        GloveSettingActivity.setGloveService(this);
     }
 
     private void scanPath(String path)
@@ -121,8 +124,9 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         MediaScannerConnection.scanFile(gloveSettingActivity.getApplicationContext(), new String[]{path}, null, null);
     }
 
-    private void initUI()
+    public void initUI(Activity activity)
     {
+        gloveSettingActivity = activity;
         btnRecord = (Button) gloveSettingActivity.findViewById(R.id.btnRecord);
         btnRecord.setOnClickListener(new View.OnClickListener()
         {
@@ -232,6 +236,8 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         txtResult = (TextView) gloveSettingActivity.findViewById(R.id.txtResult);
 
         lvDatabase = (ListView) gloveSettingActivity.findViewById(R.id.lvDatabase);
+
+        initRecognition();
     }
 
     private void startReadingRssi()
@@ -297,6 +303,24 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
      * Recording and Recognition Related Functions
      */
 
+    private RecognitionServiceListener mRecognitionServiceListener = this;
+    private ServiceConnection mRecognitionServiceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            mRecognitionService = ((RecognitionService.ServiceBinder) service).getService();
+            mRecognitionService.registerListener(mRecognitionServiceListener);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            mRecognitionService.unregisterListener(mRecognitionServiceListener);
+            mRecognitionService = null;
+        }
+    };
+
     private void initRecognition()
     {
         mCurSignData = new GloveSignData();
@@ -307,6 +331,11 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
 
         getSignNames();
         getRecordFilesAndUpdateRecordSpinner();
+
+        // Bind recognition service
+        Intent recServiceIntent = new Intent(gloveSettingActivity, RecognitionService.class);
+        boolean status = gloveSettingActivity.bindService(recServiceIntent, mRecognitionServiceConnection, gloveSettingActivity.BIND_AUTO_CREATE);
+        Log.d(TAG, "Connect to RecognitionService: " + status);
     }
 
     private void checkFolder(String root, String record)
@@ -390,8 +419,10 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
             }
         }
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(gloveSettingActivity.getApplication(), R.layout.layout_spinner_device, files);
-        spnRecord.setAdapter(arrayAdapter);
+        if(gloveSettingActivity != null){
+            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(gloveSettingActivity.getApplication(), R.layout.layout_spinner_device, files);
+            spnRecord.setAdapter(arrayAdapter);
+        }
     }
 
     private boolean startRecord(String filename)
@@ -589,6 +620,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     @Override
     public void onRecognizeFinished()
     {
+        btnRecognize.setText(R.string.ui_text_recognize);
 //        runOnUiThread(new Runnable()
 //        {
 //            @Override
