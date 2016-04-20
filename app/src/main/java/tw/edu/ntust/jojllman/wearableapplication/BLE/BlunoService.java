@@ -123,6 +123,9 @@ public class BlunoService extends Service {
     //private doNotification notify;
     //private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
 
+    private Thread			    mReadRssiThread;
+    private boolean				mReadRssiThreadRunning;
+
     private Runnable mConnectingOverTimeRunnable=new Runnable(){
 
         @Override
@@ -169,24 +172,7 @@ public class BlunoService extends Service {
         }
     };
 
-    private RecognitionService		   mRecognitionService;
     private RecognitionServiceListener mRecognitionServiceListener;
-    private ServiceConnection mRecognitionServiceConnection = new ServiceConnection()
-    {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            mRecognitionService = ((RecognitionService.ServiceBinder) service).getService();
-            mRecognitionService.registerListener(mRecognitionServiceListener);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name)
-        {
-            mRecognitionService.unregisterListener(mRecognitionServiceListener);
-            mRecognitionService = null;
-        }
-    };
 
     @Override
     public void onCreate(){
@@ -244,12 +230,9 @@ public class BlunoService extends Service {
     {
         GloveService gloveService = new GloveService();
         mBluetoothLeServiceListener = gloveService;
-        mRecognitionServiceListener = gloveService;
 
-        // Bind recognition service
-        Intent recServiceIntent = new Intent(serviceContext, RecognitionService.class);
-        boolean status = bindService(recServiceIntent, mRecognitionServiceConnection, BIND_AUTO_CREATE);
-        Log.d(TAG, "Connect to RecognitionService: " + status);
+        Log.d(TAG,"Start reading RSSI.");
+        startReadingRssi();
 
         mSendNotificationCharacteristics = new HashMap<>(NUM_DEVICE);
         mSendCommandCharacteristics = new HashMap<>(NUM_DEVICE);
@@ -292,7 +275,9 @@ public class BlunoService extends Service {
             //System.out.println("mGattUpdateReceiver->onReceive->context=" + context.toString());
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 handler.removeCallbacks(mConnectingOverTimeRunnable);
-
+                connectionState = "isToScan";
+                transferIntent.putExtra("connectionState", connectionState);
+                sendBroadcast(transferIntent);
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 connectionState = "isToScan";
                 transferIntent.putExtra("connectionState", connectionState);
@@ -301,6 +286,7 @@ public class BlunoService extends Service {
                 onConectionStateChange(mConnectionState);
                 handler.removeCallbacks(mDisonnectingOverTimeRunnable);
                 sendBroadcast(disonnectIntent);
+                mBluetoothLeServiceListener.onLeDeviceDisconnected(device);
                 //mBluetoothLeService.close();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
@@ -446,6 +432,8 @@ public class BlunoService extends Service {
                 Log.d(TAG, "Device is glove.");
                 if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                     gloveUpdate(device, intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA));
+                }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
+                    mBluetoothLeServiceListener.onRSSIRead(device, intent.getIntExtra("RSSI", 0));
                 }
             }
         }
@@ -504,7 +492,7 @@ public class BlunoService extends Service {
                         deviceType = 2;
                     }
                     boolean sts = (mSendCommandCharacteristics.get(device.getAddress()) != null) && (mSetNotificationCharacteristics.get(device.getAddress()) != null) && (mSendNotificationCharacteristics.get(device.getAddress()) != null);
-                    mBluetoothLeServiceListener.onLeServiceDiscovered(sts);
+                    //mBluetoothLeServiceListener.onLeServiceDiscovered(sts);
                 }
             }
             else
@@ -567,19 +555,21 @@ public class BlunoService extends Service {
                     {
                         mConnected_GloveLeft = true;
                         mGloveDeviceLeft = device;
+                        mBluetoothLeServiceListener.onLeDeviceConnected(device,true);
                         Log.d(TAG, "Connected to glove device left.");
                     }
                     else if(!mConnected_GloveRight)
                     {
                         mConnected_GloveRight = true;
                         mGloveDeviceRight = device;
+                        mBluetoothLeServiceListener.onLeDeviceConnected(device,false);
                         Log.d(TAG, "Connected to glove device right.");
                     }
-                    if(mConnected_GloveLeft){
+                    if(mConnected_GloveLeft && mConnected_GloveRight){
                         startNotification(mGloveDeviceLeft);
-                    }
-                    if(mConnected_GloveRight) {
                         startNotification(mGloveDeviceRight);
+                        resetRemoteDevice(mGloveDeviceLeft);
+                        resetRemoteDevice(mGloveDeviceRight);
                     }
                     mGloveGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mGloveGattCharacteristics.add(charas);
@@ -598,6 +588,7 @@ public class BlunoService extends Service {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ON_READ_REMOTE_RSSI);
         return intentFilter;
     }
 
@@ -1030,6 +1021,8 @@ public class BlunoService extends Service {
         BluetoothGattCharacteristic sendGattCharacteristic = mSendNotificationCharacteristics.get(address);
         BluetoothGattCharacteristic setGattCharacteristic = mSetNotificationCharacteristics.get(address);
 
+        Log.d(TAG, "starting notification : " + gatt.getDevice().getName() + " " + address);
+
         boolean sts;
         byte[] value = new byte[1];
         value[0] = GloveGattAttributes.NOTIFICATION_START;
@@ -1086,5 +1079,34 @@ public class BlunoService extends Service {
         sts = gatt.writeCharacteristic(sendGattCharacteristic);
 
         return sts;
+    }
+
+    private void startReadingRssi()
+    {
+        mReadRssiThreadRunning = true;
+        mReadRssiThread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                while (mReadRssiThreadRunning)
+                {
+                    if (mConnected_GloveLeft && mConnected_GloveRight)
+                    {
+                        mBluetoothLeService.readRemoteRssi();
+                    }
+
+                    try
+                    {
+                        Thread.sleep(10);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        mReadRssiThread.start();
     }
 }

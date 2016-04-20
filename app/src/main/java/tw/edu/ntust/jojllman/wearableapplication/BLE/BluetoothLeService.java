@@ -93,6 +93,8 @@ public class BluetoothLeService extends Service {
             "tw.edu.ntust.jojllman.wearableapplication.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
             "tw.edu.ntust.jojllman.wearableapplication.EXTRA_DATA";
+    public final static String ON_READ_REMOTE_RSSI =
+            "tw.edu.ntust.jojllman.wearableapplication.ON_READ_REMOTE_RSSI";
 //    public final static UUID UUID_HEART_RATE_MEASUREMENT =
 //            UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
@@ -280,6 +282,18 @@ public class BluetoothLeService extends Service {
         	System.out.println("onCharacteristicChanged  "+new String(characteristic.getValue()));
         	broadcastUpdate(gatt, ACTION_DATA_AVAILABLE, characteristic);
         }
+        @Override
+        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status)
+        {
+            super.onReadRemoteRssi(gatt, rssi, status);
+            BluetoothDevice device = gatt.getDevice();
+
+            Log.d(TAG, "RSSI read: " + device.getName() + " " + rssi);
+            Intent intent = new Intent(ON_READ_REMOTE_RSSI);
+            intent.putExtra("DEVICE", device);
+            intent.putExtra("RSSI", rssi);
+            sendBroadcast(intent);
+        }
     };
     
     private void broadcastUpdate(final String action) {
@@ -406,7 +420,7 @@ public class BluetoothLeService extends Service {
      *         callback.
      */
     public boolean connect(final String address) {
-    	System.out.println("BluetoothLeService connect"+address+mBluetoothGatts);
+    	System.out.println("BluetoothLeService connect"+address+mBluetoothGatts.values());
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;

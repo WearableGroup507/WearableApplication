@@ -1,7 +1,7 @@
-#include <jni.h>
+
 #include "EasyLog.h" 
 #include "System_Manager/System_Manager.h"
-
+#include "tw_edu_ntust_jojllman_wearableapplication_BLE_RecognitionService.h"
 
 #define TAG "RecognitionService"
 
@@ -14,7 +14,7 @@ extern "C"
 	* Method:    initialize
 	* Signature: ()V
 	*/
-	JNIEXPORT void JNICALL Java_com_example_slrs_offline_RecognitionService_initialize (JNIEnv *enc, jobject obj)
+	JNIEXPORT void JNICALL Java_tw_edu_ntust_jojllman_wearableapplication_BLE_RecognitionService_initialize (JNIEnv *enc, jobject obj)
 	{
 		slr_system.m_SLRM.SetFeatureType("GLOVE");
 		
@@ -28,7 +28,7 @@ extern "C"
 	* Method:    reset
 	* Signature: ()V
 	*/
-	JNIEXPORT void JNICALL Java_com_example_slrs_offline_RecognitionService_reset (JNIEnv *enc, jobject )
+	JNIEXPORT void JNICALL Java_tw_edu_ntust_jojllman_wearableapplication_BLE_RecognitionService_reset (JNIEnv *enc, jobject )
 	{
 		slr_system.m_SLRM.IsRecognition = false;
 		slr_system.m_SLRM.m_candidateWord = "";
@@ -41,7 +41,7 @@ extern "C"
 	* Method:    pass_data
 	* Signature: (F)V
 	*/
-	JNIEXPORT void JNICALL Java_com_example_slrs_offline_RecognitionService_pass_1data (JNIEnv *env, jobject obj, jfloatArray dataL, jfloatArray dataR)
+	JNIEXPORT void JNICALL Java_tw_edu_ntust_jojllman_wearableapplication_BLE_RecognitionService_pass_1data (JNIEnv *env, jobject obj, jfloatArray dataL, jfloatArray dataR)
 	{
 		// left - 0, right - 1
 		// Push left [0]
@@ -68,7 +68,7 @@ extern "C"
 	* Method:    run_recognize
 	* Signature: ()V
 	*/
-	JNIEXPORT jboolean JNICALL Java_com_example_slrs_offline_RecognitionService_run_1recognize (JNIEnv *enc, jobject obj)
+	JNIEXPORT jboolean JNICALL Java_tw_edu_ntust_jojllman_wearableapplication_BLE_RecognitionService_run_1recognize (JNIEnv *enc, jobject obj)
 	{
 		jboolean ok = false;
 		
@@ -91,7 +91,7 @@ extern "C"
 		return ok;
 	}
 	
-	JNIEXPORT jbyteArray JNICALL Java_com_example_slrs_offline_RecognitionService_getString (JNIEnv *env, jobject obj)
+	JNIEXPORT jbyteArray JNICALL Java_tw_edu_ntust_jojllman_wearableapplication_BLE_RecognitionService_getString (JNIEnv *env, jobject obj)
 	{
 		jbyteArray arr = env->NewByteArray(slr_system.m_SLRM.m_candidateWord.length());
 		env->SetByteArrayRegion(arr,0,slr_system.m_SLRM.m_candidateWord.length(),(jbyte*)slr_system.m_SLRM.m_candidateWord.c_str());

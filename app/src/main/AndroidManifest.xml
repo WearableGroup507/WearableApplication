@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".GlobalVariable"
@@ -41,6 +42,9 @@
             android:enabled="true" />
         <service
             android:name=".BLE.DeleteService"
+            android:enabled="true" />
+        <service
+            android:name=".BLE.RecognitionService"
             android:enabled="true" />
 
         <activity android:name=".GloveSettingActivity" >

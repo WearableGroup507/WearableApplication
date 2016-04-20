@@ -246,11 +246,11 @@ public class AppSettingActivity extends AppCompatActivity {
     }
 
     public void OnGloveSettingClick(View view){
-        if(mConnected_Glove_Left && mConnected_Glove_Right) {
+        //if(mConnected_Glove_Left && mConnected_Glove_Right) {
             Intent intent = new Intent();
             intent.setClass(AppSettingActivity.this, GloveSettingActivity.class);
             startActivity(intent);
-        }
+        //}
     }
 
     private void findView() {

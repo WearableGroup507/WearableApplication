@@ -1,5 +1,5 @@
 LOCAL_PATH := $(call my-dir)
-PARENT_PATH := $(call my-dir)\..
+PARENT_PATH := $(call my-dir)/..
 
 include $(CLEAR_VARS)
 

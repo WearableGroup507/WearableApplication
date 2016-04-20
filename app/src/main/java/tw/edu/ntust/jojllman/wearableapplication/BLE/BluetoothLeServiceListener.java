@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice;
 
 public interface BluetoothLeServiceListener
 {
-    void onLeDeviceConnected(BluetoothDevice device);
+    void onLeDeviceConnected(BluetoothDevice device, boolean isLeft);
 
     void onLeDeviceDisconnected(BluetoothDevice device);
     

@@ -22,6 +22,7 @@ public class RecognitionService extends Service
 	static
 	{
 		System.loadLibrary("SignLanguageRecognitionSystem");
+		Log.d(TAG,"loadLibrary SignLanguageRecognitionSystem");
 	}
 	
 	private native void initialize();
@@ -104,6 +105,7 @@ public class RecognitionService extends Service
 	{
 		try
 		{
+			Log.d(TAG,"Pushing recognition data.");
 			// Push data for recognition
 			mSignDatas.put(signData);
 		}

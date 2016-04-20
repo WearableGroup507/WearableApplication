@@ -53,8 +53,8 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     /***********************************************************
      * Common Components
      */
-    private Activity gloveSettingActivity;
     private Resources mResources;
+    private Activity gloveSettingActivity;
     private MediaPlayer mMediaPlayer;
     List<String> databaseList;
     List<String> recordFiles;
@@ -68,6 +68,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     private ListView lvDatabase;
     private EditText etFilename;
     private TextView txtLeftRssi, txtRightRssi, txtResult;
+    private boolean isActivityReady = false;
 
     /***********************************************************
      * BLE Components
@@ -85,9 +86,6 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     private BluetoothLeScanner mLeScanner;
     private List<ScanFilter> 		mLeScanFilters;
     private ScanSettings mLeScanSettings;
-
-    private Thread			    mReadRssiThread;
-    private boolean				mReadRssiThreadRunning;
 
     /***********************************************************
      * Recording Components
@@ -115,7 +113,6 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
 
     public GloveService()
     {
-        startReadingRssi();
         GloveSettingActivity.setGloveService(this);
     }
 
@@ -127,6 +124,9 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     public void initUI(Activity activity)
     {
         gloveSettingActivity = activity;
+        mResources = gloveSettingActivity.getResources();
+        getViewId();
+        initRecognition();
         btnRecord = (Button) gloveSettingActivity.findViewById(R.id.btnRecord);
         btnRecord.setOnClickListener(new View.OnClickListener()
         {
@@ -135,7 +135,8 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
             {
                 final String filename = etFilename.getText().toString();
 
-                if (btnRecord.getText().equals(mResources.getString(R.string.ui_text_record)))
+                Log.d(TAG,"Record clicked. "+btnRecord.getText()+"=="+mResources.getText(R.string.ui_text_record));
+                if (btnRecord.getText().equals(mResources.getText(R.string.ui_text_record)))
                 {
                     if (filename.equals(""))
                     {
@@ -157,7 +158,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
                                 public void run() {
                                     if (ret) {
                                         Toast.makeText(gloveSettingActivity.getApplicationContext(), "Start recording", Toast.LENGTH_SHORT).show();
-                                        btnRecord.setText(mResources.getString(R.string.ui_text_recording));
+                                        btnRecord.setText(R.string.ui_text_recording);
                                     } else {
                                         Toast.makeText(gloveSettingActivity.getApplicationContext(), "Start recording failed", Toast.LENGTH_SHORT).show();
                                     }
@@ -172,7 +173,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
                     stopRecord();
 
                     Toast.makeText(gloveSettingActivity.getApplicationContext(), "Stop recording", Toast.LENGTH_SHORT).show();
-                    btnRecord.setText(mResources.getString(R.string.ui_text_record));
+                    btnRecord.setText(R.string.ui_text_record);
                     getRecordFilesAndUpdateRecordSpinner();
                     scanPath(PATH_DATABASE_RECORD + File.separator + filename + FILE_EXTENSION_CSV);
                 }
@@ -180,32 +181,24 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         });
 
         btnRecognize = (Button) gloveSettingActivity.findViewById(R.id.btnRecognize);
-        btnRecognize.setOnClickListener(new View.OnClickListener()
-        {
+        btnRecognize.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 btnRecognize.setText(R.string.ui_text_recognizing);
                 txtResult.setText("");
 
-                if (!mIsRecognizing)
-                {
+                if (!mIsRecognizing) {
                     // Start recognize
-                    mDataPushThread = new Thread(new Runnable()
-                    {
+                    mDataPushThread = new Thread(new Runnable() {
                         @Override
-                        public void run()
-                        {
-                            while (mIsRecognizing)
-                            {
+                        public void run() {
+                            while (mIsRecognizing) {
+
                                 mRecognitionService.pushSignData(mCurSignData);
 
-                                try
-                                {
+                                try {
                                     Thread.sleep(30);
-                                }
-                                catch (InterruptedException e)
-                                {
+                                } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -215,9 +208,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
                     mRecognitionService.startRecognition();
                     mIsRecognizing = true;
                     mDataPushThread.start();
-                }
-                else
-                {
+                } else {
                     // Stop recognize
                     mIsRecognizing = false;
                     mDataPushThread.interrupt();
@@ -226,7 +217,16 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
                 }
             }
         });
+        if(mBluetoothDeviceLeft != null){
+            txtLeftHand.setText(mBluetoothDeviceLeft.getName()+"  "+mBluetoothDeviceLeft.getAddress());
+        }
+        if(mBluetoothDeviceRight != null){
+            txtRightHand.setText(mBluetoothDeviceRight.getName()+"  "+mBluetoothDeviceRight.getAddress());
+        }
+        isActivityReady = true;
+    }
 
+    private void getViewId(){
         etFilename = (EditText) gloveSettingActivity.findViewById(R.id.etFilename);
         txtLeftHand = (TextView) gloveSettingActivity.findViewById(R.id.txtLeftHand);
         txtRightHand = (TextView) gloveSettingActivity.findViewById(R.id.txtRightHand);
@@ -236,37 +236,6 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         txtResult = (TextView) gloveSettingActivity.findViewById(R.id.txtResult);
 
         lvDatabase = (ListView) gloveSettingActivity.findViewById(R.id.lvDatabase);
-
-        initRecognition();
-    }
-
-    private void startReadingRssi()
-    {
-        mReadRssiThreadRunning = true;
-        mReadRssiThread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                while (mReadRssiThreadRunning)
-                {
-                    if (mIsConnectedLeft && mIsConnectedRight)
-                    {
-                        mBluetoothLeService.readRemoteRssi();
-                    }
-
-                    try
-                    {
-                        Thread.sleep(10);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        mReadRssiThread.start();
     }
 
     private void playAudio(String filename)
@@ -309,6 +278,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         @Override
         public void onServiceConnected(ComponentName name, IBinder service)
         {
+            Log.d(TAG, "onRecognitionService connected. ");
             mRecognitionService = ((RecognitionService.ServiceBinder) service).getService();
             mRecognitionService.registerListener(mRecognitionServiceListener);
         }
@@ -332,6 +302,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         getSignNames();
         getRecordFilesAndUpdateRecordSpinner();
 
+        Log.d(TAG, "Connecting RecognitionService... ");
         // Bind recognition service
         Intent recServiceIntent = new Intent(gloveSettingActivity, RecognitionService.class);
         boolean status = gloveSettingActivity.bindService(recServiceIntent, mRecognitionServiceConnection, gloveSettingActivity.BIND_AUTO_CREATE);
@@ -401,6 +372,9 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
         {
             e.printStackTrace();
         }
+
+        ArrayAdapter<String> lvDatabaseAdapter = new ArrayAdapter<>(gloveSettingActivity.getApplicationContext(), android.R.layout.simple_list_item_1, databaseList);
+        lvDatabase.setAdapter(lvDatabaseAdapter);
     }
 
     private void getRecordFilesAndUpdateRecordSpinner()
@@ -491,36 +465,32 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
      */
 
     @Override
-    public void onLeDeviceConnected(BluetoothDevice device) {
-
+    public void onLeDeviceConnected(BluetoothDevice device, boolean isLeft) {
+        Log.d(TAG,"onLeDeviceConnected" + device.getName());
+        if(isLeft){
+            mIsConnectedLeft = true;
+            mBluetoothDeviceLeft = device;
+        }else{
+            mIsConnectedRight = true;
+            mBluetoothDeviceRight = device;
+        }
     }
 
     @Override
     public void onLeDeviceDisconnected(final BluetoothDevice device)
     {
-//        if (device.equals(mBluetoothDeviceLeft))
-//        {
-//            mIsConnectedLeft = false;
-//        }
-//        else if (device.equals(mBluetoothDeviceRight))
-//        {
-//            mIsConnectedRight = false;
-//        }
-//
-//        runOnUiThread(new Runnable()
-//        {
-//            @Override
-//            public void run()
-//            {
-//                Toast.makeText(getApplicationContext(), "Disconnected: " + device.getName() + " " + device.getAddress(), Toast.LENGTH_SHORT).show();
-//
-//                if (!mIsConnectedLeft && !mIsConnectedRight)
-//                {
-//                    btnConnect.setText(mResources.getString(R.string.ui_text_connect));
-//                    btnReset.setEnabled(false);
-//                }
-//            }
-//        });
+        if (device.equals(mBluetoothDeviceLeft))
+        {
+            mIsConnectedLeft = false;
+            mBluetoothDeviceLeft = null;
+            txtLeftHand.setText("Left");
+        }
+        else if (device.equals(mBluetoothDeviceRight))
+        {
+            mIsConnectedRight = false;
+            mBluetoothDeviceRight = null;
+            txtRightHand.setText("Right");
+        }
     }
     @Override
     public void onLeServiceDiscovered(boolean status)
@@ -533,27 +503,26 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     @Override
     public void onQuaternionChanged(BluetoothDevice device, float[] quaternion)
     {
-        Log.d(TAG, "onQuaternion:" + device.getAddress());
-        if (device.equals(mBluetoothDeviceLeft))
-        {
-            System.arraycopy(quaternion, 0, mCurSignData._quatL, 0, quaternion.length);
-        }
-        else if (device.equals(mBluetoothDeviceRight))
-        {
-            System.arraycopy(quaternion, 0, mCurSignData._quatR, 0, quaternion.length);
+        if(isActivityReady) {
+            Log.d(TAG, "onQuaternion:" + device.getAddress());
+            if (device.equals(mBluetoothDeviceLeft)) {
+                System.arraycopy(quaternion, 0, mCurSignData._quatL, 0, quaternion.length);
+            } else if (device.equals(mBluetoothDeviceRight)) {
+                System.arraycopy(quaternion, 0, mCurSignData._quatR, 0, quaternion.length);
+            }
         }
     }
 
     @Override
     public void onGestureChanged(BluetoothDevice device, float[] gesture)
     {
-        if (device.equals(mBluetoothDeviceLeft))
-        {
-            System.arraycopy(gesture, 0, mCurSignData._gestL, 0, gesture.length);
-        }
-        else if (device.equals(mBluetoothDeviceRight))
-        {
-            System.arraycopy(gesture, 0, mCurSignData._gestR, 0, gesture.length);
+        if(isActivityReady) {
+            Log.d(TAG, "onGestureChanged:" + device.getAddress());
+            if (device.equals(mBluetoothDeviceLeft)) {
+                System.arraycopy(gesture, 0, mCurSignData._gestL, 0, gesture.length);
+            } else if (device.equals(mBluetoothDeviceRight)) {
+                System.arraycopy(gesture, 0, mCurSignData._gestR, 0, gesture.length);
+            }
         }
     }
 
@@ -566,68 +535,61 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     @Override
     public void onAccelerationChanged(BluetoothDevice device, float[] acceleration)
     {
-        if (device.equals(mBluetoothDeviceLeft))
-        {
-            System.arraycopy(acceleration, 0, mCurSignData._acceL, 0, acceleration.length);
-        }
-        else if (device.equals(mBluetoothDeviceRight))
-        {
-            System.arraycopy(acceleration, 0, mCurSignData._acceR, 0, acceleration.length);
+        if(isActivityReady) {
+            Log.d(TAG, "onAccelerationChanged:" + device.getAddress());
+            if (device.equals(mBluetoothDeviceLeft)) {
+                System.arraycopy(acceleration, 0, mCurSignData._acceL, 0, acceleration.length);
+            } else if (device.equals(mBluetoothDeviceRight)) {
+                System.arraycopy(acceleration, 0, mCurSignData._acceR, 0, acceleration.length);
+            }
         }
     }
 
     @Override
     public void onRSSIRead(BluetoothDevice device, final int rssi)
     {
-        if (device.equals(mBluetoothDeviceLeft))
-        {
-            mCurSignData._rssiL = rssi;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    txtLeftRssi.setText(rssi + "");
-//                }
-//            });
+        if(isActivityReady) {
+            if (device.equals(mBluetoothDeviceLeft)) {
+                mCurSignData._rssiL = rssi;
+                gloveSettingActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (txtLeftRssi != null) txtLeftRssi.setText(rssi + "");
+                    }
+                });
 
-        }
-        else if (device.equals(mBluetoothDeviceRight))
-        {
-            mCurSignData._rssiR = rssi;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    txtRightRssi.setText(rssi + "");
-//                }
-//            });
+            } else if (device.equals(mBluetoothDeviceRight)) {
+                mCurSignData._rssiR = rssi;
+                gloveSettingActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (txtRightRssi != null) txtRightRssi.setText(rssi + "");
+                    }
+                });
+            }
         }
     }
 
     @Override
     public void onRecognized(final String word)
     {
-        playAudio(PATH_DATABASE_AUDIO + File.separator + word + FILE_EXTENSION_MP3);
-//        runOnUiThread(new Runnable()
-//        {
-//            @Override
-//            public void run()
-//            {
-//                txtResult.setText(word);
-//                playAudio(PATH_DATABASE_AUDIO + File.separator + word + FILE_EXTENSION_MP3);
-//            }
-//        });
+        gloveSettingActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                txtResult.setText(word);
+                playAudio(PATH_DATABASE_AUDIO + File.separator + word + FILE_EXTENSION_MP3);
+            }
+        });
     }
 
     @Override
     public void onRecognizeFinished()
     {
-        btnRecognize.setText(R.string.ui_text_recognize);
-//        runOnUiThread(new Runnable()
-//        {
-//            @Override
-//            public void run()
-//            {
-//                btnRecognize.setText(R.string.ui_text_recognize);
-//            }
-//        });
+        gloveSettingActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btnRecognize.setText(R.string.ui_text_recognize);
+            }
+        });
     }
 }
