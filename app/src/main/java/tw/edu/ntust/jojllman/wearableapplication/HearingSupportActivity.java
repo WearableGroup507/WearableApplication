@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,15 +14,20 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.GloveService;
+
 public class HearingSupportActivity extends AppCompatActivity {
     int click_count;
+
+    Handler handler=new Handler();
+    DeviceInfoView btn_device_glove;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hearing_support);
 
-        DeviceInfoView btn_device_glove = (DeviceInfoView)findViewById(R.id.dev_info_btn_hearing_glove);
+        btn_device_glove = (DeviceInfoView)findViewById(R.id.dev_info_btn_hearing_glove);
         
         btn_device_glove.setDeviceType(DeviceInfoView.GLOVE);
         
@@ -43,6 +49,14 @@ public class HearingSupportActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                btn_device_glove.setSignal((short) ((GloveService.gloveService.rssiLeft + GloveService.gloveService.rssiRight)/2));
+                handler.postDelayed(this, 500); // set time here to refresh textView
+            }
+        });
     }
 
     @Override
@@ -61,9 +75,14 @@ public class HearingSupportActivity extends AppCompatActivity {
     }
 
     public void OnDeviceClick(View view){
-        Intent intent = new Intent();
-        intent.setClass(HearingSupportActivity.this  , HearingSettingActivity.class);
-        startActivity(intent);
+        if(GloveService.gloveService.mBluetoothDeviceLeft != null &&
+                GloveService.gloveService.mBluetoothDeviceRight != null &&
+                GloveService.gloveService.mBluetoothDeviceLeft != GloveService.gloveService.mBluetoothDeviceRight)
+        {
+            Intent intent = new Intent();
+            intent.setClass(HearingSupportActivity.this, GloveControlActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void OnHelpClick(View view){

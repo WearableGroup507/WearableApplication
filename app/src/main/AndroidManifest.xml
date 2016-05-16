@@ -33,6 +33,7 @@
         <activity android:name=".HearingSettingActivity" />
         <activity android:name=".RecordGestureActivity" />
         <activity android:name=".GestureDBActivity" />
+        <activity android:name=".GloveControlActivity" />
 
         <service
             android:name=".BLE.BluetoothLeService"

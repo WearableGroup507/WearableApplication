@@ -16,6 +16,7 @@ import android.content.ServiceConnection;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -228,7 +229,7 @@ public class BlunoService extends Service {
 
     private void gloveInit()
     {
-        GloveService gloveService = new GloveService();
+        GloveService gloveService = new GloveService(this);
         mBluetoothLeServiceListener = gloveService;
 
         Log.d(TAG,"Start reading RSSI.");
@@ -948,18 +949,18 @@ public class BlunoService extends Service {
         sendBroadcast(disonnectIntent);
     }
 
-    public void swapGloves()
-    {
-        BluetoothDevice tempDev = mGloveDeviceLeft;
-        mGloveDeviceLeft = mGloveDeviceRight;
-        mGloveDeviceRight = tempDev;
-        if(mConnected_GloveLeft != mConnected_GloveRight)
-        {
-            boolean tempB = mConnected_GloveLeft;
-            mConnected_GloveLeft = mConnected_GloveRight;
-            mConnected_GloveRight = tempB;
-        }
-    }
+//    public void swapGloves()
+//    {
+//        BluetoothDevice tempDev = mGloveDeviceLeft;
+//        mGloveDeviceLeft = mGloveDeviceRight;
+//        mGloveDeviceRight = tempDev;
+//        if(mConnected_GloveLeft != mConnected_GloveRight)
+//        {
+//            boolean tempB = mConnected_GloveLeft;
+//            mConnected_GloveLeft = mConnected_GloveRight;
+//            mConnected_GloveRight = tempB;
+//        }
+//    }
 
     private void gloveUpdate (final BluetoothDevice device, final byte[] data)
     {

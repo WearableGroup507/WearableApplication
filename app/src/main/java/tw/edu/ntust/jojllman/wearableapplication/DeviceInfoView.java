@@ -74,7 +74,7 @@ public class DeviceInfoView extends View {
         canvas.drawText(battery + "%", width, height, paint);
         width = canvas.getWidth() / 5 * 4;
         paint.setColor(Color.RED);
-        canvas.drawText("強", width, height, paint);
+        canvas.drawText(getTxtSignal(), width, height, paint);
     }
 
     public void setBitmapToDraw(Bitmap bitmap){
@@ -100,14 +100,26 @@ public class DeviceInfoView extends View {
 
     public void setSignal(short signal) {
         this.signal = signal;
-
+        this.invalidate();
         updateContentDescription();
     }
 
     private void updateContentDescription(){
         String str = DEVICE_NAME[deviceType-1] + "裝置已配對，電量"
                 + battery + "%，訊號"
-                + "強";
+                + getTxtSignal();
         setContentDescription(str);
+    }
+
+    private String getTxtSignal(){
+        if(signal < -100){
+            return "弱";
+        }else if(signal < -50){
+            return "中";
+        }else if(signal < 0){
+            return "強";
+        }else{
+            return "Error";
+        }
     }
 }

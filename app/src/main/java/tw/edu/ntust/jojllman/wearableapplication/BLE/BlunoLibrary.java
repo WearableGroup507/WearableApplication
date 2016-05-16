@@ -1,16 +1,21 @@
 package tw.edu.ntust.jojllman.wearableapplication.BLE;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -35,6 +40,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 	BluetoothLeService mBluetoothLeService;
 	private LeDeviceListAdapter mLeDeviceListAdapter=null;
 	private BluetoothAdapter mBluetoothAdapter;
+	private BluetoothLeScanner mBluetoothLeScanner;
 	private boolean mScanning =false;
 	protected AlertDialog mScanDeviceDialog;
 	private String mDeviceName;
@@ -128,6 +134,12 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 		// BluetoothAdapter through BluetoothManager.
 		final BluetoothManager bluetoothManager = (BluetoothManager) mainContext.getSystemService(Context.BLUETOOTH_SERVICE);
 		mBluetoothAdapter = bluetoothManager.getAdapter();
+//        if(android.os.Build.VERSION.SDK_INT>=21) {
+//            mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+//            if (mBluetoothLeScanner == null) {
+//                return false;
+//            }
+//        }
 	
 		// Checks if Bluetooth is supported on the device.
 		if (mBluetoothAdapter == null) {
@@ -151,13 +163,23 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 			if(!mScanning)
 			{
 				mScanning = true;
-				mBluetoothAdapter.startLeScan(mLeScanCallback);
+                mBluetoothAdapter.startLeScan(mLeScanCallback);
+//                if(android.os.Build.VERSION.SDK_INT<21) {
+//                    mBluetoothAdapter.startLeScan(mLeScanCallback);
+//                }else{
+//                    mBluetoothLeScanner.startScan(mScanCallback);
+//                }
 			}
 		} else {
 			if(mScanning)
 			{
 				mScanning = false;
-				mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+//                if(android.os.Build.VERSION.SDK_INT<21) {
+//                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+//                }else{
+//                    mBluetoothLeScanner.stopScan(mScanCallback);
+//                }
 			}
 		}
 	}
@@ -197,6 +219,21 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 			});
 		}
 	};
+
+//    private ScanCallback mScanCallback = new ScanCallback() {
+//
+//        @Override
+//        public void onScanResult(int callbackType, final ScanResult result) {
+//            ((Activity) mainContext).runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    System.out.println("mLeScanCallback onLeScan run ");
+//                    mLeDeviceListAdapter.addDevice(result.getDevice());
+//                    mLeDeviceListAdapter.notifyDataSetChanged();
+//                }
+//            });
+//        }
+//    };
 	
 	private class LeDeviceListAdapter extends BaseAdapter {
 		private ArrayList<BluetoothDevice> mLeDevices;
