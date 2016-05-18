@@ -1,6 +1,7 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.Dialog;
+import android.bluetooth.BluetoothDevice;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -8,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,16 +21,27 @@ import android.widget.ImageButton;
 
 import java.util.List;
 
-public class VisualSupportActivity extends AppCompatActivity {
-    int click_count=0;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+
+public class VisualSupportActivity extends BlunoLibrary {
+    private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
+    private GlobalVariable globalVariable;
+
+    private Handler handler=new Handler();
+    private DeviceInfoView btn_device_glass;
+    private DeviceInfoView btn_device_bracelet;
+    private int click_count=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visual_support);
+
+        globalVariable = (GlobalVariable)getApplicationContext();
         
-        DeviceInfoView btn_device_glass = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_glass);
-        DeviceInfoView btn_device_bracelet = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_bracelet);
+        btn_device_glass = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_glass);
+        btn_device_bracelet = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_bracelet);
 
         btn_device_glass.setDeviceType(DeviceInfoView.GLASS);
         btn_device_bracelet.setDeviceType(DeviceInfoView.BRACELET);
@@ -53,6 +66,82 @@ public class VisualSupportActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        onCreateProcess();
+        switch (mConnectionState) {
+            case isNull:
+                connectionState="isScanning";
+                mConnectionState = theConnectionState.valueOf(connectionState);
+                onConnectionStateChange(mConnectionState);
+                scanLeDevice(true);
+                break;
+            case isToScan:
+                connectionState="isScanning";
+                mConnectionState = theConnectionState.valueOf(connectionState);
+                onConnectionStateChange(mConnectionState);
+                scanLeDevice(true);
+                break;
+            case isScanning:
+                break;
+            case isConnecting:
+                break;
+            case isConnected:
+                break;
+            case isDisconnecting:
+                break;
+            default:
+                break;
+        }
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                btn_device_glass.setSignal((short) ((100-98) / 2));        //TODO: get glass rssi
+                btn_device_bracelet.setSignal((short) ((100-98) / 2));     //TODO: get bracelet rssi
+                handler.postDelayed(this, 500); // set time here to refresh textView
+            }
+        });
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (BluetoothDevice device : getScannedDevices()) {
+                    if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
+                            globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
+
+                        System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
+
+                        mDeviceName = device.getName();
+                        mDeviceAddress = device.getAddress();
+
+                        if (mDeviceName == null)
+                            mDeviceName = getString(R.string.unknown_device);
+
+                        if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
+                            connectionState = "isToScan";
+                            mConnectionState = theConnectionState.valueOf(connectionState);
+                            onConnectionStateChange(mConnectionState);
+                        } else {
+                            connectionState = "isConnecting";
+                            mConnectionState = theConnectionState.valueOf(connectionState);
+                            onConnectionStateChange(mConnectionState);
+                        }
+                    }
+                }
+                handler.postDelayed(this, 500);
+            }
+        });
+    }
+
+    public void onPause(){
+        scanLeDevice(false);
+        handler.removeCallbacksAndMessages(null);
+        super.onPause();
     }
 
     @Override
@@ -155,5 +244,33 @@ public class VisualSupportActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    @Override
+    public void onConnectionStateChange(theConnectionState mConnectionState) {
+        switch (mConnectionState) {
+            case isConnected:
+//                buttonScan.setText("Connected");
+                break;
+            case isConnecting:
+//                buttonScan.setText("Connecting");
+                mTransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
+                mTransferIntent.putExtra("connectionState", connectionState);
+//                mThresholdIntent.putExtra("frontThreshold", mThresholdIntent);
+//                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
+                sendBroadcast(mTransferIntent);
+//                sendBroadcast(mThresholdIntent);
+                //TODO: move to app setting
+                break;
+            case isToScan:
+//                buttonScan.setText("Scan");
+                break;
+            case isScanning:
+//                buttonScan.setText("Scanning");
+                break;
+            case isDisconnecting:
+//                buttonScan.setText("isDisconnecting");
+                break;
+        }
     }
 }

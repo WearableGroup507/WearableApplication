@@ -605,9 +605,10 @@ public class BluetoothLeService extends Service {
 
     public void readRemoteRssi ()
     {
-        for (BluetoothGatt gatt : mBluetoothGatts.values())
-        {
-            boolean sts = gatt.readRemoteRssi();
+        synchronized (mBluetoothGatts) {
+            for (BluetoothGatt gatt : mBluetoothGatts.values()) {
+                boolean sts = gatt.readRemoteRssi();
+            }
         }
     }
 }

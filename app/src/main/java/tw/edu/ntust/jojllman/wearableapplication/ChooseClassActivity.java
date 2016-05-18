@@ -1,26 +1,31 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.Dialog;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
 public class ChooseClassActivity extends AppCompatActivity {
-    int click_count=0;
+    private int mClickCount =0;
+    private short mAutoEnter = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_class);
 
-        GlobalVariable globalVariable = (GlobalVariable)getApplicationContext();
+        final GlobalVariable globalVariable = (GlobalVariable)getApplicationContext();
         globalVariable.readSetting();
 
         DisplayMetrics metrics = new DisplayMetrics();
@@ -53,6 +58,23 @@ public class ChooseClassActivity extends AppCompatActivity {
 
         Intent intent = new Intent(ChooseClassActivity.this, BlunoService.class);
         startService(intent);
+
+        if(mAutoEnter == 1){
+            Intent intentVisual = new Intent(ChooseClassActivity.this  , VisualSupportActivity.class);
+            startActivity(intentVisual);
+            this.finish();
+            overridePendingTransition(0, 0);
+        }else if(mAutoEnter == 2){
+            Intent intentHearing = new Intent(ChooseClassActivity.this  , HearingSupportActivity.class);
+            startActivity(intentHearing);
+            this.finish();
+            overridePendingTransition(0, 0);
+        }
+    }
+
+    public void onResume(){
+        super.onResume();
+
     }
 
     @Override
@@ -67,7 +89,7 @@ public class ChooseClassActivity extends AppCompatActivity {
     }
 
     public void OnVisualClick(View view){
-        click_count=0;
+        mClickCount =0;
 
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , VisualSupportActivity.class);
@@ -76,7 +98,7 @@ public class ChooseClassActivity extends AppCompatActivity {
     }
 
     public void OnHearingClick(View view){
-        click_count=0;
+        mClickCount =0;
 
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , HearingSupportActivity.class);
@@ -85,6 +107,7 @@ public class ChooseClassActivity extends AppCompatActivity {
     }
 
     public void OnHelpClick(View view){
+//        this.findViewById(android.R.id.content).announceForAccessibility("0123456789");
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
@@ -106,8 +129,8 @@ public class ChooseClassActivity extends AppCompatActivity {
         ibtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (++click_count > 2) {
-                    click_count = 0;
+                if (++mClickCount > 2) {
+                    mClickCount = 0;
                     if (dialog.isShowing()) {
                         dialog.hide();
                     }
@@ -115,7 +138,7 @@ public class ChooseClassActivity extends AppCompatActivity {
                     intent.setClass(ChooseClassActivity.this, AppManageActivity.class);
                     startActivity(intent);
                 } else {
-                    v.announceForAccessibility("繼續點擊" + (3 - click_count) + "次進入管理頁面");
+                    v.announceForAccessibility("繼續點擊" + (3 - mClickCount) + "次進入管理頁面");
                 }
             }
         });
@@ -125,7 +148,7 @@ public class ChooseClassActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (dialog.isShowing()) {
-                    click_count = 0;
+                    mClickCount = 0;
                     dialog.hide();
                 }
             }

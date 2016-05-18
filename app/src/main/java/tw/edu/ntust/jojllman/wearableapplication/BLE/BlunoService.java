@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
 import tw.edu.ntust.jojllman.wearableapplication.R;
 import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
 
@@ -552,14 +553,14 @@ public class BlunoService extends Service {
                     Log.d(TAG, "Connected to bracelet device.");
                     break;
                 case 2:
-                    if(!mConnected_GloveLeft)
+                    if(!mConnected_GloveLeft && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlove.toLowerCase() + "l"))
                     {
                         mConnected_GloveLeft = true;
                         mGloveDeviceLeft = device;
                         mBluetoothLeServiceListener.onLeDeviceConnected(device,true);
                         Log.d(TAG, "Connected to glove device left.");
                     }
-                    else if(!mConnected_GloveRight)
+                    else if(!mConnected_GloveRight && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlove.toLowerCase() + "r"))
                     {
                         mConnected_GloveRight = true;
                         mGloveDeviceRight = device;

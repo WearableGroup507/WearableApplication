@@ -72,7 +72,7 @@ public class AppManageActivity extends BlunoLibrary {
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
         registerReceiver(mMsgReceiver, intentFilter);
 
-        if(!isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
             Intent intent = new Intent(AppManageActivity.this, BlunoService.class);
             startService(intent);
         }
@@ -103,7 +103,7 @@ public class AppManageActivity extends BlunoLibrary {
 
     public void OnSearchDeviceClick(View view){
 
-        if(!isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
             onCreateProcess();
 
             Intent intent = new Intent(AppManageActivity.this, BlunoService.class);
@@ -157,6 +157,7 @@ public class AppManageActivity extends BlunoLibrary {
 //                mThresholdIntent.putExtra("frontThreshold", mThresholdIntent);
 //                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
                 sendBroadcast(mTransferIntent);
+                ((GlobalVariable)getApplicationContext()).getSaved_devices().addDevice(mDeviceName, mDeviceAddress);
 //                sendBroadcast(mThresholdIntent);
                 //TODO: move to app setting
                 break;
@@ -170,18 +171,6 @@ public class AppManageActivity extends BlunoLibrary {
 //                buttonScan.setText("isDisconnecting");
                 break;
         }
-    }
-
-    public static boolean isServiceRunning(Context context, String serviceClassName){
-        final ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
-        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
-
-        for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
-            if (runningServiceInfo.service.getClassName().equals(serviceClassName)){
-                return true;
-            }
-        }
-        return false;
     }
 
     protected void findView() {

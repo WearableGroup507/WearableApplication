@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import tw.edu.ntust.jojllman.wearableapplication.AppManageActivity;
+import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
 
 /**
  * Created by Lian on 2016/4/6.
@@ -167,7 +168,7 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
 
     public void initRecognition(Activity activity)
     {
-        if(gloveActivity != null && AppManageActivity.isServiceRunning(gloveActivity,"tw.edu.ntust.jojllman.wearableapplication.BLE.RecognitionService")){
+        if(gloveActivity != null && GlobalVariable.isServiceRunning(gloveActivity, "tw.edu.ntust.jojllman.wearableapplication.BLE.RecognitionService")){
             gloveActivity.unbindService(mRecognitionServiceConnection);
         }
         gloveActivity = activity;
@@ -467,13 +468,17 @@ public class GloveService implements RecognitionServiceListener, BluetoothLeServ
     public void onRSSIRead(BluetoothDevice device, final int rssi)
     {
         if (device.equals(mBluetoothDeviceLeft)) {
-            mCurSignData._rssiL = rssi;
             rssiLeft = rssi;
-            if(isActivityReady) glovelistener.RSSIUpdate(true, rssi);
+            if(isActivityReady){
+                mCurSignData._rssiL = rssi;
+                glovelistener.RSSIUpdate(true, rssi);
+            }
         } else if (device.equals(mBluetoothDeviceRight)) {
-            mCurSignData._rssiR = rssi;
             rssiRight = rssi;
-            if(isActivityReady) glovelistener.RSSIUpdate(false, rssi);
+            if(isActivityReady){
+                mCurSignData._rssiR = rssi;
+                glovelistener.RSSIUpdate(false, rssi);
+            }
         }
     }
 

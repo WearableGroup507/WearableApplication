@@ -105,9 +105,11 @@ public class DeviceInfoView extends View {
     }
 
     private void updateContentDescription(){
-        String str = DEVICE_NAME[deviceType-1] + "裝置已配對，電量"
+        String str = DEVICE_NAME[deviceType-1]
+                + "裝置已配對，電量"
                 + battery + "%，訊號"
                 + getTxtSignal();
+        if(getTxtSignal().equals("未知"))str = DEVICE_NAME[deviceType-1] + "裝置未配對";
         setContentDescription(str);
     }
 
@@ -119,7 +121,7 @@ public class DeviceInfoView extends View {
         }else if(signal < 0){
             return "強";
         }else{
-            return "Error";
+            return "未知";
         }
     }
 }

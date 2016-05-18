@@ -43,7 +43,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 	private BluetoothLeScanner mBluetoothLeScanner;
 	private boolean mScanning =false;
 	protected AlertDialog mScanDeviceDialog;
-	private String mDeviceName;
+	protected String mDeviceName;
 	protected String mDeviceAddress;
 	public String connectionState = "isNull";
 	protected enum theConnectionState{
@@ -182,6 +182,10 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 //                }
 			}
 		}
+	}
+
+	protected BluetoothDevice[] getScannedDevices(){
+		return mLeDeviceListAdapter.mLeDevices.toArray(new BluetoothDevice[mLeDeviceListAdapter.mLeDevices.size()]);
 	}
 	
 	// Code to manage Service lifecycle.

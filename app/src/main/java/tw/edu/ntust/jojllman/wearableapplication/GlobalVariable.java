@@ -1,19 +1,30 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
+import android.app.ActivityManager;
 import android.app.Application;
+import android.app.Service;
 import android.content.Context;
 import android.os.Vibrator;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Lian on 2015/11/26.
  */
 public class GlobalVariable extends Application {
+    public static final String defaultNameGlove = "GloveBLE";
+    public static final String defaultNameGlass = "Glass";
+    public static final String defaultNameBracelet = "Bracelet";
+
     public static final int VIBRATE_LIGHT=1;
     public static final int VIBRATE_MID=2;
     public static final int VIBRATE_STRONG=4;
@@ -25,6 +36,12 @@ public class GlobalVariable extends Application {
 
     private boolean bracelet_distance_enabled = false;
     private boolean bracelet_color_enabled = false;
+
+    private SavedDevices saved_devices;
+
+    public GlobalVariable(){
+        saved_devices = new SavedDevices();
+    }
 
     public void setVibrate_level(int new_vibrate_level){
         if(new_vibrate_level != vibrate_level) {
@@ -73,6 +90,10 @@ public class GlobalVariable extends Application {
         return glass_side_threshold;
     }
 
+    public SavedDevices getSaved_devices(){
+        return saved_devices;
+    }
+
     public boolean isBraceletDistanceEnabled() {
         return bracelet_distance_enabled;
     }
@@ -100,8 +121,9 @@ public class GlobalVariable extends Application {
 
     public boolean saveSetting(){
         _isSettingChanged=false;
-        FileOutputStream out = null;
+        FileOutputStream out;
         try {
+            System.out.println("start saving settings.");
             //在 getFilesDir() 目錄底下建立 setting.txt 檔案用來進行寫入
             out = openFileOutput("setting.txt", Context.MODE_PRIVATE);
 
@@ -118,19 +140,23 @@ public class GlobalVariable extends Application {
 
             out.close();
         } catch (Exception e) {
+            e.printStackTrace();
+            saved_devices.saveDevice();
             return false;
         }
-        return true;
+        return saved_devices.saveDevice();
     }
 
     public boolean readSetting(){
         _isSettingChanged=false;
-        FileInputStream in = null;
+        FileInputStream in;
         StringBuffer data = new StringBuffer();
         try {
+            System.out.println("opening setting.txt");
             //開啟 getFilesDir() 目錄底下名稱為 setting.txt 檔案
             in = openFileInput("setting.txt");
 
+            System.out.println("start reading settings.");
             //讀取該檔案的內容
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(in, "utf-8"));
@@ -140,6 +166,8 @@ public class GlobalVariable extends Application {
             }
             in.close();
         } catch (Exception e) {
+            e.printStackTrace();
+            saved_devices.loadDevice();
             return false;
         }
         int current_pos=data.indexOf("VIBRATE_LEVEL");
@@ -167,6 +195,101 @@ public class GlobalVariable extends Application {
             bracelet_color_enabled=Boolean.parseBoolean(data.substring(data.indexOf("=", current_pos) + 1, data.indexOf("\n", current_pos)));
         }else bracelet_color_enabled = false;
 
-        return true;
+        return saved_devices.loadDevice();
+    }
+
+    public class SavedDevices{
+        private HashMap<String, String> device_address = new HashMap<>();
+
+        public void addDevice(String name, String addr) {
+            if(!device_address.containsKey(name)) {
+                device_address.put(name,addr);
+                saveDevice();
+            }
+        }
+
+        public String[] getDeviceList() {
+            return device_address.keySet().toArray(new String[device_address.size()]);
+        }
+
+        public String getDevice(String name) {
+            return device_address.get(name);
+        }
+
+        public boolean containsDeviceName(String name) {
+            return device_address.containsKey(name);
+        }
+
+        public boolean containsDeviceAddr(String addr) {
+            return device_address.containsValue(addr);
+        }
+
+        public boolean removeDevice(String name){
+            String addr = device_address.remove(name);
+            if(addr == null || addr == "")return false;
+            saveDevice();
+            return true;
+        }
+
+        private boolean saveDevice(){
+            FileOutputStream outDev;
+            try {
+                System.out.println("start saving devices.");
+                outDev = openFileOutput("device.txt", Context.MODE_PRIVATE);
+
+                String outstr2="";
+                for (String dev:device_address.keySet()) {
+                    outstr2+=dev+"="+device_address.get(dev)+"\n";
+                }
+
+                outDev.write(outstr2.getBytes());
+                outDev.flush();
+
+                outDev.close();
+            }catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        }
+
+        public boolean loadDevice(){
+            FileInputStream inDev;
+            try {
+                System.out.println("opening device.txt");
+                inDev = openFileInput("device.txt");
+
+                System.out.println("start reading devices.");
+                //讀取DEVICE
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(inDev, "utf-8"));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if(line.endsWith("\n"))line=line.substring(0,line.length()-1);
+                    String temp[] = line.split("=");
+                    device_address.put(temp[0],temp[1]);
+
+                    System.out.println(line);
+                }
+                System.out.println(device_address.size() + " devices read.");
+                inDev.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public static boolean isServiceRunning(Context context, String serviceClassName){
+        final ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
+
+        for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
+            if (runningServiceInfo.service.getClassName().equals(serviceClassName)){
+                return true;
+            }
+        }
+        return false;
     }
 }
