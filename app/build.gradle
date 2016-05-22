@@ -3,14 +3,13 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
-
     defaultConfig {
         applicationId "tw.edu.ntust.jojllman.wearableapplication"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
-        versionName "1.0"
-        ndk{
+        versionName '1.0'
+        ndk {
             moduleName "SignLanguageRecognitionSystem"
         }
     }
@@ -32,14 +31,15 @@ android {
         def ndkDir = android.ndkDirectory
         commandLine "$ndkDir/ndk-build.cmd", '-C', file('src/main/jni').absolutePath
     }
-
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn buildNative
+    }
+    productFlavors {
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.4.0'
 }

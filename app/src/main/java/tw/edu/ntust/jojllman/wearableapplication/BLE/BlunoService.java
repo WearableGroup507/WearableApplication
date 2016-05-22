@@ -101,6 +101,18 @@ public class BlunoService extends Service {
         none, distance, color
     }
 
+    private final static int AVOID_ALLDIRECTION = 11;
+    private final static int AVOID_FRONT = 12;
+    private final static int AVOID_LEFT = 13;
+    private final static int AVOID_RIGHT = 14;
+    private final static int AVOID_LEFTANDRIGHT = 15;
+
+    private final static int MOVE_LEFT = 21;
+    private final static int MOVE_RIGHT = 22;
+
+    public static boolean state_avoid = false;
+    private int move_direction;
+    private int pre_avoid_state;
     private int front  = 100;
     private int left       = 100;
     private int right      = 100;
@@ -174,7 +186,19 @@ public class BlunoService extends Service {
         }
     };
 
-    private RecognitionServiceListener mRecognitionServiceListener;
+    public static TextToSpeechService mTTSService;
+
+    private ServiceConnection TextToSpeechServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.i(TAG, "TextToSpeechService unconnected");
+        }
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.i(TAG, "TextToSpeechService connected");
+            mTTSService = ((TextToSpeechService.LocalBinder)service).getService();
+        }
+    };
 
     @Override
     public void onCreate(){
@@ -225,6 +249,9 @@ public class BlunoService extends Service {
 
         gloveInit();
 
+        Intent intent = new Intent(this, TextToSpeechService.class);
+        bindService(intent, TextToSpeechServiceConnection, Context.BIND_AUTO_CREATE);
+
         System.out.println("BlunoService onCreate");
     }
 
@@ -264,6 +291,8 @@ public class BlunoService extends Service {
         mSCharacteristic=null;
         serviceContext.unbindService(mServiceConnection);
         mBluetoothLeService = null;
+        unbindService(TextToSpeechServiceConnection);
+        mTTSService = null;
     }
 
 
@@ -329,7 +358,8 @@ public class BlunoService extends Service {
                         }
                     }
                     else if (mSCharacteristic==mSerialPortCharacteristic) {
-                        onSerialReceived(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                        onSerialReceived(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                        displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     }
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }
@@ -616,161 +646,219 @@ public class BlunoService extends Service {
         }
     }
 
-    public void onSerialReceived(String theString){
-        String[] buffer = theString.split(",");
-        Log.i("BlunoService", "onSerialRcecived");
-        try{
-            front  = Integer.parseInt(buffer[0]);
-            left   = Integer.parseInt(buffer[1]);
-            right  = Integer.parseInt(buffer[2]);
-            Log.i("BlunoService", "front:" + front + ", left:" + left + ", right:" + right);
-            stateProcess();
-            transferIntent.putExtra("front", front);
-            transferIntent.putExtra("left", left);
-            transferIntent.putExtra("right", right);
-            sendBroadcast(transferIntent);
-            Log.i("BlunoService", "Warning Count = " + mWarningCount);
+    private void displayData(String data) {
+        if (data != null) {
+            String tokens[] = data.split(",");
 
-        }catch(Exception e){
-            Log.e("BlunoService", "[Error onSerialReceived]: "+e.toString());
+            int front_distance = Integer.parseInt(tokens[0]);
+            int left_distance = Integer.parseInt(tokens[1]);
+            int right_distance = Integer.parseInt(tokens[2]);
+
+            int avoid_state_now = 0;
+
+            if(state_avoid){
+                if(left_distance<sidesThreshold && right_distance<sidesThreshold && front_distance<frontThreshold) {
+                    avoid_state_now = AVOID_ALLDIRECTION;
+                }else if(front_distance < frontThreshold) {
+                    avoid_state_now = AVOID_FRONT;
+                }else if(right_distance<sidesThreshold && front_distance>frontThreshold) {
+                    avoid_state_now = AVOID_LEFTANDRIGHT;
+                }else if(left_distance<sidesThreshold) {
+                    avoid_state_now = AVOID_LEFT;
+                }else if(right_distance<sidesThreshold) {
+                    avoid_state_now = AVOID_RIGHT;
+                }
+
+                if(!mTTSService.isSpeaking() || avoid_state_now != pre_avoid_state){
+                    Log.i(TAG, "Avoid notify");
+                    switch (avoid_state_now){
+                        case AVOID_ALLDIRECTION:
+                            mTTSService.speak("密集區域注意");
+                            break;
+                        case AVOID_FRONT:
+                            if(left_distance > right_distance || move_direction == MOVE_LEFT) {
+                                mTTSService.speak("前方注意 請向左避開");
+                                move_direction = MOVE_LEFT;
+                            }else {
+                                mTTSService.speak("前方注意 請向右避開");
+                                move_direction = MOVE_RIGHT;
+                            }
+                            break;
+                        case AVOID_LEFTANDRIGHT:
+                            mTTSService.speak("左右側注意");
+                            break;
+                        case AVOID_LEFT:
+                            mTTSService.speak("左側注意");
+                            break;
+                        case AVOID_RIGHT:
+                            mTTSService.speak("右側注意");
+                            break;
+                        default:
+                            move_direction = 0;
+                            break;
+                    }
+                }
+
+                pre_avoid_state = avoid_state_now;
+            }
         }
     }
 
-    public void stateProcess(){
-        if(turnOff) {
-            if(mWarningCount < mWarningCountThreshold) {
-                mWarningCount = mWarningCountThreshold;
-            }
-        }
-
-        if((left > sidesThreshold && right > sidesThreshold && front > frontThreshold) || mWarningCount >= mWarningCountThreshold){
-            mWarningState = warningState.safe;
-            //turnOff = true;
-            if(mWarningCount >= (mWarningCountThreshold+1) && (Math.abs(left-leftTemp) > 5 || Math.abs(right-rightTemp) > 5 ||
-                    Math.abs(front-frontTemp) > 5)){
-                mWarningCount = 0;
-                turnOff = false;
-            }
-            leftTemp = left;
-            rightTemp = right;
-            frontTemp = front;
-            mWarningCount+=1;
-        }
-        else if(left < sidesThreshold && right > sidesThreshold && front > frontThreshold){
-            if(mWarningState != warningState.left)
-                mWarningCount = 0;
-            mWarningState = warningState.left;
-            mWarningText = "左方危險, 注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_left);
-            //vibrate = new long[]{0, 100, 500, 100, 500};
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-
-        }
-        else if(left > sidesThreshold && right < sidesThreshold && front > frontThreshold){
-            if(mWarningState != warningState.right)
-                mWarningCount = 0;
-            mWarningState = warningState.right;
-            mWarningText = "右方危險, 注意";
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_right);
-            //vibrate = new long[]{0, 500, 500, 100, 500};
-            mWarningCount += 1;
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-        else if(left < sidesThreshold && right < sidesThreshold && front > frontThreshold){
-            if(mWarningState != warningState.twoSide)
-                mWarningCount = 0;
-            mWarningState = warningState.twoSide;
-            mWarningText = "兩側危險, 注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_twosides);
-            //vibrate = new long[]{0, 1000, 500, 100, 500};
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-        else if(left > sidesThreshold && right > sidesThreshold && front < frontThreshold){
-            if(mWarningState != warningState.front)
-                mWarningCount = 0;
-            mWarningState = warningState.front;
-            mWarningText = "前方危險, 注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_front);
-            //vibrate = new long[]{0, 0, 500, 500, 500};
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-
-        else if(left < sidesThreshold && right < sidesThreshold && front < frontThreshold){
-            if(mWarningState != warningState.allDirection)
-                mWarningCount = 0;
-            mWarningState = warningState.allDirection;
-            mWarningText = "密集區域, 注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning);
-            //vibrate = new long[]{0, 1000, 500, 500, 500};
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-        else if(left < sidesThreshold && right > sidesThreshold && front < frontThreshold){
-            if(mWarningState != warningState.frontAndLeft)
-                mWarningCount = 0;
-            mWarningState = warningState.frontAndLeft;
-            mWarningText = "前方與左方危險, 注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_frontleft);
-            //vibrate = new long[]{0, 100, 500, 500, 500};
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-        else if(left > sidesThreshold && right < sidesThreshold && front < frontThreshold){
-            if(mWarningState != warningState.frontAndRight)
-                mWarningCount = 0;
-            mWarningState = warningState.frontAndRight;
-            mWarningText = "前方與右方危險, 注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_frontright);
-            //vibrate = new long[]{0, 500, 500, 500, 500};
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-        else{
-            if(mWarningState != warningState.others)
-                mWarningCount = 0;
-            mWarningState = warningState.others;
-            mWarningText = "注意";
-            mWarningCount += 1;
-            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning);
-            //vibrate = new long[]{0, 1000, 500, 500, 500};
-            //postNotifications();
-            if(!onNotification) {
-                doNotification notify = new doNotification();
-                notify.start();
-            }
-        }
-
-    }
+//    public void onSerialReceived(String theString){
+//        String[] buffer = theString.split(",");
+//        Log.i("BlunoService", "onSerialRcecived");
+//        try{
+//            front  = Integer.parseInt(buffer[0]);
+//            left   = Integer.parseInt(buffer[1]);
+//            right  = Integer.parseInt(buffer[2]);
+//            Log.i("BlunoService", "front:" + front + ", left:" + left + ", right:" + right);
+//            stateProcess();
+//            transferIntent.putExtra("front", front);
+//            transferIntent.putExtra("left", left);
+//            transferIntent.putExtra("right", right);
+//            sendBroadcast(transferIntent);
+//            Log.i("BlunoService", "Warning Count = " + mWarningCount);
+//
+//        }catch(Exception e){
+//            Log.e("BlunoService", "[Error onSerialReceived]: "+e.toString());
+//        }
+//    }
+//
+//    public void stateProcess(){
+//        if(turnOff) {
+//            if(mWarningCount < mWarningCountThreshold) {
+//                mWarningCount = mWarningCountThreshold;
+//            }
+//        }
+//
+//        if((left > sidesThreshold && right > sidesThreshold && front > frontThreshold) || mWarningCount >= mWarningCountThreshold){
+//            mWarningState = warningState.safe;
+//            //turnOff = true;
+//            if(mWarningCount >= (mWarningCountThreshold+1) && (Math.abs(left-leftTemp) > 5 || Math.abs(right-rightTemp) > 5 ||
+//                    Math.abs(front-frontTemp) > 5)){
+//                mWarningCount = 0;
+//                turnOff = false;
+//            }
+//            leftTemp = left;
+//            rightTemp = right;
+//            frontTemp = front;
+//            mWarningCount+=1;
+//        }
+//        else if(left < sidesThreshold && right > sidesThreshold && front > frontThreshold){
+//            if(mWarningState != warningState.left)
+//                mWarningCount = 0;
+//            mWarningState = warningState.left;
+//            mWarningText = "左方危險, 注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_left);
+//            //vibrate = new long[]{0, 100, 500, 100, 500};
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//
+//        }
+//        else if(left > sidesThreshold && right < sidesThreshold && front > frontThreshold){
+//            if(mWarningState != warningState.right)
+//                mWarningCount = 0;
+//            mWarningState = warningState.right;
+//            mWarningText = "右方危險, 注意";
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_right);
+//            //vibrate = new long[]{0, 500, 500, 100, 500};
+//            mWarningCount += 1;
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//        else if(left < sidesThreshold && right < sidesThreshold && front > frontThreshold){
+//            if(mWarningState != warningState.twoSide)
+//                mWarningCount = 0;
+//            mWarningState = warningState.twoSide;
+//            mWarningText = "兩側危險, 注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_twosides);
+//            //vibrate = new long[]{0, 1000, 500, 100, 500};
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//        else if(left > sidesThreshold && right > sidesThreshold && front < frontThreshold){
+//            if(mWarningState != warningState.front)
+//                mWarningCount = 0;
+//            mWarningState = warningState.front;
+//            mWarningText = "前方危險, 注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_front);
+//            //vibrate = new long[]{0, 0, 500, 500, 500};
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//
+//        else if(left < sidesThreshold && right < sidesThreshold && front < frontThreshold){
+//            if(mWarningState != warningState.allDirection)
+//                mWarningCount = 0;
+//            mWarningState = warningState.allDirection;
+//            mWarningText = "密集區域, 注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning);
+//            //vibrate = new long[]{0, 1000, 500, 500, 500};
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//        else if(left < sidesThreshold && right > sidesThreshold && front < frontThreshold){
+//            if(mWarningState != warningState.frontAndLeft)
+//                mWarningCount = 0;
+//            mWarningState = warningState.frontAndLeft;
+//            mWarningText = "前方與左方危險, 注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_frontleft);
+//            //vibrate = new long[]{0, 100, 500, 500, 500};
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//        else if(left > sidesThreshold && right < sidesThreshold && front < frontThreshold){
+//            if(mWarningState != warningState.frontAndRight)
+//                mWarningCount = 0;
+//            mWarningState = warningState.frontAndRight;
+//            mWarningText = "前方與右方危險, 注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning_frontright);
+//            //vibrate = new long[]{0, 500, 500, 500, 500};
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//        else{
+//            if(mWarningState != warningState.others)
+//                mWarningCount = 0;
+//            mWarningState = warningState.others;
+//            mWarningText = "注意";
+//            mWarningCount += 1;
+//            soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.warning);
+//            //vibrate = new long[]{0, 1000, 500, 500, 500};
+//            //postNotifications();
+//            if(!onNotification) {
+//                doNotification notify = new doNotification();
+//                notify.start();
+//            }
+//        }
+//
+//    }
     /*
     private void postNotifications(){
         sendBroadcast(new Intent(NotificationIntentReceiver.ACTION_ENABLE_MESSAGES)
@@ -806,56 +894,60 @@ public class BlunoService extends Service {
         postedNotificationCount = notifications.length;
     }
     */
-   public void myNotification(){
-       int notificationId = 001;
-
-       Intent openIntent = new Intent(this, VisualSupportActivity.class);
-       openIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-       PendingIntent openPendingIntent = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-       Intent deleteIntent = new Intent(this, DeleteService.class);
-       PendingIntent deletePendingIntent = PendingIntent.getService(this, 0, deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-
-       NotificationCompat.WearableExtender wearableExtender =
-               new NotificationCompat.WearableExtender()
-                       .setHintHideIcon(true)
-                       .setBackground(BitmapFactory.decodeResource(getResources(), R.drawable.warning));
-
-       NotificationCompat.Builder notificationBuilder =
-               new NotificationCompat.Builder(this)
-                       .setSmallIcon(R.mipmap.ic_launcher)
-                       .setContentTitle("危險！")
-                       .setContentText(mWarningText)
-                       .setContentIntent(openPendingIntent)
-                       .setDeleteIntent(deletePendingIntent)
-                       .addAction(R.drawable.ic_full_reply, "Turn Off", deletePendingIntent)
-                       .extend(wearableExtender)
-                       .setPriority(NotificationCompat.PRIORITY_HIGH)
-                       .setSound(soundUri)
-                       .setVibrate(vibrate);
-
-       // Get an instance of the NotificationManager service
-       NotificationManagerCompat notificationManager =
-               NotificationManagerCompat.from(this);
-
-       // Build the notification and issues it with notification manager.
-       notificationManager.notify(notificationId, notificationBuilder.build());
-   }
-
-    public class doNotification extends Thread {
-        @Override
-        public void run(){
-            onNotification = true;
-            myNotification();
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            onNotification = false;
-        }
-    }
+//   public void myNotification(){
+//       int notificationId = 001;
+//
+//       Intent openIntent = new Intent(this, VisualSupportActivity.class);
+//       openIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//       PendingIntent openPendingIntent = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//       Intent deleteIntent = new Intent(this, DeleteService.class);
+//       PendingIntent deletePendingIntent = PendingIntent.getService(this, 0, deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+//
+//
+//       NotificationCompat.WearableExtender wearableExtender =
+//               new NotificationCompat.WearableExtender()
+//                       .setHintHideIcon(true)
+//                       .setBackground(BitmapFactory.decodeResource(getResources(), R.drawable.warning));
+//
+//       NotificationCompat.Builder notificationBuilder =
+//               new NotificationCompat.Builder(this)
+//                       .setSmallIcon(R.mipmap.ic_launcher)
+//                       .setContentTitle("危險！")
+//                       .setContentText(mWarningText)
+//                       .setContentIntent(openPendingIntent)
+//                       .setDeleteIntent(deletePendingIntent)
+//                       .addAction(R.drawable.ic_full_reply, "Turn Off", deletePendingIntent)
+//                       .extend(wearableExtender)
+//                       .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                       .setSound(soundUri)
+//                       .setVibrate(vibrate);
+//
+//       // Get an instance of the NotificationManager service
+//       NotificationManagerCompat notificationManager =
+//               NotificationManagerCompat.from(this);
+//
+//       // Build the notification and issues it with notification manager.
+//       notificationManager.notify(notificationId, notificationBuilder.build());
+//
+//       if(!mTTSService.isSpeaking()){
+//           mTTSService.speak(mWarningText);
+//       }
+//   }
+//
+//    public class doNotification extends Thread {
+//        @Override
+//        public void run(){
+//            onNotification = true;
+//            myNotification();
+//            try {
+//                sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            onNotification = false;
+//        }
+//    }
 
     public class MsgReceiver extends BroadcastReceiver{
         @Override
