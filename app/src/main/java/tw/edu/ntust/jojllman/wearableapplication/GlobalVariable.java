@@ -1,4 +1,4 @@
-package tw.edu.ntust.jojllman.wearableapplication;
+﻿package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.ActivityManager;
 import android.app.Application;
@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class GlobalVariable extends Application {
     public static final String defaultNameGlove = "GloveBLE";
-    public static final String defaultNameGlass = "Glass";
-    public static final String defaultNameBracelet = "Bracelet";
+    public static final String defaultNameGlass = "UltraSound";
+    public static final String defaultNameBracelet = "Nordic_Bracelet";
 
     public static final int VIBRATE_LIGHT=1;
     public static final int VIBRATE_MID=2;

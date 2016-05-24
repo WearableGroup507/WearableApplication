@@ -1,7 +1,6 @@
 package tw.edu.ntust.jojllman.wearableapplication.BLE;
 
 import android.annotation.SuppressLint;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -13,15 +12,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -31,24 +25,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.RunnableFuture;
 
 import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
-import tw.edu.ntust.jojllman.wearableapplication.R;
-import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
 
 /**
  * This is a service class for manipulating data from bracelet and glass
  */
 
 public class BlunoService extends Service {
-    public final static String SerialPortUUID="0000dfb1-0000-1000-8000-00805f9b34fb";
-    public final static String CommandUUID="0000dfb2-0000-1000-8000-00805f9b34fb";
-    public final static String ModelNumberStringUUID="00002a24-0000-1000-8000-00805f9b34fb";
+//    public final static String SerialPortUUID="0000dfb1-0000-1000-8000-00805f9b34fb";
+//    public final static String CommandUUID="0000dfb2-0000-1000-8000-00805f9b34fb";
+//    public final static String ModelNumberStringUUID="00002a24-0000-1000-8000-00805f9b34fb";
+    public final static UUID UUID_GLASS_SERVICE =
+            UUID.fromString("0000AAAF-0000-1000-8000-00805F9B34FB");
+    public final static UUID UUID_GLASS_CHARACTERISTIC =
+            UUID.fromString("0000AAA1-0000-1000-8000-00805F9B34FB");
     public final static UUID UUID_BRACELET_NOTIFY =
             UUID.fromString(BraceletGattAttributes.NOTIFY);
     public final static UUID UUID_BRACELET_SERVICE =
             UUID.fromString(BraceletGattAttributes.SERVICE);
     private final static int NUM_DEVICE = 2;
+    private GlobalVariable mGlobalVariable;
     private Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
@@ -83,9 +81,10 @@ public class BlunoService extends Service {
     private HashMap<String, BluetoothGattCharacteristic> mSendNotificationCharacteristics;
     private HashMap<String, BluetoothGattCharacteristic> mSendCommandCharacteristics;
     private HashMap<String, BluetoothGattCharacteristic> mSetNotificationCharacteristics;
-    private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
-                    mSerialPortCharacteristic, mCommandCharacteristic;
-    private static BluetoothGattCharacteristic mNotifyCharacteristic;
+    private BluetoothGattCharacteristic mUltraSoundCharacteristic;
+//    private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
+//                    mSerialPortCharacteristic, mCommandCharacteristic;
+    private BluetoothGattCharacteristic mNotifyCharacteristic;
 
     private String mDeviceAddress;
     private String mPassword="AT+PASSWOR=DFRobot\r\n";
@@ -110,7 +109,10 @@ public class BlunoService extends Service {
     private final static int MOVE_LEFT = 21;
     private final static int MOVE_RIGHT = 22;
 
-    public static boolean state_avoid = false;
+    private static boolean readUltraSound = false;
+    public static void setReadUltraSound(boolean b){readUltraSound = b;}
+    public static boolean getReadUltraSound(){return readUltraSound;}
+    private Runnable readUltraSoundRunnable;
     private int move_direction;
     private int pre_avoid_state;
     private int front  = 100;
@@ -119,8 +121,8 @@ public class BlunoService extends Service {
     private int frontTemp = 100;
     private int leftTemp = 100;
     private int rightTemp = 100;
-    private int frontThreshold = 50;
-    private int sidesThreshold = 50;
+    private int frontThreshold;
+    private int sidesThreshold;
     //private int postedNotificationCount = 0;
     private theConnectionState mConnectionState;
     protected enum warningState{
@@ -228,8 +230,14 @@ public class BlunoService extends Service {
     }
 
     public void onCreateProcess() {
+        mGlobalVariable = (GlobalVariable)getApplicationContext();
         Intent gattServiceIntent = new Intent(serviceContext, BluetoothLeService.class);
-        serviceContext.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        getApplicationContext().bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
+        Log.d(TAG,"Try binding TextToSpeechService");
+        Intent ttsIntent = new Intent(serviceContext, TextToSpeechService.class);
+        boolean b = getApplicationContext().bindService(ttsIntent, TextToSpeechServiceConnection, Context.BIND_AUTO_CREATE);
+        Log.d(TAG,"TextToSpeechService bound = "+b);
 
         msgReceiver = new MsgReceiver();
         IntentFilter intentFilter = new IntentFilter();
@@ -249,8 +257,8 @@ public class BlunoService extends Service {
 
         gloveInit();
 
-        Intent intent = new Intent(this, TextToSpeechService.class);
-        bindService(intent, TextToSpeechServiceConnection, Context.BIND_AUTO_CREATE);
+        frontThreshold = mGlobalVariable.getGlassFrontThreshold();
+        sidesThreshold = mGlobalVariable.getGlassSideThreshold();
 
         System.out.println("BlunoService onCreate");
     }
@@ -288,7 +296,7 @@ public class BlunoService extends Service {
             handler.removeCallbacks(mDisonnectingOverTimeRunnable);
             mBluetoothLeService.close();
         }
-        mSCharacteristic=null;
+//        mSCharacteristic=null;
         serviceContext.unbindService(mServiceConnection);
         mBluetoothLeService = null;
         unbindService(TextToSpeechServiceConnection);
@@ -319,6 +327,9 @@ public class BlunoService extends Service {
                 sendBroadcast(disonnectIntent);
                 mBluetoothLeServiceListener.onLeDeviceDisconnected(device);
                 //mBluetoothLeService.close();
+                if(device.equals(mGlassDevice)){
+                    handler.removeCallbacks(readUltraSoundRunnable);
+                }
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices(device)) {
@@ -331,37 +342,38 @@ public class BlunoService extends Service {
             if(device.equals(mGlassDevice)) {
                 Log.d(TAG, "Device is glass");
                 if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                    if(mSCharacteristic==mModelNumberCharacteristic)
-                    {
-                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
-                            mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, false);
-                            mSCharacteristic=mCommandCharacteristic;
-                            mSCharacteristic.setValue(mPassword);
-                            mBluetoothLeService.writeCharacteristic(device, mSCharacteristic);
-                            mSCharacteristic.setValue(mBaudrateBuffer);
-                            mBluetoothLeService.writeCharacteristic(device, mSCharacteristic);
-                            mSCharacteristic=mSerialPortCharacteristic;
-                            mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
-                            connectionState = "isConnected";
-                            transferIntent.putExtra("connectionState", connectionState);
-                            sendBroadcast(transferIntent);
-                            mConnectionState = theConnectionState.valueOf(connectionState);
-                            onConectionStateChange(mConnectionState);
-                        }
-                        else {
-                            Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
-                            connectionState = "isToScan";
-                            transferIntent.putExtra("connectionState", connectionState);
-                            sendBroadcast(transferIntent);
-                            mConnectionState = theConnectionState.valueOf(connectionState);
-                            onConectionStateChange(mConnectionState);
-                        }
-                    }
-                    else if (mSCharacteristic==mSerialPortCharacteristic) {
-//                        onSerialReceived(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                        displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                    }
+                    displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                    if(mSCharacteristic==mModelNumberCharacteristic)
+//                    {
+//                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
+//                            mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, false);
+//                            mSCharacteristic=mCommandCharacteristic;
+//                            mSCharacteristic.setValue(mPassword);
+//                            mBluetoothLeService.writeCharacteristic(device, mSCharacteristic);
+//                            mSCharacteristic.setValue(mBaudrateBuffer);
+//                            mBluetoothLeService.writeCharacteristic(device, mSCharacteristic);
+//                            mSCharacteristic=mSerialPortCharacteristic;
+//                            mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
+//                            connectionState = "isConnected";
+//                            transferIntent.putExtra("connectionState", connectionState);
+//                            sendBroadcast(transferIntent);
+//                            mConnectionState = theConnectionState.valueOf(connectionState);
+//                            onConectionStateChange(mConnectionState);
+//                        }
+//                        else {
+//                            Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
+//                            connectionState = "isToScan";
+//                            transferIntent.putExtra("connectionState", connectionState);
+//                            sendBroadcast(transferIntent);
+//                            mConnectionState = theConnectionState.valueOf(connectionState);
+//                            onConectionStateChange(mConnectionState);
+//                        }
+//                    }
+//                    else if (mSCharacteristic==mSerialPortCharacteristic) {
+////                        onSerialReceived(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                        displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                    }
                 }
             }
             else if(device.equals(mBraceletDevice)) {
@@ -474,9 +486,9 @@ public class BlunoService extends Service {
     private void getGattServices(BluetoothDevice device, List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid = null;
-        mModelNumberCharacteristic=null;
-        mSerialPortCharacteristic=null;
-        mCommandCharacteristic=null;
+//        mModelNumberCharacteristic=null;
+//        mSerialPortCharacteristic=null;
+//        mCommandCharacteristic=null;
 
         short deviceType = -1; // 0:glass, 1:bracelet, 2:glove
 
@@ -491,7 +503,7 @@ public class BlunoService extends Service {
 
             if(uuid.equalsIgnoreCase(UUID_BRACELET_SERVICE.toString()))
             {
-                Log.i(TAG, "Count is:" + gattCharacteristics.size());
+                Log.d(TAG, "GET BRACELET SERVICE.");
                 for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics)
                 {
                     Log.i(TAG, gattCharacteristic.getUuid().toString());
@@ -527,27 +539,33 @@ public class BlunoService extends Service {
                     //mBluetoothLeServiceListener.onLeServiceDiscovered(sts);
                 }
             }
-            else
+            else if(uuid.equalsIgnoreCase(UUID_GLASS_SERVICE.toString()))
             {
+                Log.d(TAG, "GET GLASS SERVICE.");
                 // Loops through available Characteristics.
                 for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
                     charas.add(gattCharacteristic);
-                    //uuid = gattCharacteristic.getUuid().toString();
-                    if (uuid.equals(ModelNumberStringUUID)) {
-                        mModelNumberCharacteristic = gattCharacteristic;
+                    if(gattCharacteristic.getUuid().equals(UUID_GLASS_CHARACTERISTIC)) {
+                        mUltraSoundCharacteristic = gattCharacteristic;
                         deviceType = 0;
-                        System.out.println("mModelNumberCharacteristic  " + mModelNumberCharacteristic.getUuid().toString());
-                    } else if (uuid.equals(SerialPortUUID)) {
-                        mSerialPortCharacteristic = gattCharacteristic;
-                        deviceType = 0;
-                        System.out.println("mSerialPortCharacteristic  " + mSerialPortCharacteristic.getUuid().toString());
-//                    updateConnectionState(R.string.comm_establish);
-                    } else if (uuid.equals(CommandUUID)) {
-                        mCommandCharacteristic = gattCharacteristic;
-                        deviceType = 0;
-                        System.out.println("mCommandCharacteristic  " + mCommandCharacteristic.getUuid().toString());
-//                    updateConnectionState(R.string.comm_establish);
+                        System.out.println("mUltraSoundCharacteristic  " + mUltraSoundCharacteristic.getUuid().toString());
                     }
+                    //uuid = gattCharacteristic.getUuid().toString();
+//                    if (uuid.equals(ModelNumberStringUUID)) {
+//                        mModelNumberCharacteristic = gattCharacteristic;
+//                        deviceType = 0;
+//                        System.out.println("mModelNumberCharacteristic  " + mModelNumberCharacteristic.getUuid().toString());
+//                    } else if (uuid.equals(SerialPortUUID)) {
+//                        mSerialPortCharacteristic = gattCharacteristic;
+//                        deviceType = 0;
+//                        System.out.println("mSerialPortCharacteristic  " + mSerialPortCharacteristic.getUuid().toString());
+////                    updateConnectionState(R.string.comm_establish);
+//                    } else if (uuid.equals(CommandUUID)) {
+//                        mCommandCharacteristic = gattCharacteristic;
+//                        deviceType = 0;
+//                        System.out.println("mCommandCharacteristic  " + mCommandCharacteristic.getUuid().toString());
+////                    updateConnectionState(R.string.comm_establish);
+//                    }
                 }
             }
             // 0:glass, 1:bracelet, 2:glove
@@ -559,19 +577,30 @@ public class BlunoService extends Service {
                     mGlassGattCharacteristics.add(charas);
                     mBluetoothLeService.setGlassGatt(mBluetoothLeService.getGattFromDevice(device));
 
-                    if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
+                    if (mUltraSoundCharacteristic==null) {
                         Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
                         connectionState = "isToScan";
                         transferIntent.putExtra("connectionState", connectionState);
                         sendBroadcast(transferIntent);
                         mConnectionState = theConnectionState.valueOf(connectionState);
                         onConectionStateChange(mConnectionState);
+                    }else{
+                        readUltraSound();
                     }
-                    else {
-                        mSCharacteristic=mModelNumberCharacteristic;
-                        mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
-                        mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
-                    }
+
+//                    if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
+//                        Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
+//                        connectionState = "isToScan";
+//                        transferIntent.putExtra("connectionState", connectionState);
+//                        sendBroadcast(transferIntent);
+//                        mConnectionState = theConnectionState.valueOf(connectionState);
+//                        onConectionStateChange(mConnectionState);
+//                    }
+//                    else {
+//                        mSCharacteristic=mModelNumberCharacteristic;
+//                        mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
+//                        mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
+//                    }
                     Log.d(TAG, "Connected to glass device.");
                     break;
                 case 1:
@@ -646,6 +675,24 @@ public class BlunoService extends Service {
         }
     }
 
+    public void readUltraSound(){
+        if (mBluetoothLeService == null || mUltraSoundCharacteristic == null || mGlassDevice == null) {
+            Log.d(TAG, "Glass not initialized");
+            return;
+        }
+        if(readUltraSoundRunnable == null) {
+            readUltraSoundRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (readUltraSound)
+                        mBluetoothLeService.readCharacteristic(mGlassDevice, mUltraSoundCharacteristic);
+                    handler.postDelayed(this, 100); // set time here to refresh textView
+                }
+            };
+            handler.post(readUltraSoundRunnable);
+        }
+    }
+
     private void displayData(String data) {
         if (data != null) {
             String tokens[] = data.split(",");
@@ -656,51 +703,49 @@ public class BlunoService extends Service {
 
             int avoid_state_now = 0;
 
-            if(state_avoid){
-                if(left_distance<sidesThreshold && right_distance<sidesThreshold && front_distance<frontThreshold) {
-                    avoid_state_now = AVOID_ALLDIRECTION;
-                }else if(front_distance < frontThreshold) {
-                    avoid_state_now = AVOID_FRONT;
-                }else if(right_distance<sidesThreshold && front_distance>frontThreshold) {
-                    avoid_state_now = AVOID_LEFTANDRIGHT;
-                }else if(left_distance<sidesThreshold) {
-                    avoid_state_now = AVOID_LEFT;
-                }else if(right_distance<sidesThreshold) {
-                    avoid_state_now = AVOID_RIGHT;
-                }
-
-                if(!mTTSService.isSpeaking() || avoid_state_now != pre_avoid_state){
-                    Log.i(TAG, "Avoid notify");
-                    switch (avoid_state_now){
-                        case AVOID_ALLDIRECTION:
-                            mTTSService.speak("密集區域注意");
-                            break;
-                        case AVOID_FRONT:
-                            if(left_distance > right_distance || move_direction == MOVE_LEFT) {
-                                mTTSService.speak("前方注意 請向左避開");
-                                move_direction = MOVE_LEFT;
-                            }else {
-                                mTTSService.speak("前方注意 請向右避開");
-                                move_direction = MOVE_RIGHT;
-                            }
-                            break;
-                        case AVOID_LEFTANDRIGHT:
-                            mTTSService.speak("左右側注意");
-                            break;
-                        case AVOID_LEFT:
-                            mTTSService.speak("左側注意");
-                            break;
-                        case AVOID_RIGHT:
-                            mTTSService.speak("右側注意");
-                            break;
-                        default:
-                            move_direction = 0;
-                            break;
-                    }
-                }
-
-                pre_avoid_state = avoid_state_now;
+            if(left_distance<sidesThreshold && right_distance<sidesThreshold && front_distance<frontThreshold) {
+                avoid_state_now = AVOID_ALLDIRECTION;
+            }else if(front_distance < frontThreshold) {
+                avoid_state_now = AVOID_FRONT;
+            }else if(right_distance<sidesThreshold && front_distance>frontThreshold) {
+                avoid_state_now = AVOID_LEFTANDRIGHT;
+            }else if(left_distance<sidesThreshold) {
+                avoid_state_now = AVOID_LEFT;
+            }else if(right_distance<sidesThreshold) {
+                avoid_state_now = AVOID_RIGHT;
             }
+
+            if(!mTTSService.isSpeaking() || avoid_state_now != pre_avoid_state){
+                Log.i(TAG, "Avoid notify");
+                switch (avoid_state_now){
+                    case AVOID_ALLDIRECTION:
+                        mTTSService.speak("密集區域注意");
+                        break;
+                    case AVOID_FRONT:
+                        if(left_distance > right_distance || move_direction == MOVE_LEFT) {
+                            mTTSService.speak("前方注意 請向左避開");
+                            move_direction = MOVE_LEFT;
+                        }else {
+                            mTTSService.speak("前方注意 請向右避開");
+                            move_direction = MOVE_RIGHT;
+                        }
+                        break;
+                    case AVOID_LEFTANDRIGHT:
+                        mTTSService.speak("左右側注意");
+                        break;
+                    case AVOID_LEFT:
+                        mTTSService.speak("左側注意");
+                        break;
+                    case AVOID_RIGHT:
+                        mTTSService.speak("右側注意");
+                        break;
+                    default:
+                        move_direction = 0;
+                        break;
+                }
+            }
+
+            pre_avoid_state = avoid_state_now;
         }
     }
 

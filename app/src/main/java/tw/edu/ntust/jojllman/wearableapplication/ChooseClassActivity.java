@@ -2,12 +2,17 @@ package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
@@ -15,6 +20,7 @@ import android.widget.ImageButton;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.TextToSpeechService;
 
 public class ChooseClassActivity extends AppCompatActivity {
     private int mClickCount =0;

@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.GloveService;
 
 public class HearingSupportActivity extends BlunoLibrary {

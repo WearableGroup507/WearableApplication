@@ -26,6 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
 import tw.edu.ntust.jojllman.wearableapplication.R;
 
 import java.util.ArrayList;
@@ -63,9 +64,12 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 					Toast.LENGTH_SHORT).show();
 			((Activity) mainContext).finish();
 		}
-		
-        Intent gattServiceIntent = new Intent(mainContext, BluetoothLeService.class);
-        mainContext.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
+        if(mBluetoothLeService == null) {
+            Log.d(TAG, "Bind BluetoothLeService.");
+            Intent gattServiceIntent = new Intent(mainContext, BluetoothLeService.class);
+            mainContext.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        }
 
 		// Initializes list view adapter.
 		mLeDeviceListAdapter = new LeDeviceListAdapter();
@@ -146,6 +150,22 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 			return false;
 		}
 		return true;
+	}
+
+	public void onPause(){
+        if(mBluetoothLeService != null) {
+            Log.d(TAG, "Unbind BluetoothLeService.");
+            unbindService(mServiceConnection);
+            mBluetoothLeService = null;     //important, because onServiceDisconnected won't call unless something goes wrong.
+        }
+		super.onPause();
+	}
+
+	public void onResume(){
+		if(mBluetoothLeService == null) {
+			onCreateProcess();
+		}
+		super.onResume();
 	}
     
 	protected void scanLeDevice(final boolean enable) {

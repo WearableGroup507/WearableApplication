@@ -11,9 +11,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
@@ -25,6 +25,7 @@ import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
 public class VisualSupportActivity extends BlunoLibrary {
+    private static String TAG = VisualSupportActivity.class.getSimpleName();
     private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
     private GlobalVariable globalVariable;
 
@@ -111,8 +112,9 @@ public class VisualSupportActivity extends BlunoLibrary {
             @Override
             public void run() {
                 for (BluetoothDevice device : getScannedDevices()) {
-                    if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
-                            globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
+                    String devNameLow = device.getName().toLowerCase();
+                    if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
+                            globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
 
                         System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
 
@@ -161,11 +163,20 @@ public class VisualSupportActivity extends BlunoLibrary {
 
     public void OnDeviceClick(View view){
         if(view.getId() == R.id.dev_info_btn_visual_glass){
-            // TODO: 增加眼鏡按下動作
+            // 增加眼鏡按下動作
+            Log.d(TAG,"dev_info_btn_visual_glass pressed");
+            if(!BlunoService.getReadUltraSound()){
+                BlunoService.setReadUltraSound(true);
+                view.announceForAccessibility("開啟眼鏡避障功能");
+            }else{
+                BlunoService.setReadUltraSound(false);
+                view.announceForAccessibility("關閉眼鏡避障功能");
+            }
         }
 
         if(view.getId() == R.id.dev_info_btn_visual_bracelet){
             // TODO: 增加手環按下動作
+            Log.d(TAG,"dev_info_btn_visual_bracelet pressed");
         }
     }
 

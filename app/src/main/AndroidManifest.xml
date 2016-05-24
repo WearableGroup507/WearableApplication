@@ -47,6 +47,9 @@
         <service
             android:name=".BLE.RecognitionService"
             android:enabled="true" />
+        <service
+            android:name=".BLE.TextToSpeechService"
+            android:enabled="true" />
 
         <activity android:name=".GloveSettingActivity" >
         </activity>
