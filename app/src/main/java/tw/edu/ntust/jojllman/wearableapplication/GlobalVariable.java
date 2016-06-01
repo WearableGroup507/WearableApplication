@@ -1,4 +1,4 @@
-﻿package tw.edu.ntust.jojllman.wearableapplication;
+package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.ActivityManager;
 import android.app.Application;

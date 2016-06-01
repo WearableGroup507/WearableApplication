@@ -2,6 +2,8 @@ package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,6 +27,9 @@ public class HearingSupportActivity extends BlunoLibrary {
     private int click_count;
     private Handler handler=new Handler();
     private DeviceInfoView btn_device_glove;
+
+    private Runnable autoConnectRunnable;
+    private boolean killAutoConnectRunnable = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +60,41 @@ public class HearingSupportActivity extends BlunoLibrary {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        autoConnectRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if(!killAutoConnectRunnable) {
+                    for (BluetoothDevice device : getScannedDevices()) {
+                        String devNameLow = device.getName().toLowerCase();
+                        if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
+                                globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
+
+                            System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
+
+                            mDeviceName = device.getName();
+                            mDeviceAddress = device.getAddress();
+
+                            if (mDeviceName == null)
+                                mDeviceName = getString(R.string.unknown_device);
+
+                            if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
+                                connectionState = "isToScan";
+                                mConnectionState = theConnectionState.valueOf(connectionState);
+                                onConnectionStateChange(mConnectionState);
+                            } else {
+                                connectionState = "isConnecting";
+                                mConnectionState = theConnectionState.valueOf(connectionState);
+                                onConnectionStateChange(mConnectionState);
+                            }
+                        }
+                    }
+                    handler.postDelayed(this, 2000);
+                }else{
+                    handler.removeCallbacksAndMessages(this);
+                }
+            }
+        };
     }
 
     @Override
@@ -95,37 +135,8 @@ public class HearingSupportActivity extends BlunoLibrary {
             }
         });
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (BluetoothDevice device : getScannedDevices()) {
-                    if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlove.toLowerCase())) {
-//                        scanLeDevice(false);
-
-                        System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
-
-                        mDeviceName = device.getName();
-                        mDeviceAddress = device.getAddress();
-
-                        if (mDeviceName == null)
-                            mDeviceName = getString(R.string.unknown_device);
-
-                        if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
-                            connectionState = "isToScan";
-                            mConnectionState = theConnectionState.valueOf(connectionState);
-                            onConnectionStateChange(mConnectionState);
-                        } else {
-//					mainContext.unbindService(mServiceConnection);
-//					mBluetoothLeService = null;
-                            connectionState = "isConnecting";
-                            mConnectionState = theConnectionState.valueOf(connectionState);
-                            onConnectionStateChange(mConnectionState);
-                        }
-                    }
-                }
-                handler.postDelayed(this, 500);
-            }
-        });
+        killAutoConnectRunnable = false;
+        handler.post(autoConnectRunnable);
     }
 
     @Override
@@ -139,6 +150,22 @@ public class HearingSupportActivity extends BlunoLibrary {
     public boolean onSupportNavigateUp(){
         onBackPressed();
         return true;
+    }
+
+    public class MsgReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+//            front  = intent.getIntExtra("front", 0);
+//            left   = intent.getIntExtra("left", 0);
+//            right  = intent.getIntExtra("right", 0);
+            connectionState = intent.getStringExtra("connectionState");
+
+            mConnectionState = theConnectionState.valueOf(connectionState);
+            onConnectionStateChange(mConnectionState);
+//            serialReceivedFront.setText(Integer.toString(front));
+//            serialReceivedLeft.setText(Integer.toString(left));
+//            serialReceivedRight.setText(Integer.toString(right));
+        }
     }
 
     @Override
@@ -223,6 +250,8 @@ public class HearingSupportActivity extends BlunoLibrary {
 //                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
                 sendBroadcast(mTransferIntent);
 //                sendBroadcast(mThresholdIntent);
+                killAutoConnectRunnable = true;
+                scanLeDevice(false);
                 //TODO: move to app setting
                 break;
             case isToScan:

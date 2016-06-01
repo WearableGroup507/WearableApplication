@@ -245,13 +245,13 @@ public class AppSettingActivity extends AppCompatActivity {
         }
     }
 
-    public void OnGloveSettingClick(View view){
-        if(mConnected_Glove_Left && mConnected_Glove_Right) {
-            Intent intent = new Intent();
-            intent.setClass(AppSettingActivity.this, GloveSettingActivity.class);
-            startActivity(intent);
-        }
-    }
+//    public void OnGloveSettingClick(View view){
+//        if(mConnected_Glove_Left && mConnected_Glove_Right) {
+//            Intent intent = new Intent();
+//            intent.setClass(AppSettingActivity.this, GloveSettingActivity.class);
+//            startActivity(intent);
+//        }
+//    }
 
     private void findView() {
         mSeekBar_front = (SeekBar)findViewById(R.id.seekBar_glass_front);

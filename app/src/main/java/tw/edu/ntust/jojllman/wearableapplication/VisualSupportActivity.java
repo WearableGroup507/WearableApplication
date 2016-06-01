@@ -2,7 +2,9 @@ package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
@@ -27,12 +29,16 @@ import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 public class VisualSupportActivity extends BlunoLibrary {
     private static String TAG = VisualSupportActivity.class.getSimpleName();
     private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
+    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_DISTANCE");
     private GlobalVariable globalVariable;
 
     private Handler handler=new Handler();
     private DeviceInfoView btn_device_glass;
     private DeviceInfoView btn_device_bracelet;
     private int click_count=0;
+
+    private Runnable autoConnectRunnable;
+    private boolean killAutoConnectRunnable = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +73,41 @@ public class VisualSupportActivity extends BlunoLibrary {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        autoConnectRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if(!killAutoConnectRunnable) {
+                    for (BluetoothDevice device : getScannedDevices()) {
+                        String devNameLow = device.getName().toLowerCase();
+                        if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
+                                globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
+
+                            System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
+
+                            mDeviceName = device.getName();
+                            mDeviceAddress = device.getAddress();
+
+                            if (mDeviceName == null)
+                                mDeviceName = getString(R.string.unknown_device);
+
+                            if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
+                                connectionState = "isToScan";
+                                mConnectionState = theConnectionState.valueOf(connectionState);
+                                onConnectionStateChange(mConnectionState);
+                            } else {
+                                connectionState = "isConnecting";
+                                mConnectionState = theConnectionState.valueOf(connectionState);
+                                onConnectionStateChange(mConnectionState);
+                            }
+                        }
+                    }
+                    handler.postDelayed(this, 2000);
+                }else{
+                    handler.removeCallbacksAndMessages(this);
+                }
+            }
+        };
     }
 
     @Override
@@ -102,47 +143,24 @@ public class VisualSupportActivity extends BlunoLibrary {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                btn_device_glass.setSignal((short) ((100-98) / 2));        //TODO: get glass rssi
-                btn_device_bracelet.setSignal((short) ((100-98) / 2));     //TODO: get bracelet rssi
+                btn_device_glass.setSignal((short) BlunoService.getGlass_RSSI());        //get glass rssi
+                btn_device_bracelet.setSignal((short) BlunoService.getBracelet_RSSI());     //get bracelet rssi
                 handler.postDelayed(this, 500); // set time here to refresh textView
             }
         });
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (BluetoothDevice device : getScannedDevices()) {
-                    String devNameLow = device.getName().toLowerCase();
-                    if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
-                            globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
-
-                        System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
-
-                        mDeviceName = device.getName();
-                        mDeviceAddress = device.getAddress();
-
-                        if (mDeviceName == null)
-                            mDeviceName = getString(R.string.unknown_device);
-
-                        if (mDeviceName.equals("No Device Available") && mDeviceAddress.equals("No Address Available")) {
-                            connectionState = "isToScan";
-                            mConnectionState = theConnectionState.valueOf(connectionState);
-                            onConnectionStateChange(mConnectionState);
-                        } else {
-                            connectionState = "isConnecting";
-                            mConnectionState = theConnectionState.valueOf(connectionState);
-                            onConnectionStateChange(mConnectionState);
-                        }
-                    }
-                }
-                handler.postDelayed(this, 500);
-            }
-        });
+        killAutoConnectRunnable = false;
+        handler.post(autoConnectRunnable);
     }
 
     public void onPause(){
         scanLeDevice(false);
         handler.removeCallbacksAndMessages(null);
+        if(BlunoService.getReadUltraSound()){
+            BlunoService.setReadUltraSound(false);
+        }
+        braceletDistanceIntent.putExtra("sendDistance",false);
+        sendBroadcast(braceletDistanceIntent);
         super.onPause();
     }
 
@@ -150,6 +168,22 @@ public class VisualSupportActivity extends BlunoLibrary {
     public boolean onSupportNavigateUp(){
         onBackPressed();
         return true;
+    }
+
+    public class MsgReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+//            front  = intent.getIntExtra("front", 0);
+//            left   = intent.getIntExtra("left", 0);
+//            right  = intent.getIntExtra("right", 0);
+            connectionState = intent.getStringExtra("connectionState");
+
+            mConnectionState = theConnectionState.valueOf(connectionState);
+            onConnectionStateChange(mConnectionState);
+//            serialReceivedFront.setText(Integer.toString(front));
+//            serialReceivedLeft.setText(Integer.toString(left));
+//            serialReceivedRight.setText(Integer.toString(right));
+        }
     }
 
     @Override
@@ -175,8 +209,17 @@ public class VisualSupportActivity extends BlunoLibrary {
         }
 
         if(view.getId() == R.id.dev_info_btn_visual_bracelet){
-            // TODO: 增加手環按下動作
+            // 增加手環按下動作
             Log.d(TAG,"dev_info_btn_visual_bracelet pressed");
+            if(!BlunoService.getbSendingBraceletDistance()){
+                braceletDistanceIntent.putExtra("sendDistance",true);
+                sendBroadcast(braceletDistanceIntent);
+                view.announceForAccessibility("開啟手環功能");
+            }else{
+                braceletDistanceIntent.putExtra("sendDistance",false);
+                sendBroadcast(braceletDistanceIntent);
+                view.announceForAccessibility("關閉手環功能");
+            }
         }
     }
 
@@ -271,6 +314,8 @@ public class VisualSupportActivity extends BlunoLibrary {
 //                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
                 sendBroadcast(mTransferIntent);
 //                sendBroadcast(mThresholdIntent);
+                killAutoConnectRunnable = true;
+                scanLeDevice(false);
                 //TODO: move to app setting
                 break;
             case isToScan:

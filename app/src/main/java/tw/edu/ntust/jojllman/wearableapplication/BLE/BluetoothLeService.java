@@ -257,6 +257,7 @@ public class BluetoothLeService extends Service {
                         System.out.println(status);
                     }
                 }
+                Log.d(TAG,"onCharacteristicWrite " + new String(characteristic.getValue()));
             }
         }
         
@@ -265,10 +266,10 @@ public class BluetoothLeService extends Service {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-            	System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString());
+            	System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + " true");
 //            	broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
                 broadcastUpdate(gatt, ACTION_DATA_AVAILABLE, characteristic);
-            }
+            }else System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + " false");
         }
         @Override
         public void  onDescriptorWrite(BluetoothGatt gatt, 
@@ -510,7 +511,7 @@ public class BluetoothLeService extends Service {
 
         gatt.readCharacteristic(characteristic);
     }
-    
+
 
     /**
      * Write information to the device on a given {@code BluetoothGattCharacteristic}. The content string and characteristic is 
@@ -558,7 +559,8 @@ public class BluetoothLeService extends Service {
 
         gatt.setCharacteristicNotification(characteristic, enabled);
 
-        if (BlunoService.UUID_BRACELET_SERVICE.equals(characteristic.getUuid())) {
+        if (BlunoService.UUID_BRACELET_SERVICE.equals(characteristic.getUuid()) ||
+                BlunoService.UUID_BRACELET_NOTIFY.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                     UUID.fromString(BraceletGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);

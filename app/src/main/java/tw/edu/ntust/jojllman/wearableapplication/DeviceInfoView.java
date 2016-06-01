@@ -20,6 +20,7 @@ public class DeviceInfoView extends View {
     public static final short BRACELET = 2;
     public static final short GLOVE = 3;
     public static final String[] DEVICE_NAME = {"眼鏡", "手環", "手套"};
+    public static boolean useTextSignal = false;
 
     private Bitmap deviceBitmap = null;
     private short deviceType = GLASS;
@@ -114,6 +115,9 @@ public class DeviceInfoView extends View {
     }
 
     private String getTxtSignal(){
+        if(!useTextSignal){
+            return ""+signal;
+        }
         if(signal < -100){
             return "弱";
         }else if(signal < -50){

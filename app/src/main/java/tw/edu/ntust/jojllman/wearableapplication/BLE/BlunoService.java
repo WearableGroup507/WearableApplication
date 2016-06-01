@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.RunnableFuture;
 
 import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
 
@@ -45,12 +44,15 @@ public class BlunoService extends Service {
             UUID.fromString(BraceletGattAttributes.NOTIFY);
     public final static UUID UUID_BRACELET_SERVICE =
             UUID.fromString(BraceletGattAttributes.SERVICE);
+    public final static UUID UUID_BRACELET_WRITE =
+            UUID.fromString(BraceletGattAttributes.WRITE);
     private final static int NUM_DEVICE = 2;
     private GlobalVariable mGlobalVariable;
     private Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
     private Intent braceletIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
+    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_DISTANCE");
     private Context serviceContext=this;
     private MsgReceiver msgReceiver;
     private ThresholdReceiver thresholdReceiver;
@@ -85,16 +87,25 @@ public class BlunoService extends Service {
 //    private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
 //                    mSerialPortCharacteristic, mCommandCharacteristic;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
+    private BluetoothGattCharacteristic mWriteCharacteristic;
 
     private String mDeviceAddress;
     private String mPassword="AT+PASSWOR=DFRobot\r\n";
     private String mBaudrateBuffer = "AT+CURRUART="+mBaudrate+"\r\n";
 
-    public boolean mConnected = false;
+//    public boolean mConnected = false;
     private final static String TAG = BlunoService.class.getSimpleName();
 
     static public int Bracelet_R, Bracelet_G, Bracelet_B;
     static public String Bracelet_DT;
+    private static int Bracelet_RSSI;
+    public static int getBracelet_RSSI(){return Bracelet_RSSI;}
+    private static boolean bSendingBraceletDistance = false;
+    public static boolean getbSendingBraceletDistance(){return bSendingBraceletDistance;}
+    private boolean isFirstStop = false;
+    private Runnable mBraceletDistanceNotifyRunnable;
+    private Runnable mBraceletNotifyRunnable;
+
     private BraceletState m_braceletState = BraceletState.none;
     public enum BraceletState{
         none, distance, color
@@ -113,6 +124,8 @@ public class BlunoService extends Service {
     public static void setReadUltraSound(boolean b){readUltraSound = b;}
     public static boolean getReadUltraSound(){return readUltraSound;}
     private Runnable readUltraSoundRunnable;
+    private static int Glass_RSSI;
+    public static int getGlass_RSSI(){return Glass_RSSI;}
     private int move_direction;
     private int pre_avoid_state;
     private int front  = 100;
@@ -202,6 +215,13 @@ public class BlunoService extends Service {
         }
     };
 
+    private void WriteValue(BluetoothDevice dev, BluetoothGattCharacteristic characteristic, String strValue)
+    {
+        BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(dev);
+        characteristic.setValue(strValue.getBytes());
+        gatt.writeCharacteristic(characteristic);
+    }
+
     @Override
     public void onCreate(){
         super.onCreate();
@@ -255,6 +275,13 @@ public class BlunoService extends Service {
         deleteIntentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_DELETE");
         registerReceiver(deleteReceiver, deleteIntentFilter);
 
+        IntentFilter braceletControlIntentFilter = new IntentFilter();
+        braceletControlIntentFilter.addAction(braceletDistanceIntent.getAction());
+        registerReceiver(mBraceletControlReceiver, braceletControlIntentFilter);
+
+        Log.d(TAG,"Start reading RSSI.");
+        startReadingRssi();
+
         gloveInit();
 
         frontThreshold = mGlobalVariable.getGlassFrontThreshold();
@@ -268,9 +295,6 @@ public class BlunoService extends Service {
         GloveService gloveService = new GloveService(this);
         mBluetoothLeServiceListener = gloveService;
 
-        Log.d(TAG,"Start reading RSSI.");
-        startReadingRssi();
-
         mSendNotificationCharacteristics = new HashMap<>(NUM_DEVICE);
         mSendCommandCharacteristics = new HashMap<>(NUM_DEVICE);
         mSetNotificationCharacteristics = new HashMap<>(NUM_DEVICE);
@@ -283,6 +307,15 @@ public class BlunoService extends Service {
 
     public void onDestroyProcess() {
         System.out.println("BlunoService onDestroy");
+        if(mConnected_Bracelet && bSendingBraceletDistance && mWriteCharacteristic != null) {
+            bSendingBraceletDistance =false;
+            //for test start
+            String edtSend = "aa0";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
+            String edtSend3 = "ac0";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
+            //for test end
+        }
         serviceContext.unregisterReceiver(mGattUpdateReceiver);
         connectionState="isToScan";
         transferIntent.putExtra("connectionState", connectionState);
@@ -302,7 +335,6 @@ public class BlunoService extends Service {
         unbindService(TextToSpeechServiceConnection);
         mTTSService = null;
     }
-
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @SuppressLint("DefaultLocale")
@@ -329,6 +361,10 @@ public class BlunoService extends Service {
                 //mBluetoothLeService.close();
                 if(device.equals(mGlassDevice)){
                     handler.removeCallbacks(readUltraSoundRunnable);
+                }
+                if(device.equals(mBraceletDevice)){
+                    handler.removeCallbacks(mBraceletNotifyRunnable);
+                    handler.removeCallbacks(mBraceletDistanceNotifyRunnable);
                 }
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
@@ -374,6 +410,8 @@ public class BlunoService extends Service {
 ////                        onSerialReceived(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 //                        displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 //                    }
+                }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
+                    Glass_RSSI=intent.getIntExtra("RSSI",0);
                 }
             }
             else if(device.equals(mBraceletDevice)) {
@@ -397,23 +435,19 @@ public class BlunoService extends Service {
                     if(m_braceletState == BraceletState.none) {
                         if(PW.startsWith("ad00001")) {
                             m_braceletState = BraceletState.distance;
-                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-                            String edtSend = "aa1";
-                            mNotifyCharacteristic.setValue(edtSend);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
-                            String edtSend3 = "ac1";
-                            mNotifyCharacteristic.setValue(edtSend3);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
+//                            String edtSend = "aa1";
+//                            WriteValue(device,mWriteCharacteristic,edtSend);
+//                            String edtSend3 = "ac1";
+//                            WriteValue(device,mWriteCharacteristic,edtSend3);
                         }
                         else if(PW.startsWith("ad00010")) {
 
                         }
                         else if(PW.startsWith("ad00100")) {
                             m_braceletState = BraceletState.color;
-                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-                            String edtSend = "ab1";
-                            mNotifyCharacteristic.setValue(edtSend);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
+//                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+//                            String edtSend = "ab1";
+//                            WriteValue(device,mWriteCharacteristic,edtSend);
                         }
                         else if(PW.startsWith("ad01000")) {
                             //TODO: speak out I'm here
@@ -425,13 +459,11 @@ public class BlunoService extends Service {
                         }
                         else if(PW.startsWith("ad00010")) {
                             m_braceletState = BraceletState.none;
-                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-                            String edtSend = "aa0";
-                            mNotifyCharacteristic.setValue(edtSend);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
-                            String edtSend3 = "ac0";
-                            mNotifyCharacteristic.setValue(edtSend3);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
+//                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+//                            String edtSend = "aa0";
+//                            WriteValue(device,mWriteCharacteristic,edtSend);
+//                            String edtSend3 = "ac0";
+//                            WriteValue(device,mWriteCharacteristic,edtSend3);
                         }
                         else if (data != null && data.length > 0) {
                             if(aastart!=-1){
@@ -449,10 +481,9 @@ public class BlunoService extends Service {
                         }
                         else if(PW.startsWith("ad00010")) {
                             m_braceletState = BraceletState.none;
-                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-                            String edtSend = "ab0";
-                            mNotifyCharacteristic.setValue(edtSend);
-                            gatt.writeCharacteristic(mNotifyCharacteristic);
+//                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+//                            String edtSend = "ab0";
+//                            WriteValue(device,mWriteCharacteristic,edtSend);
                         }
                         else if (data != null && data.length > 0) {
                             if(abstart!=-1){
@@ -470,6 +501,8 @@ public class BlunoService extends Service {
 
                     braceletIntent.putExtra("BraceletState", m_braceletState + "");
                     sendBroadcast(braceletIntent);
+                }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
+                    Bracelet_RSSI=intent.getIntExtra("RSSI",0);
                 }
             }
             else if(device.equals(mGloveDeviceLeft) || device.equals(mGloveDeviceRight)) {
@@ -482,6 +515,106 @@ public class BlunoService extends Service {
             }
         }
     };
+
+    private final BroadcastReceiver mBraceletControlReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equalsIgnoreCase(braceletDistanceIntent.getAction())) {
+                boolean b=intent.getBooleanExtra("sendDistance",false);
+                setBraceletFunction(b);
+            }
+        }
+    };
+
+    private void setBraceletFunction(boolean b){
+        if(!mConnected_Bracelet) {
+            Log.e(TAG,"Bracelet not found.");
+            return;
+        }
+        if(mWriteCharacteristic==null){
+            Log.e(TAG,"Bracelet mWriteCharacteristic not found.");
+            return;
+        }
+        if(b && !bSendingBraceletDistance) {
+            bSendingBraceletDistance = true;
+            String edtSend = "aa1";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
+            String edtSend3 = "ac1";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
+        }else if(bSendingBraceletDistance){
+            bSendingBraceletDistance = false;
+            String edtSend = "aa0";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
+            String edtSend3 = "ac0";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
+        }
+//        mBraceletNotifyRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Thread.sleep(200);
+//                    setBraceletCharacteristicNotification(true);
+//                    Thread.sleep(400);
+//                    setBraceletCharacteristicNotification(true);
+//                }
+//                catch (InterruptedException e1)
+//                {
+//                    e1.printStackTrace();
+//                }
+//            }
+//        };
+//        handler.post(mBraceletNotifyRunnable);
+//
+//        mBraceletDistanceNotifyRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    if(bSendingBraceletDistance) {
+//                        Thread.sleep(100);
+//                        isFirstStop=true;
+//                        String edtSend = "aa1";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic,edtSend);
+//                        String edtSend2 = "ac1";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic,edtSend2);
+//                    }else if(isFirstStop){
+//                        isFirstStop=false;
+//                        String edtSend = "aa0";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic,edtSend);
+//                        String edtSend2 = "ac0";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic,edtSend2);
+//                        Thread.sleep(500);
+//                    }
+//                }
+//                catch (InterruptedException e1)
+//                {
+//                    String edtSend = "aa0";
+//                    WriteValue(mBraceletDevice, mWriteCharacteristic,edtSend);
+//                    String edtSend2 = "ac0";
+//                    WriteValue(mBraceletDevice, mWriteCharacteristic,edtSend2);
+//                    e1.printStackTrace();
+//                }
+//            }
+//        };
+//        handler.post(mBraceletDistanceNotifyRunnable);
+    }
+
+    private boolean setBraceletCharacteristicNotification(boolean enabled){
+        if(mBraceletDevice == null){
+            Log.d(TAG, "mBraceletDevice is missing.");
+            return false;
+        }
+        if(mNotifyCharacteristic == null){
+            Log.d(TAG, "mNotifyCharacteristic is missing.");
+            return false;
+        }
+        if(mWriteCharacteristic == null){
+            Log.d(TAG, "mWriteCharacteristic is missing.");
+            return false;
+        }
+        mBluetoothLeService.setCharacteristicNotification(mBraceletDevice,mNotifyCharacteristic,enabled);
+        mBluetoothLeService.setCharacteristicNotification(mBraceletDevice,mWriteCharacteristic,enabled);
+        return true;
+    }
 
     private void getGattServices(BluetoothDevice device, List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
@@ -515,7 +648,12 @@ public class BlunoService extends Service {
                         mBluetoothLeService.setCharacteristicNotification(device, gattCharacteristic, true);
                         //broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
                         deviceType = 1;
-                        break;
+                    }
+                    if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(UUID_BRACELET_WRITE.toString()))
+                    {
+                        mWriteCharacteristic = gattCharacteristic;
+                        mBluetoothLeService.setCharacteristicNotification(device, gattCharacteristic, true);
+                        deviceType = 1;
                     }
                 }
             }
@@ -609,6 +747,7 @@ public class BlunoService extends Service {
                     mBraceletGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mBraceletGattCharacteristics.add(charas);
                     mBluetoothLeService.setBraceletGatt(mBluetoothLeService.getGattFromDevice(device));
+//                    initBraceletRunnable();
                     Log.d(TAG, "Connected to bracelet device.");
                     break;
                 case 2:
@@ -1010,7 +1149,7 @@ public class BlunoService extends Service {
 
             mDeviceAddress = intent.getStringExtra("mDeviceAddress");
             connectionState = intent.getStringExtra("connectionState");
-            Log.d(TAG, "mDeviceAddress"+mDeviceAddress);
+            Log.d(TAG, "mDeviceAddress "+mDeviceAddress);
 
             if (mBluetoothLeService.connect(mDeviceAddress)) {
                 Log.d(TAG, "Connect request success");
@@ -1230,14 +1369,24 @@ public class BlunoService extends Service {
             {
                 while (mReadRssiThreadRunning)
                 {
-                    if (mConnected_GloveLeft && mConnected_GloveRight)
+                    if ((mConnected_GloveLeft && mConnected_GloveRight) ||
+                            mConnected_Bracelet || mConnected_Glass)
                     {
+                        mBluetoothLeService.readRemoteRssi();
+                        try
+                        {
+                            Thread.sleep(100);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
                         mBluetoothLeService.readRemoteRssi();
                     }
 
                     try
                     {
-                        Thread.sleep(10);
+                        Thread.sleep(200);
                     }
                     catch (InterruptedException e)
                     {
