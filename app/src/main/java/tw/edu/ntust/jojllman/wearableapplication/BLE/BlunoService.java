@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -100,11 +101,11 @@ public class BlunoService extends Service {
     static public String Bracelet_DT;
     private static int Bracelet_RSSI;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
-    private static boolean bSendingBraceletDistance = false;
-    public static boolean getbSendingBraceletDistance(){return bSendingBraceletDistance;}
-    private boolean isFirstStop = false;
-    private Runnable mBraceletDistanceNotifyRunnable;
-    private Runnable mBraceletNotifyRunnable;
+//    private static boolean bSendingBraceletDistance = false;
+//    public static boolean getbSendingBraceletDistance(){return bSendingBraceletDistance;}
+//    private boolean isFirstStop = false;
+//    private Runnable mBraceletDistanceNotifyRunnable;
+//    private Runnable mBraceletNotifyRunnable;
 
     private BraceletState m_braceletState = BraceletState.none;
     public enum BraceletState{
@@ -307,13 +308,14 @@ public class BlunoService extends Service {
 
     public void onDestroyProcess() {
         System.out.println("BlunoService onDestroy");
-        if(mConnected_Bracelet && bSendingBraceletDistance && mWriteCharacteristic != null) {
-            bSendingBraceletDistance =false;
+        if(mConnected_Bracelet && mWriteCharacteristic != null) {
             //for test start
             String edtSend = "aa0";
             WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
             String edtSend3 = "ac0";
             WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
+            String edtSend2 = "ab0";
+            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend2);
             //for test end
         }
         serviceContext.unregisterReceiver(mGattUpdateReceiver);
@@ -363,8 +365,8 @@ public class BlunoService extends Service {
                     handler.removeCallbacks(readUltraSoundRunnable);
                 }
                 if(device.equals(mBraceletDevice)){
-                    handler.removeCallbacks(mBraceletNotifyRunnable);
-                    handler.removeCallbacks(mBraceletDistanceNotifyRunnable);
+//                    handler.removeCallbacks(mBraceletNotifyRunnable);
+//                    handler.removeCallbacks(mBraceletDistanceNotifyRunnable);
                 }
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
@@ -425,47 +427,51 @@ public class BlunoService extends Service {
                     int aastart = datastring.indexOf("aa");
                     int abstart = datastring.indexOf("ab");
                     Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
-                    Log.d(TAG, "PW=" + PW);
+//                    Log.d(TAG, "PW=" + PW);
                     Log.i(TAG, "State: " + m_braceletState);
-                    Log.i(TAG, "PW equals ad00001" + PW.startsWith("ad00001")); //距離
-                    Log.i(TAG, "PW equals ad00010" + PW.startsWith("ad00010")); //重置
-                    Log.i(TAG, "PW equals ad00100" + PW.startsWith("ad00100")); //距離
-                    Log.i(TAG, "PW equals ad01000" + PW.startsWith("ad01000")); //尋找手機
+//                    Log.i(TAG, "PW equals ad00001" + PW.startsWith("ad00001")); //距離
+//                    Log.i(TAG, "PW equals ad00010" + PW.startsWith("ad00010")); //重置
+//                    Log.i(TAG, "PW equals ad00100" + PW.startsWith("ad00100")); //距離
+//                    Log.i(TAG, "PW equals ad01000" + PW.startsWith("ad01000")); //尋找手機
 
                     if(m_braceletState == BraceletState.none) {
                         if(PW.startsWith("ad00001")) {
                             m_braceletState = BraceletState.distance;
-//                            String edtSend = "aa1";
-//                            WriteValue(device,mWriteCharacteristic,edtSend);
-//                            String edtSend3 = "ac1";
-//                            WriteValue(device,mWriteCharacteristic,edtSend3);
+                            String edtSend4 = "aw1";
+                            WriteValue(device, mWriteCharacteristic, edtSend4);
+                            String edtSend = "aa1";
+                            WriteValue(device,mWriteCharacteristic,edtSend);
+                            String edtSend3 = "ac1";
+                            WriteValue(device,mWriteCharacteristic,edtSend3);
                         }
                         else if(PW.startsWith("ad00010")) {
 
                         }
                         else if(PW.startsWith("ad00100")) {
                             m_braceletState = BraceletState.color;
-//                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-//                            String edtSend = "ab1";
-//                            WriteValue(device,mWriteCharacteristic,edtSend);
+                            String edtSend4 = "aw1";
+                            WriteValue(device, mWriteCharacteristic, edtSend4);
+                            String edtSend = "ab1";
+                            WriteValue(device,mWriteCharacteristic,edtSend);
                         }
                         else if(PW.startsWith("ad01000")) {
-                            //TODO: speak out I'm here
+                            //TODO: speak out I'm here (search for phone)
+                            mTTSService.speak("手機在這裡。");
                         }
                     }
                     else if(m_braceletState == BraceletState.distance) {
                         if(PW.startsWith("ad10000")) {
                             //TODO: speak out distance
+                            mTTSService.speak("前方"+Integer.valueOf(Bracelet_DT)/10+"公分有障礙物");
                         }
                         else if(PW.startsWith("ad00010")) {
                             m_braceletState = BraceletState.none;
-//                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-//                            String edtSend = "aa0";
-//                            WriteValue(device,mWriteCharacteristic,edtSend);
-//                            String edtSend3 = "ac0";
-//                            WriteValue(device,mWriteCharacteristic,edtSend3);
+                            String edtSend = "aa0";
+                            WriteValue(device,mWriteCharacteristic,edtSend);
+                            String edtSend3 = "ac0";
+                            WriteValue(device,mWriteCharacteristic,edtSend3);
                         }
-                        else if (data != null && data.length > 0) {
+                        else if (data != null && data.length > 5) {
                             if(aastart!=-1){
                                 final StringBuilder stringDT= new StringBuilder();
                                 //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
@@ -478,14 +484,30 @@ public class BlunoService extends Service {
                     else if(m_braceletState == BraceletState.color) {
                         if(PW.startsWith("ad10000")) {
                             //TODO: speak out color
+                            if(Bracelet_R>150 && Bracelet_G<80 && Bracelet_B<80)
+                                mTTSService.speak("這是紅色");
+                            else if(Bracelet_G>Bracelet_R && (Bracelet_G-30)>Bracelet_B)
+                                mTTSService.speak("這是綠色");
+                            else if(Bracelet_G>Bracelet_R && Bracelet_B>100)
+                                mTTSService.speak("這是藍色");
+                            else if(Bracelet_B<140 && (Bracelet_R-Bracelet_G)<70&& Bracelet_B>5)  // && (Bracelet_R-20)>Bracelet_G
+                                mTTSService.speak("這是黃色");
+                                //else if(Math.abs(Bracelet_R-Bracelet_B)<20 && (Bracelet_R+20)>Bracelet_G && Bracelet_G>50)
+                                //	mSpeech.speak("這是紫色");
+                            else if(Bracelet_R>200 && Bracelet_G>80 && Bracelet_G<130 && Bracelet_B<70)
+                                mTTSService.speak("這是橘色");
+                            else if(Bracelet_R>240 && Bracelet_G>240 && Bracelet_B>240)
+                                mTTSService.speak("這是白色");
+                            else if(Bracelet_R<5 && Bracelet_G<5 && Bracelet_B<5)
+                                mTTSService.speak("這是黑色");
                         }
                         else if(PW.startsWith("ad00010")) {
                             m_braceletState = BraceletState.none;
-//                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
-//                            String edtSend = "ab0";
-//                            WriteValue(device,mWriteCharacteristic,edtSend);
+                            BluetoothGatt gatt = mBluetoothLeService.getGattFromDevice(device);
+                            String edtSend = "ab0";
+                            WriteValue(device,mWriteCharacteristic,edtSend);
                         }
-                        else if (data != null && data.length > 0) {
+                        else if (data != null && data.length > 10) {
                             if(abstart!=-1){
                                 final StringBuilder stringR= new StringBuilder();
                                 final StringBuilder stringG= new StringBuilder();
@@ -498,8 +520,7 @@ public class BlunoService extends Service {
                             }
                         }
                     }
-
-                    braceletIntent.putExtra("BraceletState", m_braceletState + "");
+                    braceletIntent.putExtra("BraceletState", m_braceletState.name());
                     sendBroadcast(braceletIntent);
                 }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
                     Bracelet_RSSI=intent.getIntExtra("RSSI",0);
@@ -520,34 +541,85 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase(braceletDistanceIntent.getAction())) {
-                boolean b=intent.getBooleanExtra("sendDistance",false);
-                setBraceletFunction(b);
+                boolean sendDistance=intent.getBooleanExtra("sendDistance",false);
+                boolean sendColor=intent.getBooleanExtra("sendColor",false);
+                if(sendDistance){
+                    m_braceletState = BraceletState.distance;
+                    String edtSend4 = "aw1";
+                    WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend4);
+                    String edtSend = "aa1";
+                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                    String edtSend3 = "ac1";
+                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend3);
+                }else if(m_braceletState == BraceletState.distance){
+                    m_braceletState = BraceletState.none;
+                    String edtSend = "aa0";
+                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                    String edtSend3 = "ac0";
+                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend3);
+                }
+                if(sendColor){
+                    m_braceletState = BraceletState.color;
+                    String edtSend4 = "aw1";
+                    WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend4);
+                    String edtSend = "ab1";
+                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                }else if(m_braceletState == BraceletState.color){
+                    m_braceletState = BraceletState.none;
+                    String edtSend = "ab0";
+                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                }
             }
         }
     };
 
-    private void setBraceletFunction(boolean b){
-        if(!mConnected_Bracelet) {
-            Log.e(TAG,"Bracelet not found.");
-            return;
-        }
-        if(mWriteCharacteristic==null){
-            Log.e(TAG,"Bracelet mWriteCharacteristic not found.");
-            return;
-        }
-        if(b && !bSendingBraceletDistance) {
-            bSendingBraceletDistance = true;
-            String edtSend = "aa1";
-            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
-            String edtSend3 = "ac1";
-            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
-        }else if(bSendingBraceletDistance){
-            bSendingBraceletDistance = false;
-            String edtSend = "aa0";
-            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
-            String edtSend3 = "ac0";
-            WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
-        }
+//    private void setBraceletFunction(boolean b){
+//        if(!mConnected_Bracelet) {
+//            Log.e(TAG,"Bracelet not found.");
+//            return;
+//        }
+//        if(mWriteCharacteristic==null){
+//            Log.e(TAG,"Bracelet mWriteCharacteristic not found.");
+//            return;
+//        }
+//        if(b && !bSendingBraceletDistance) {
+//            new Thread(){
+//                @Override
+//                public void run(){
+//                    super.run();
+//                    try {
+//                        bSendingBraceletDistance = true;
+//                        String edtSend4 = "aw1";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend4);
+//                        Thread.sleep(100);
+//                        String edtSend = "aa1";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
+//                        String edtSend3 = "ac1";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
+//                    } catch (Exception e1) {
+//                        e1.printStackTrace();
+//                    }
+//                }
+//            }.start();
+//        }else if(bSendingBraceletDistance){
+//            new Thread(){
+//                @Override
+//                public void run(){
+//                    super.run();
+//                    try {
+//                        bSendingBraceletDistance = false;
+//                        Thread.sleep(100);
+//                        String edtSend = "aa0";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
+//                        Thread.sleep(100);
+//                        String edtSend3 = "ac0";
+//                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
+//                    } catch (Exception e1) {
+//                        e1.printStackTrace();
+//                    }
+//                }
+//            }.start();
+//        }
 //        mBraceletNotifyRunnable = new Runnable() {
 //            @Override
 //            public void run() {
@@ -596,7 +668,7 @@ public class BlunoService extends Service {
 //            }
 //        };
 //        handler.post(mBraceletDistanceNotifyRunnable);
-    }
+//    }
 
     private boolean setBraceletCharacteristicNotification(boolean enabled){
         if(mBraceletDevice == null){
@@ -747,6 +819,19 @@ public class BlunoService extends Service {
                     mBraceletGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mBraceletGattCharacteristics.add(charas);
                     mBluetoothLeService.setBraceletGatt(mBluetoothLeService.getGattFromDevice(device));
+                    Bracelet_RSSI = 118;
+                    new Thread(){
+                        public void run(){
+                            super.run();
+                            try {
+                                Thread.sleep(200);
+                                String edtSend4 = "aw1";
+                                WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend4);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }.start();
 //                    initBraceletRunnable();
                     Log.d(TAG, "Connected to bracelet device.");
                     break;
@@ -1370,7 +1455,7 @@ public class BlunoService extends Service {
                 while (mReadRssiThreadRunning)
                 {
                     if ((mConnected_GloveLeft && mConnected_GloveRight) ||
-                            mConnected_Bracelet || mConnected_Glass)
+                            mConnected_Glass)
                     {
                         mBluetoothLeService.readRemoteRssi();
                         try

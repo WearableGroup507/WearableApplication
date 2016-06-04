@@ -266,10 +266,10 @@ public class BluetoothLeService extends Service {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-            	System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + " true");
+            	System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + "  true");
 //            	broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
                 broadcastUpdate(gatt, ACTION_DATA_AVAILABLE, characteristic);
-            }else System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + " false");
+            }else System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + "  false");
         }
         @Override
         public void  onDescriptorWrite(BluetoothGatt gatt, 
@@ -440,6 +440,13 @@ public class BluetoothLeService extends Service {
 //                return false;
 //            }
 //        }
+
+        for(BluetoothGatt gatt : mBluetoothGatts.values()) {
+            if(gatt.getDevice().getAddress().equalsIgnoreCase(address)){
+                Log.w(TAG, "Device already connected.");
+                return false;
+            }
+        }
 
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null) {

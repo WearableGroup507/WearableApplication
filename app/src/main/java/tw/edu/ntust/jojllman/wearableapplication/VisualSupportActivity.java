@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -35,6 +36,7 @@ public class VisualSupportActivity extends BlunoLibrary {
     private Handler handler=new Handler();
     private DeviceInfoView btn_device_glass;
     private DeviceInfoView btn_device_bracelet;
+    private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private int click_count=0;
 
     private Runnable autoConnectRunnable;
@@ -46,7 +48,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         setContentView(R.layout.activity_visual_support);
 
         globalVariable = (GlobalVariable)getApplicationContext();
-        
+
         btn_device_glass = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_glass);
         btn_device_bracelet = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_bracelet);
 
@@ -108,6 +110,10 @@ public class VisualSupportActivity extends BlunoLibrary {
                 }
             }
         };
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
+        registerReceiver(braceletReceiver, intentFilter);
     }
 
     @Override
@@ -195,7 +201,15 @@ public class VisualSupportActivity extends BlunoLibrary {
         return super.dispatchPopulateAccessibilityEvent(event);
     }
 
-    public void OnDeviceClick(View view){
+    private BroadcastReceiver braceletReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String braceletState = intent.getStringExtra("BraceletState");
+            m_braceletState = BlunoService.BraceletState.valueOf(braceletState);
+        }
+    };
+
+    public void OnDeviceClick(final View view){
         if(view.getId() == R.id.dev_info_btn_visual_glass){
             // 增加眼鏡按下動作
             Log.d(TAG,"dev_info_btn_visual_glass pressed");
@@ -211,15 +225,31 @@ public class VisualSupportActivity extends BlunoLibrary {
         if(view.getId() == R.id.dev_info_btn_visual_bracelet){
             // 增加手環按下動作
             Log.d(TAG,"dev_info_btn_visual_bracelet pressed");
-            if(!BlunoService.getbSendingBraceletDistance()){
-                braceletDistanceIntent.putExtra("sendDistance",true);
-                sendBroadcast(braceletDistanceIntent);
-                view.announceForAccessibility("開啟手環功能");
-            }else{
-                braceletDistanceIntent.putExtra("sendDistance",false);
-                sendBroadcast(braceletDistanceIntent);
-                view.announceForAccessibility("關閉手環功能");
-            }
+            new Thread(){
+                public void run(){
+                    super.run();
+                    if(m_braceletState == BlunoService.BraceletState.none){
+                        braceletDistanceIntent.putExtra("sendDistance",true);
+                        sendBroadcast(braceletDistanceIntent);
+                        view.announceForAccessibility("開啟手環距離偵測");
+                    }else if(m_braceletState == BlunoService.BraceletState.distance){
+                        braceletDistanceIntent.putExtra("sendDistance",false);
+                        sendBroadcast(braceletDistanceIntent);
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        braceletDistanceIntent.putExtra("sendColor",true);
+                        sendBroadcast(braceletDistanceIntent);
+                        view.announceForAccessibility("開啟手環顏色辨識，關閉手環距離偵測");
+                    }else if(m_braceletState == BlunoService.BraceletState.color){
+                        braceletDistanceIntent.putExtra("sendColor",false);
+                        sendBroadcast(braceletDistanceIntent);
+                        view.announceForAccessibility("關閉手環顏色辨識");
+                    }
+                }
+            }.start();
         }
     }
 
