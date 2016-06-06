@@ -30,13 +30,15 @@ import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 public class VisualSupportActivity extends BlunoLibrary {
     private static String TAG = VisualSupportActivity.class.getSimpleName();
     private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
-    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_DISTANCE");
+//    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
+    private Intent mREQUEST_CONNECTED_DEVICES = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private GlobalVariable globalVariable;
 
     private Handler handler=new Handler();
     private DeviceInfoView btn_device_glass;
     private DeviceInfoView btn_device_bracelet;
-    private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
+//    private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
+    private boolean m_braceletConnected = false;
     private int click_count=0;
 
     private Runnable autoConnectRunnable;
@@ -69,7 +71,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);*/
 
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
@@ -107,12 +109,14 @@ public class VisualSupportActivity extends BlunoLibrary {
                     handler.postDelayed(this, 2000);
                 }else{
                     handler.removeCallbacksAndMessages(this);
+                    Log.d(TAG,"removeCallbacksAndMessages autoConnectRunnable");
+                    sendBroadcast(mREQUEST_CONNECTED_DEVICES);
                 }
             }
         };
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         registerReceiver(braceletReceiver, intentFilter);
     }
 
@@ -157,6 +161,8 @@ public class VisualSupportActivity extends BlunoLibrary {
 
         killAutoConnectRunnable = false;
         handler.post(autoConnectRunnable);
+
+        sendBroadcast(mREQUEST_CONNECTED_DEVICES);
     }
 
     public void onPause(){
@@ -165,8 +171,8 @@ public class VisualSupportActivity extends BlunoLibrary {
         if(BlunoService.getReadUltraSound()){
             BlunoService.setReadUltraSound(false);
         }
-        braceletDistanceIntent.putExtra("sendDistance",false);
-        sendBroadcast(braceletDistanceIntent);
+//        braceletDistanceIntent.putExtra("sendDistance",false);
+//        sendBroadcast(braceletDistanceIntent);
         super.onPause();
     }
 
@@ -204,54 +210,61 @@ public class VisualSupportActivity extends BlunoLibrary {
     private BroadcastReceiver braceletReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String braceletState = intent.getStringExtra("BraceletState");
-            m_braceletState = BlunoService.BraceletState.valueOf(braceletState);
+            m_braceletConnected = intent.getBooleanExtra("Connected_Bracelet", false);
         }
     };
 
-    public void OnDeviceClick(final View view){
-        if(view.getId() == R.id.dev_info_btn_visual_glass){
+    public void OnDeviceClick(final View view) {
+        sendBroadcast(mREQUEST_CONNECTED_DEVICES);
+        if (view.getId() == R.id.dev_info_btn_visual_glass) {
             // 增加眼鏡按下動作
-            Log.d(TAG,"dev_info_btn_visual_glass pressed");
-            if(!BlunoService.getReadUltraSound()){
+            Log.d(TAG, "dev_info_btn_visual_glass pressed");
+            if (!BlunoService.getReadUltraSound()) {
                 BlunoService.setReadUltraSound(true);
                 view.announceForAccessibility("開啟眼鏡避障功能");
-            }else{
+            } else {
                 BlunoService.setReadUltraSound(false);
                 view.announceForAccessibility("關閉眼鏡避障功能");
             }
         }
 
-        if(view.getId() == R.id.dev_info_btn_visual_bracelet){
+        if (view.getId() == R.id.dev_info_btn_visual_bracelet) {
             // 增加手環按下動作
-            Log.d(TAG,"dev_info_btn_visual_bracelet pressed");
-            new Thread(){
-                public void run(){
-                    super.run();
-                    if(m_braceletState == BlunoService.BraceletState.none){
-                        braceletDistanceIntent.putExtra("sendDistance",true);
-                        sendBroadcast(braceletDistanceIntent);
-                        view.announceForAccessibility("開啟手環距離偵測");
-                    }else if(m_braceletState == BlunoService.BraceletState.distance){
-                        braceletDistanceIntent.putExtra("sendDistance",false);
-                        sendBroadcast(braceletDistanceIntent);
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        braceletDistanceIntent.putExtra("sendColor",true);
-                        sendBroadcast(braceletDistanceIntent);
-                        view.announceForAccessibility("開啟手環顏色辨識，關閉手環距離偵測");
-                    }else if(m_braceletState == BlunoService.BraceletState.color){
-                        braceletDistanceIntent.putExtra("sendColor",false);
-                        sendBroadcast(braceletDistanceIntent);
-                        view.announceForAccessibility("關閉手環顏色辨識");
-                    }
-                }
-            }.start();
+            Log.d(TAG, "dev_info_btn_visual_bracelet pressed");
+            if (m_braceletConnected) {
+                Intent intent = new Intent();
+                intent.setClass(this, BraceletControlActivity.class);
+                startActivity(intent);
+            }
         }
     }
+//            new Thread(){
+//                public void run(){
+//                    super.run();
+//                    if(m_braceletState == BlunoService.BraceletState.none){
+//                        braceletDistanceIntent.putExtra("sendDistance",true);
+//                        sendBroadcast(braceletDistanceIntent);
+//                        view.announceForAccessibility("開啟手環距離偵測");
+//                    }else if(m_braceletState == BlunoService.BraceletState.distance){
+//                        braceletDistanceIntent.putExtra("sendDistance",false);
+//                        sendBroadcast(braceletDistanceIntent);
+//                        try {
+//                            Thread.sleep(100);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        braceletDistanceIntent.putExtra("sendColor",true);
+//                        sendBroadcast(braceletDistanceIntent);
+//                        view.announceForAccessibility("開啟手環顏色辨識，關閉手環距離偵測");
+//                    }else if(m_braceletState == BlunoService.BraceletState.color){
+//                        braceletDistanceIntent.putExtra("sendColor",false);
+//                        sendBroadcast(braceletDistanceIntent);
+//                        view.announceForAccessibility("關閉手環顏色辨識");
+//                    }
+//                }
+//            }.start();
+//        }
+//    }
 
     public void OnHelpClick(View view){
         DisplayMetrics metrics = new DisplayMetrics();

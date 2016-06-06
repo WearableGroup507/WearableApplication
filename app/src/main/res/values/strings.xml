@@ -18,6 +18,11 @@
     <string name="help_message">單指點擊導讀\n單指雙擊確認\n雙指滑動選單</string>
     <string name="btn_ok">確認</string>
 
+    <string name="bracelet_control">手環控制頁面</string>
+    <string name="btn_bracelet_distance">手環距離偵測</string>
+    <string name="btn_bracelet_color">手環顏色辨識</string>
+    <string name="btn_bracelet_search">尋找手環</string>
+
     <string name="app_manage">管理頁面</string>
     <string name="btn_search_device">搜尋裝置</string>
     <string name="btn_app_setting">應用程式設定</string>
