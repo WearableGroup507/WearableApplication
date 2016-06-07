@@ -1499,7 +1499,7 @@ public class BlunoService extends Service {
                 while (mReadRssiThreadRunning)
                 {
                     if ((mConnected_GloveLeft && mConnected_GloveRight) ||
-                            mConnected_Glass)
+                            mConnected_Glass || mConnected_Bracelet)
                     {
                         mBluetoothLeService.readRemoteRssi();
                         try

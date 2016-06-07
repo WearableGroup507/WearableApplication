@@ -100,7 +100,7 @@
         android:layout_height="0dp"
         android:layout_weight="3"
         android:background="#ffb21a"
-        android:id="@+id/layout_search_dev"
+        android:id="@+id/layout_visual_search_dev"
         android:onClick="OnDeviceClick"
         >
         <TextView

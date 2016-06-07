@@ -15,26 +15,26 @@
     android:weightSum="10">
 
     <Button
-        android:contentDescription="@string/btn_glove_control_recognize"
+        android:contentDescription="@string/layout_glove_control_recognize"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:id="@+id/btn_glove_control_recognize"
-        android:text="@string/btn_glove_control_recognize"
+        android:text="@string/layout_glove_control_recognize"
         android:textSize="@dimen/btn_font_size"
         android:onClick="OnGloveRecognizeClick"
         android:background="@drawable/button_with_border"
         android:layout_weight="5" />
 
     <Button
-        android:contentDescription="@string/btn_glove_control_reset"
+        android:contentDescription="@string/layout_glove_control_reset"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:id="@+id/btn_glove_control_reset"
-        android:text="@string/btn_glove_control_reset"
+        android:text="@string/layout_glove_control_reset"
         android:textSize="@dimen/btn_font_size"
         android:onClick="OnGloveResetClick"
         android:background="@drawable/button_with_border"

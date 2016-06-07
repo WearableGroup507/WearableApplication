@@ -13,10 +13,13 @@
     android:weightSum="20">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="@string/layout_glove_dev"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="14"
         android:background="@drawable/button_with_border_new"
+        android:id="@+id/layout_glove_dev"
+        android:onClick="OnDeviceClick"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -25,7 +28,7 @@
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="20dp"
             android:layout_gravity="center_horizontal"
-            android:text="智慧手套"
+            android:text="@string/layout_glove_dev"
             android:textSize="60sp"
             android:textColor="#FFFFFF" />
 
@@ -51,17 +54,20 @@
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="@string/layout_search_device"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="#ffb21a"
+        android:id="@+id/layout_hearing_search_device"
+        android:onClick="OnDeviceClick"
         >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_centerVertical="true"
-            android:text="搜尋裝置"
+            android:text="@string/layout_search_device"
             android:textSize="60sp"
             android:textColor="#FFFFFF" />
     </RelativeLayout>

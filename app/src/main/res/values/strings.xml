@@ -11,7 +11,7 @@
 
     <string name="hearing_button">進入聽障頁面</string>
     <string name="hearing_main">聽障穿戴式裝置</string>
-    <string name="btn_gloves">手套裝置</string>
+    <string name="layout_glove_dev">智慧手套</string>
 
     <string name="help_dialog">TalkBack操作指引</string>
     <string name="btn_click_to_setting">連續點擊轉往管理頁面</string>
@@ -35,9 +35,9 @@
     <string name="btn_cancel">取消</string>
 
     <string name="glove_control">手套控制頁面</string>
-    <string name="btn_glove_control_recognize">開始辨識</string>
-    <string name="btn_glove_control_recognizing">正在辨識</string>
-    <string name="btn_glove_control_reset">手套重置</string>
+    <string name="layout_glove_control_recognize">開始辨識</string>
+    <string name="layout_glove_control_recognizing">正在辨識</string>
+    <string name="layout_glove_control_reset">手套重置</string>
 
     <string name="hearing_setting">手勢管理頁面</string>
     <string name="btn_record_gesture">錄製手勢</string>

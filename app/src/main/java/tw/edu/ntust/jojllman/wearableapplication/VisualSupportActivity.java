@@ -1,6 +1,5 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
-import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -9,18 +8,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -125,6 +119,11 @@ public class VisualSupportActivity extends BlunoLibrary {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         registerReceiver(braceletReceiver, intentFilter);
+    }
+
+    protected void onDestroy(){
+        super.onDestroy();
+        unregisterReceiver(braceletReceiver);
     }
 
     @Override
@@ -265,10 +264,12 @@ public class VisualSupportActivity extends BlunoLibrary {
                 intent.setClass(this, BraceletControlActivity.class);
                 startActivity(intent);
             }
-        }else if (view.getId() == R.id.layout_search_dev){
+        }else if (view.getId() == R.id.layout_visual_search_dev){
 
         }else if (view.getId() == R.id.layout_setting){
-
+            Intent intent = new Intent();
+            intent.setClass(this  , VisualSettingActivity.class);
+            startActivity(intent);
         }
     }
 //            new Thread(){
