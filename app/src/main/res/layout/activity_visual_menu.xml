@@ -9,14 +9,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="tw.edu.ntust.jojllman.wearableapplication.ChooseClassActivity"
-    android:background="#ffffff"
+    android:background="#000000"
     android:weightSum="20">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
-        android:background="#0047b2"
+        android:background="@drawable/button_with_border_new"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -43,8 +43,8 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="30dp"
             android:layout_alignParentRight="true"
             android:scaleType="fitEnd"
             android:src="@drawable/bg_glass"/>
@@ -54,7 +54,7 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
-        android:background="#0047b2"
+        android:background="@drawable/button_with_border_new"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -81,8 +81,8 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="25dp"
             android:layout_alignParentRight="true"
             android:scaleType="fitEnd"
             android:src="@drawable/bg_wristband"/>
