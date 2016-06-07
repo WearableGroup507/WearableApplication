@@ -7,9 +7,9 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
@@ -18,16 +18,16 @@ public class BraceletControlActivity extends AppCompatActivity {
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
 
     private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
-    private Button btnDistance;
-    private Button btnColor;
-    private Button btnSearch;
+    private RelativeLayout layoutDistance;
+    private RelativeLayout layoutColor;
+    private RelativeLayout layoutSearch;
     private boolean killRunnable = false;
     private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bracelet_control);
+        setContentView(R.layout.activity_visual_bracelet_menu);
 
         findView();
 
@@ -46,18 +46,18 @@ public class BraceletControlActivity extends AppCompatActivity {
                 if(!killRunnable){
 //                    Log.d(TAG, m_braceletState.name());
                     if(m_braceletState == BlunoService.BraceletState.distance) {
-                        btnDistance.setText(getString(R.string.btn_bracelet_distance) + "\n" + BlunoService.Bracelet_DT / 10 + "公分");
-                        btnDistance.setContentDescription("物體距離" + BlunoService.Bracelet_DT / 10 + "公分。關閉手環距離偵測");
+                        ((TextView)layoutDistance.getChildAt(0)).setText(getString(R.string.btn_bracelet_distance) + "\n" + BlunoService.Bracelet_DT / 10 + "公分");
+                        layoutDistance.setContentDescription("物體距離" + BlunoService.Bracelet_DT / 10 + "公分。點擊關閉手環距離偵測");
                     }else{
-                        btnDistance.setContentDescription(getString(R.string.btn_bracelet_distance));
-                        btnDistance.setText(R.string.btn_bracelet_distance);
+                        layoutDistance.setContentDescription(getString(R.string.btn_bracelet_distance));
+                        ((TextView)layoutDistance.getChildAt(0)).setText(R.string.btn_bracelet_distance);
                     }
                     if(m_braceletState == BlunoService.BraceletState.color){
-                        btnColor.setText(getString(R.string.btn_bracelet_color) + "\n" + BlunoService.getColorName());
-                        btnColor.setContentDescription(BlunoService.getColorName() + "。關閉手環顏色辨識");
+                        ((TextView)layoutColor.getChildAt(0)).setText(getString(R.string.btn_bracelet_color) + "\n" + BlunoService.getColorName());
+                        layoutColor.setContentDescription(BlunoService.getColorName() + "。點擊關閉手環顏色辨識");
                     }else{
-                        btnColor.setContentDescription(getString(R.string.btn_bracelet_color));
-                        btnColor.setText(R.string.btn_bracelet_color);
+                        layoutColor.setContentDescription(getString(R.string.btn_bracelet_color));
+                        ((TextView)layoutColor.getChildAt(0)).setText(R.string.btn_bracelet_color);
                     }
                 }else{
                     mHandler.removeCallbacksAndMessages(this);
@@ -78,9 +78,9 @@ public class BraceletControlActivity extends AppCompatActivity {
     }
 
     private void findView() {
-        btnDistance = (Button)findViewById(R.id.btn_bracelet_distance);
-        btnColor = (Button)findViewById(R.id.btn_bracelet_color);
-        btnSearch = (Button)findViewById(R.id.btn_bracelet_search);
+        layoutDistance = (RelativeLayout)findViewById(R.id.layout_bracelet_distance);
+        layoutColor = (RelativeLayout)findViewById(R.id.layout_bracelet_color);
+        layoutSearch = (RelativeLayout)findViewById(R.id.layout_bracelet_search);
     }
 
     private BroadcastReceiver braceletReceiver = new BroadcastReceiver() {
@@ -90,6 +90,16 @@ public class BraceletControlActivity extends AppCompatActivity {
             m_braceletState = BlunoService.BraceletState.valueOf(braceletState);
         }
     };
+
+    public void OnBraceletMenuClick(final View view){
+        if(view.getId() == R.id.layout_bracelet_color){
+            OnColorClick(view);
+        }else if(view.getId() == R.id.layout_bracelet_distance){
+            OnDistanceClick(view);
+        }else if(view.getId() == R.id.layout_bracelet_search){
+            OnSearchClick(view);
+        }
+    }
 
     public void OnDistanceClick(final View view){
 //        view.setContentDescription("測試 測試 test test");
@@ -127,6 +137,7 @@ public class BraceletControlActivity extends AppCompatActivity {
     }
 
     public void OnSearchClick(final View view){
-
+//        braceletControlIntent.putExtra("BraceletSearch",true);
+//        sendBroadcast(braceletControlIntent);
     }
 }

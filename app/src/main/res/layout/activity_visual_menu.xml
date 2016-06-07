@@ -8,15 +8,18 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="tw.edu.ntust.jojllman.wearableapplication.ChooseClassActivity"
+    tools:context="tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity"
     android:background="#000000"
     android:weightSum="20">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="@string/layout_glasses"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="@drawable/button_with_border_new"
+        android:id="@+id/layout_glass_dev"
+        android:onClick="OnDeviceClick"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -25,7 +28,7 @@
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="20dp"
             android:layout_gravity="center_horizontal"
-            android:text="智慧眼鏡"
+            android:text="@string/layout_glasses"
             android:textSize="40sp"
             android:textColor="#FFFFFF" />
 
@@ -51,10 +54,13 @@
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="@string/layout_bracelet"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="@drawable/button_with_border_new"
+        android:id="@+id/layout_bracelet_dev"
+        android:onClick="OnDeviceClick"
         >
         <TextView
             android:layout_width="wrap_content"
@@ -63,7 +69,7 @@
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="20dp"
             android:layout_gravity="center_horizontal"
-            android:text="智慧手環"
+            android:text="@string/layout_bracelet"
             android:textSize="40sp"
             android:textColor="#FFFFFF" />
 
@@ -89,33 +95,39 @@
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="@string/layout_search_device"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:background="#ffb21a"
+        android:id="@+id/layout_search_dev"
+        android:onClick="OnDeviceClick"
         >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_centerVertical="true"
-            android:text="搜尋裝置"
+            android:text="@string/layout_search_device"
             android:textSize="40sp"
             android:textColor="#FFFFFF" />
     </RelativeLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="@string/layout_app_setting"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:background="#787777"
+        android:id="@+id/layout_setting"
+        android:onClick="OnDeviceClick"
         >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_centerVertical="true"
-            android:text="設定"
+            android:text="@string/layout_app_setting"
             android:textSize="40sp"
             android:textColor="#FFFFFF" />
     </RelativeLayout>

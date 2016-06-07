@@ -99,6 +99,7 @@ public class BlunoService extends Service {
     static public int Bracelet_R, Bracelet_G, Bracelet_B;
     static public int Bracelet_DT;      //mm
     private static int Bracelet_RSSI;
+    static public int Bracelet_BAT;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
 //    private static boolean bSendingBraceletDistance = false;
 //    public static boolean getbSendingBraceletDistance(){return bSendingBraceletDistance;}
@@ -438,6 +439,7 @@ public class BlunoService extends Service {
                     String PW=datastring;
                     int aastart = datastring.indexOf("aa");
                     int abstart = datastring.indexOf("ab");
+                    int aestart = datastring.indexOf("ae");
                     Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
 //                    Log.d(TAG, "PW=" + PW);
                     Log.i(TAG, "State: " + m_braceletState);
@@ -508,6 +510,13 @@ public class BlunoService extends Service {
                             }
                         }
                     }
+                    if(PW.startsWith("ae")){
+                        if(aestart!=-1) {
+                            final StringBuilder stringBAT = new StringBuilder();
+                            Bracelet_BAT = Integer.valueOf(stringBAT.append(datastring, aastart + 2, aastart + 5).toString());
+                            Log.d(TAG, "BAT:" + Bracelet_BAT);
+                        }
+                    }
                     braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                     sendBroadcast(braceletStateIntent);
                 }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
@@ -549,13 +558,14 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase(braceletControlIntent.getAction())) {
-                final boolean sendDistance=intent.getBooleanExtra("BraceletDistance",false);
-                final boolean sendColor=intent.getBooleanExtra("BraceletColor",false);
+                final boolean braceletDistance =intent.getBooleanExtra("BraceletDistance",false);
+                final boolean braceletColor =intent.getBooleanExtra("BraceletColor",false);
+                final boolean braceletSearch = intent.getBooleanExtra("BraceletSearch",false);
                 new Thread(){
                     public void run(){
                         super.run();
                         try {
-                            if(sendDistance){
+                            if(braceletDistance){
                                 m_braceletState = BraceletState.distance;
                                 Thread.sleep(100);
                                 String edtSend4 = "aw1";
@@ -577,7 +587,7 @@ public class BlunoService extends Service {
                                 WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend3);
                                 Thread.sleep(100);
                             }
-                            if(sendColor){
+                            if(braceletColor){
                                 m_braceletState = BraceletState.color;
                                 Thread.sleep(100);
                                 String edtSend4 = "aw1";
@@ -588,9 +598,15 @@ public class BlunoService extends Service {
                                 Thread.sleep(100);
                             }else if(m_braceletState == BraceletState.color){
                                 m_braceletState = BraceletState.none;
+                                Thread.sleep(100);
                                 String edtSend = "ab0";
                                 WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
                                 Thread.sleep(100);
+                            }
+                            if(braceletSearch){
+                                //TODO : find bracelet
+                            }else{
+
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -1483,7 +1499,7 @@ public class BlunoService extends Service {
                 while (mReadRssiThreadRunning)
                 {
                     if ((mConnected_GloveLeft && mConnected_GloveRight) ||
-                            mConnected_Glass || mConnected_Bracelet)
+                            mConnected_Glass)
                     {
                         mBluetoothLeService.readRemoteRssi();
                         try

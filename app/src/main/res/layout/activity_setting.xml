@@ -15,26 +15,26 @@
     android:weightSum="10">
 
     <Button
-        android:contentDescription="@string/btn_search_device"
+        android:contentDescription="@string/layout_search_device"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:id="@+id/btn_search_device"
-        android:text="@string/btn_search_device"
+        android:text="@string/layout_search_device"
         android:textSize="@dimen/btn_font_size"
         android:onClick="OnSearchDeviceClick"
         android:background="@drawable/button_with_border"
         android:layout_weight="5" />
 
     <Button
-        android:contentDescription="@string/btn_app_setting"
+        android:contentDescription="+@string/btn_app_setting"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:id="@+id/btn_app_setting"
-        android:text="@string/btn_app_setting"
+        android:text="+@string/btn_app_setting"
         android:textSize="@dimen/btn_font_size"
         android:onClick="OnAppSettingClick"
         android:background="@drawable/button_with_border"
