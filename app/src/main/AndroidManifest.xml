@@ -35,6 +35,8 @@
         <activity android:name=".GestureDBActivity" />
         <activity android:name=".GloveControlActivity" />
         <activity android:name=".VisualSettingActivity" />
+        <activity android:name=".VisualSearchActivity" />
+        <activity android:name=".HearingSearchActivity" />
 
         <service
             android:name=".BLE.BluetoothLeService"

@@ -76,15 +76,30 @@ public class VisualSupportActivity extends BlunoLibrary {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        short auto = getIntent().getShortExtra("AutoEnter", (short) 0);
+        if(auto == 0) {
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
+        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+            Intent intent = new Intent(this, BlunoService.class);
+            startService(intent);
+        }
+
+        m_braceletConnected = false;
+        killAutoConnectRunnable = false;
         autoConnectRunnable = new Runnable() {
             @Override
             public void run() {
                 if(!killAutoConnectRunnable) {
                     for (BluetoothDevice device : getScannedDevices()) {
-                        String devNameLow = device.getName().toLowerCase();
+                        String devNameLow;
+                        if(device.getName() == null){
+                            devNameLow = getString(R.string.unknown_device);
+                        }else{
+                            devNameLow = device.getName().toLowerCase();
+                        }
                         if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameGlass.toLowerCase()) ||
                                 globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameBracelet.toLowerCase())) {
 
@@ -122,6 +137,10 @@ public class VisualSupportActivity extends BlunoLibrary {
     }
 
     protected void onDestroy(){
+        if(GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+            Intent intent = new Intent(this, BlunoService.class);
+            stopService(intent);
+        }
         super.onDestroy();
         unregisterReceiver(braceletReceiver);
     }
@@ -265,7 +284,9 @@ public class VisualSupportActivity extends BlunoLibrary {
                 startActivity(intent);
             }
         }else if (view.getId() == R.id.layout_visual_search_dev){
-
+            Intent intent = new Intent();
+            intent.setClass(this  , VisualSearchActivity.class);
+            startActivity(intent);
         }else if (view.getId() == R.id.layout_setting){
             Intent intent = new Intent();
             intent.setClass(this  , VisualSettingActivity.class);

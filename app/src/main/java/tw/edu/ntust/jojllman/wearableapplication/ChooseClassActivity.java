@@ -67,11 +67,13 @@ public class ChooseClassActivity extends AppCompatActivity {
 
         if(mAutoEnter == 1){
             Intent intentVisual = new Intent(ChooseClassActivity.this  , VisualSupportActivity.class);
+            intentVisual.putExtra("AutoEnter", mAutoEnter);
             startActivity(intentVisual);
             this.finish();
             overridePendingTransition(0, 0);
         }else if(mAutoEnter == 2){
             Intent intentHearing = new Intent(ChooseClassActivity.this  , HearingSupportActivity.class);
+            intentHearing.putExtra("AutoEnter", mAutoEnter);
             startActivity(intentHearing);
             this.finish();
             overridePendingTransition(0, 0);
@@ -99,6 +101,7 @@ public class ChooseClassActivity extends AppCompatActivity {
 
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , VisualSupportActivity.class);
+        intent.putExtra("AutoEnter", mAutoEnter);
         startActivity(intent);
 //        this.finish();
     }
@@ -108,6 +111,7 @@ public class ChooseClassActivity extends AppCompatActivity {
 
         Intent intent = new Intent();
         intent.setClass(ChooseClassActivity.this  , HearingSupportActivity.class);
+        intent.putExtra("AutoEnter", mAutoEnter);
         startActivity(intent);
 //        this.finish();
     }

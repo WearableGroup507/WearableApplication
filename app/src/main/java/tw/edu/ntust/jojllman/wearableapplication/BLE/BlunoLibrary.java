@@ -26,6 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import tw.edu.ntust.jojllman.wearableapplication.AppManageActivity;
 import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
 import tw.edu.ntust.jojllman.wearableapplication.R;
 

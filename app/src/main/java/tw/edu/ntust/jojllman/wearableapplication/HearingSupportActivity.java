@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.GloveService;
 
 public class HearingSupportActivity extends BlunoLibrary {
@@ -57,15 +58,29 @@ public class HearingSupportActivity extends BlunoLibrary {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        short auto = getIntent().getShortExtra("AutoEnter", (short) 0);
+        if(auto == 0) {
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
+        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+            Intent intent = new Intent(this, BlunoService.class);
+            startService(intent);
+        }
+
+        killAutoConnectRunnable = false;
         autoConnectRunnable = new Runnable() {
             @Override
             public void run() {
                 if(!killAutoConnectRunnable) {
                     for (BluetoothDevice device : getScannedDevices()) {
-                        String devNameLow = device.getName().toLowerCase();
+                        String devNameLow;
+                        if(device.getName() == null){
+                            devNameLow = getString(R.string.unknown_device);
+                        }else{
+                            devNameLow = device.getName().toLowerCase();
+                        }
                         if (globalVariable.getSaved_devices().containsDeviceAddr(device.getAddress()) && devNameLow.startsWith(GlobalVariable.defaultNameGlove.toLowerCase())) {
 
                             System.out.println("Device Name:" + device.getName() + "   " + "Device Name:" + device.getAddress());
@@ -93,6 +108,14 @@ public class HearingSupportActivity extends BlunoLibrary {
                 }
             }
         };
+    }
+
+    protected void onDestroy(){
+        if(GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+            Intent intent = new Intent(this, BlunoService.class);
+            stopService(intent);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -200,7 +223,9 @@ public class HearingSupportActivity extends BlunoLibrary {
                 startActivity(intent);
             }
         }else if(view.getId() == R.id.layout_hearing_search_device){
-
+            Intent intent = new Intent();
+            intent.setClass(this, HearingSearchActivity.class);
+            startActivity(intent);
         }
     }
 //

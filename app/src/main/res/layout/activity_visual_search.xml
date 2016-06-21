@@ -11,6 +11,7 @@
     android:background="#f9b21f" >
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:contentDescription="搜尋藍芽裝置..."
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -40,7 +41,7 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:paddingTop="70dp"
-            android:text="BLE Device\n\t\t\t\t\tScan..."
+            android:text="搜尋藍芽裝置..."
             android:textSize="30sp"
             android:textColor="#FFFFFF" />
     </RelativeLayout>

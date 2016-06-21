@@ -257,7 +257,6 @@ public class VisualSettingActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
-        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
         registerReceiver(mMsgReceiver, intentFilter);
 
         sendBroadcast(mRequestConnectedIntent);

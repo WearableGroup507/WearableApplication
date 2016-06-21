@@ -101,6 +101,9 @@ public class BlunoService extends Service {
     private static int Bracelet_RSSI;
     static public int Bracelet_BAT;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
+    public static int distance_rssi;
+    private static int[] data = new int[3];
+    private static int index=0;
 //    private static boolean bSendingBraceletDistance = false;
 //    public static boolean getbSendingBraceletDistance(){return bSendingBraceletDistance;}
 //    private boolean isFirstStop = false;
@@ -109,7 +112,7 @@ public class BlunoService extends Service {
 
     private BraceletState m_braceletState = BraceletState.none;
     public enum BraceletState{
-        none, distance, color
+        none, distance, color, search
     }
 
     private final static int AVOID_ALLDIRECTION = 11;
@@ -240,9 +243,9 @@ public class BlunoService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         Log.i("BlunoService", "Destroy");
         onDestroyProcess();
+        super.onDestroy();
     }
 
     @Override
@@ -308,36 +311,19 @@ public class BlunoService extends Service {
 
     public void onDestroyProcess() {
         System.out.println("BlunoService onDestroy");
-        if(mConnected_Bracelet && mWriteCharacteristic != null) {
-            //for test start
-            new Thread(){
-                public void run(){
-                    super.run();
-                    try {
-                        Thread.sleep(100);
-                        String edtSend = "aa0";
-                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend);
-                        Thread.sleep(100);
-                        String edtSend3 = "ac0";
-                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend3);
-                        Thread.sleep(100);
-                        String edtSend2 = "ab0";
-                        WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend2);
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }.start();
-            //for test end
-        }
-        serviceContext.unregisterReceiver(mGattUpdateReceiver);
+        mReadRssiThreadRunning = false;
         connectionState="isToScan";
         transferIntent.putExtra("connectionState", connectionState);
         sendBroadcast(transferIntent);
         mConnectionState = theConnectionState.valueOf(connectionState);
         onConectionStateChange(mConnectionState);
+
+        unregisterReceiver(mGattUpdateReceiver);
         unregisterReceiver(msgReceiver);
+        unregisterReceiver(thresholdReceiver);
+        unregisterReceiver(deleteReceiver);
+        unregisterReceiver(mBraceletControlReceiver);
+
         if(mBluetoothLeService!=null)
         {
             mBluetoothLeService.disconnect();
@@ -345,10 +331,14 @@ public class BlunoService extends Service {
             mBluetoothLeService.close();
         }
 //        mSCharacteristic=null;
-        serviceContext.unbindService(mServiceConnection);
-        mBluetoothLeService = null;
-        unbindService(TextToSpeechServiceConnection);
-        mTTSService = null;
+        try{
+            getApplicationContext().unbindService(TextToSpeechServiceConnection);
+            mTTSService = null;
+            getApplicationContext().unbindService(mServiceConnection);
+            mBluetoothLeService = null;
+        } catch (IllegalArgumentException e){
+            e.printStackTrace();
+        }
     }
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
@@ -376,10 +366,22 @@ public class BlunoService extends Service {
                 //mBluetoothLeService.close();
                 if(device.equals(mGlassDevice)){
                     handler.removeCallbacks(readUltraSoundRunnable);
+                    mTTSService.speak("眼鏡裝置已斷線。");
+                    mGlassDevice=null;
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
 //                    handler.removeCallbacks(mBraceletDistanceNotifyRunnable);
+                    mTTSService.speak("手環裝置已斷線。");
+                    mBraceletDevice=null;
+                }
+                if(device.equals(mGloveDeviceLeft)){
+                    mTTSService.speak("左手手套已斷線。");
+                    mGloveDeviceLeft=null;
+                }
+                if(device.equals(mGloveDeviceRight)){
+                    mTTSService.speak("右手手套已斷線。");
+                    mGloveDeviceRight=null;
                 }
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
@@ -509,8 +511,14 @@ public class BlunoService extends Service {
                                 //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
                             }
                         }
+                    }else if(m_braceletState == BraceletState.search){
+                        if(PW.startsWith("ad00010")) {
+                            braceletControlIntent.putExtra("BraceletSearch",false);
+                            sendBroadcast(braceletControlIntent);
+                            mTTSService.speak("關閉尋找手環");
+                        }
                     }
-                    if(PW.startsWith("ae")){
+                        if(PW.startsWith("ae")){
                         if(aestart!=-1) {
                             final StringBuilder stringBAT = new StringBuilder();
                             Bracelet_BAT = Integer.valueOf(stringBAT.append(datastring, aastart + 2, aastart + 5).toString());
@@ -521,6 +529,7 @@ public class BlunoService extends Service {
                     sendBroadcast(braceletStateIntent);
                 }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
                     Bracelet_RSSI=intent.getIntExtra("RSSI",0);
+                    calculateAccuracy(Bracelet_RSSI+100);
                 }
             }
             else if(device.equals(mGloveDeviceLeft) || device.equals(mGloveDeviceRight)) {
@@ -561,6 +570,9 @@ public class BlunoService extends Service {
                 final boolean braceletDistance =intent.getBooleanExtra("BraceletDistance",false);
                 final boolean braceletColor =intent.getBooleanExtra("BraceletColor",false);
                 final boolean braceletSearch = intent.getBooleanExtra("BraceletSearch",false);
+                Log.i(TAG,"braceletDistance " + braceletDistance);
+                Log.i(TAG,"braceletColor " + braceletColor);
+                Log.i(TAG,"braceletSearch " + braceletSearch);
                 new Thread(){
                     public void run(){
                         super.run();
@@ -604,10 +616,24 @@ public class BlunoService extends Service {
                                 Thread.sleep(100);
                             }
                             if(braceletSearch){
-                                //TODO : find bracelet
-                            }else{
-
+                                //find bracelet
+                                m_braceletState = BraceletState.search;
+                                Thread.sleep(100);
+                                String edtSend = "ai1";
+                                WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                                Thread.sleep(100);
+                                if(distance_rssi < 33){
+                                    edtSend = "ag001001";
+                                }else{
+                                    edtSend = "ag001002";
+                                }
+                                WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                                Thread.sleep(100);
+                            }else if(m_braceletState == BraceletState.search){
+                                m_braceletState = BraceletState.none;
                             }
+                            braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
+                            sendBroadcast(braceletStateIntent);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -830,6 +856,7 @@ public class BlunoService extends Service {
                     mGlassGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
                     mGlassGattCharacteristics.add(charas);
                     mBluetoothLeService.setGlassGatt(mBluetoothLeService.getGattFromDevice(device));
+                    Glass_RSSI = 118;
 
                     if (mUltraSoundCharacteristic==null) {
                         Toast.makeText(serviceContext, "Please select DFRobot devices",Toast.LENGTH_SHORT).show();
@@ -855,6 +882,7 @@ public class BlunoService extends Service {
 //                        mBluetoothLeService.setCharacteristicNotification(device, mSCharacteristic, true);
 //                        mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
 //                    }
+                    mTTSService.speak("眼鏡裝置已連線。");
                     Log.d(TAG, "Connected to glass device.");
                     break;
                 case 1:
@@ -877,6 +905,7 @@ public class BlunoService extends Service {
                         }
                     }.start();
 //                    initBraceletRunnable();
+                    mTTSService.speak("手環裝置已連線。");
                     Log.d(TAG, "Connected to bracelet device.");
                     break;
                 case 2:
@@ -885,6 +914,7 @@ public class BlunoService extends Service {
                         mConnected_GloveLeft = true;
                         mGloveDeviceLeft = device;
                         mBluetoothLeServiceListener.onLeDeviceConnected(device,true);
+                        mTTSService.speak("右手手套已連線。");
                         Log.d(TAG, "Connected to glove device left.");
                     }
                     else if(!mConnected_GloveRight && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlove.toLowerCase() + "r"))
@@ -892,6 +922,7 @@ public class BlunoService extends Service {
                         mConnected_GloveRight = true;
                         mGloveDeviceRight = device;
                         mBluetoothLeServiceListener.onLeDeviceConnected(device,false);
+                        mTTSService.speak("左手手套已連線。");
                         Log.d(TAG, "Connected to glove device right.");
                     }
                     if(mConnected_GloveLeft && mConnected_GloveRight){
@@ -1501,29 +1532,39 @@ public class BlunoService extends Service {
                     if ((mConnected_GloveLeft && mConnected_GloveRight) ||
                             mConnected_Glass || mConnected_Bracelet)
                     {
-                        mBluetoothLeService.readRemoteRssi();
                         try
                         {
+                            mBluetoothLeService.readRemoteRssi();
+                            Thread.sleep(200);
+                            mBluetoothLeService.readRemoteRssi();
                             Thread.sleep(200);
                         }
-                        catch (InterruptedException e)
+                        catch (Exception e)
                         {
                             e.printStackTrace();
                         }
-                        mBluetoothLeService.readRemoteRssi();
-                    }
-
-                    try
-                    {
-                        Thread.sleep(200);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
                     }
                 }
             }
         });
         mReadRssiThread.start();
+    }
+
+    private static void calculateAccuracy(int rssi) {
+        data[index] = rssi;
+        //Log.i("", data[0] + "" + data[1] + "" + data[2]);
+        if (index == 0) {
+            if (data[0] <= (data[1] + 3) && data[0] >= (data[1] - 3) && data[0] <= (data[2] + 3) && data[0] >= (data[2] - 3))
+                distance_rssi = data[0];
+            index = 1;
+        } else if (index == 1) {
+            if (data[1] <= (data[2] + 3) && data[1] >= (data[2] - 3) && data[1] <= (data[0] + 3) && data[1] >= (data[0] - 3))
+                distance_rssi = data[1];
+            index = 2;
+        } else if (index == 2) {
+            if (data[2] <= (data[0] + 3) && data[2] >= (data[0] - 3) && data[2] <= (data[1] + 3) && data[2] >= (data[1] - 3))
+                distance_rssi = data[1];
+            index = 0;
+        }
     }
 }
