@@ -103,18 +103,34 @@ public class HearingSearchActivity extends BlunoLibrary {
                 break;
         }
         killRunnable = false;
+//        this.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                if(!killRunnable){
+//                    if(getScannedDevices().length > 0){
+//                        mScanDeviceDialog.show();
+//                        killRunnable = true;
+//                    }
+//                }else{
+//                    mHandler.removeCallbacksAndMessages(this);
+//                }
+//                mHandler.postDelayed(this,500);
+//            }
+//        });
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                if(!killRunnable){
-                    if(getScannedDevices().length > 0){
-                        mScanDeviceDialog.show();
-                        killRunnable = true;
+                if(!isFinishing()){
+                    if(!killRunnable){
+                        if(getScannedDevices().length > 0){
+                            mScanDeviceDialog.show();
+                            killRunnable = true;
+                        }
+                    }else{
+                        mHandler.removeCallbacksAndMessages(this);
                     }
-                }else{
-                    mHandler.removeCallbacksAndMessages(this);
+                    mHandler.postDelayed(this,1500);
                 }
-                mHandler.postDelayed(this,500);
             }
         });
     }
@@ -130,6 +146,7 @@ public class HearingSearchActivity extends BlunoLibrary {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mScanDeviceDialog.dismiss();
         unregisterReceiver(mMsgReceiver);
 //        unbindService(mServiceConnection);
         Log.i(TAG, "onDestroy");
