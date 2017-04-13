@@ -43,8 +43,8 @@ public class ChooseClassActivity extends AppCompatActivity {
         ImageButton ibtnHearing = (ImageButton) findViewById(R.id.img_btn_hearing);
         ibtnHearing.getLayoutParams().height = (int)(metrics.heightPixels*0.4);
 
-        Button btnHelp = (Button) findViewById(R.id.btn_help);
-        btnHelp.getLayoutParams().height = (int)(metrics.heightPixels*0.1);
+        //Button btnHelp = (Button) findViewById(R.id.btn_help);
+        //btnHelp.getLayoutParams().height = (int)(metrics.heightPixels*0.1);
 
         View decorView = getWindow().getDecorView();
         /*decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
