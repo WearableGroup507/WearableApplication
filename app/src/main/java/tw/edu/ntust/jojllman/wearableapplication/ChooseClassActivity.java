@@ -6,14 +6,18 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -37,11 +41,27 @@ public class ChooseClassActivity extends AppCompatActivity {
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        ImageButton ibtnVisual = (ImageButton) findViewById(R.id.img_btn_visual);
+        Button ibtnVisual = (Button) findViewById(R.id.img_btn_visual);
         ibtnVisual.getLayoutParams().height = (int)(metrics.heightPixels*0.4);
+        ibtnVisual.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        ContextCompat.getDrawable(ChooseClassActivity.this.getApplicationContext(), R.drawable.bg_eye);
+                        Button btn_eye = (Button) findViewById(R.id.img_btn_visual);
+                        btn_eye.getCompoundDrawables()[2].setLevel(1);
+                        Button btn_ear = (Button) findViewById(R.id.img_btn_hearing);
+                        btn_ear.getCompoundDrawables()[2].setLevel(1);
 
-        ImageButton ibtnHearing = (ImageButton) findViewById(R.id.img_btn_hearing);
-        ibtnHearing.getLayoutParams().height = (int)(metrics.heightPixels*0.4);
+//                        Drawable img = ChooseClassActivity.this.getApplicationContext().getResources().getDrawable(
+//                                R.drawable.blue_line);
+//                        img.setBounds(0, 0, 20, textView1.getMeasuredHeight());
+//                        textView1.setCompoundDrawables(img, null, null, null);
+//                        textView1.removeOnLayoutChangeListener(this);
+                    }
+                });
+        Button btn_ear = (Button) findViewById(R.id.img_btn_hearing);
+        btn_ear.getLayoutParams().height = (int)(metrics.heightPixels*0.4);
 
         Button btnHelp = (Button) findViewById(R.id.btn_help);
         btnHelp.getLayoutParams().height = (int)(metrics.heightPixels*0.1);

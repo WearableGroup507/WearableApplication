@@ -12,33 +12,41 @@
     android:background="#000000"
     android:weightSum="12">
 
-    <ImageButton
+    <Button
         android:contentDescription="@string/visual_button"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:id="@+id/img_btn_visual"
-        android:src="@drawable/img_btn_eye_selector"
-        android:scaleType="centerInside"
+        android:drawableRight="@drawable/scale_eye"
         android:adjustViewBounds="true"
-        android:background="@drawable/button_with_border_new"
+        android:text="視覺輔助"
+        android:paddingLeft="26dp"
+        android:drawablePadding="-280dp"
+        android:background="#0047b2"
         android:onClick="OnVisualClick"
-        android:layout_weight="5"/>
+        android:layout_weight="6"
+        android:textSize="50sp"
+        android:textColor="#ffffff"/>
 
-    <ImageButton
+    <Button
         android:contentDescription="@string/hearing_button"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
+        android:text="聽覺輔助"
         android:id="@+id/img_btn_hearing"
-        android:src="@drawable/img_btn_ear_selector"
-        android:scaleType="centerInside"
+        android:drawableRight="@drawable/scale_ear"
         android:adjustViewBounds="true"
-        android:background="@drawable/button_with_border_new"
+        android:paddingLeft="26dp"
+        android:drawablePadding="-280dp"
+        android:background="#ffffff"
         android:onClick="OnHearingClick"
-        android:layout_weight="5"/>
+        android:layout_weight="6"
+        android:textSize="50sp"
+        android:textColor="#0047b2"/>
 
     <Button
         android:contentDescription="@string/btn_help"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:id="@+id/btn_help"
         android:text="@string/btn_help"

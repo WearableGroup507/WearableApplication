@@ -24,8 +24,8 @@
     <string name="btn_bracelet_search">尋找手環</string>
 
     <string name="app_manage">管理頁面</string>
-    <string name="layout_search_device">搜尋裝置</string>
-    <string name="layout_app_setting">應用程式設定</string>
+    <string name="layout_search_device">尋找手環</string>
+    <string name="layout_app_setting">設定</string>
 
     <string name="search_device">搜尋裝置頁面</string>
 

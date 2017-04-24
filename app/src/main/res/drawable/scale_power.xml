@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scale xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/icon_power"
+    android:scaleGravity="left"
+    android:scaleHeight="60%"
+    android:scaleWidth="60%" />

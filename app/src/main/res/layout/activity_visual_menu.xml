@@ -12,7 +12,7 @@
     android:background="#000000"
     android:weightSum="20">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:contentDescription="@string/layout_glasses"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
@@ -20,79 +20,131 @@
         android:background="@drawable/button_with_border_new"
         android:id="@+id/layout_glass_dev"
         android:onClick="OnDeviceClick"
+        android:orientation="horizontal"
         >
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginLeft="20dp"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/layout_glasses"
-            android:textSize="40sp"
-            android:textColor="#FFFFFF" />
+        <LinearLayout
+            android:layout_width="231dp"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:paddingTop="20dp"
+            android:paddingLeft="26dp"
+            android:layout_alignParentLeft="true"
+            android:layout_weight="3"
+            android:paddingBottom="20dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="40sp"
+                android:gravity="center"
+                android:layout_weight="6"
+                android:textColor="#FFFFFF"
+                android:text="@string/layout_glasses" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginLeft="20dp"
-            android:layout_gravity="center_horizontal"
-            android:text="訊號 未知"
-            android:textSize="25sp"
-            android:textColor="#FFFFFF" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="裝置 未連線"
+                android:gravity="center"
+                android:textSize="25sp"
+                android:layout_weight="3"
+                android:textColor="#FFFFFF" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginTop="25dp"
-            android:layout_marginBottom="30dp"
-            android:layout_alignParentRight="true"
-            android:scaleType="fitEnd"
-            android:src="@drawable/bg_glass"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="電量 0%"
+                android:gravity="top"
+                android:textSize="25sp"
+                android:layout_weight="3"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+        <Button
+            android:layout_marginRight="30dp"
+            android:id="@+id/glass_btn"
+            android:drawableLeft="@drawable/scale_power"
+            android:text="關閉"
+            android:textColor="#0047B2"
+            android:textSize="19sp"
+            android:adjustViewBounds="true"
+            android:layout_width="103dp"
+            android:minWidth="103dp"
+            android:layout_height="53dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:layout_weight="3"
+            android:drawablePadding="-33dp"
+            android:paddingLeft="9dp"
+            android:background="@drawable/btn_shape"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:contentDescription="@string/layout_bracelet"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="@drawable/button_with_border_new"
         android:id="@+id/layout_bracelet_dev"
+        android:orientation="horizontal"
         android:onClick="OnDeviceClick"
         >
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginLeft="20dp"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/layout_bracelet"
-            android:textSize="40sp"
-            android:textColor="#FFFFFF" />
+        <LinearLayout
+            android:layout_width="231dp"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:paddingTop="20dp"
+            android:paddingLeft="26dp"
+            android:layout_alignParentLeft="true"
+            android:layout_weight="3"
+            android:paddingBottom="20dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/layout_bracelet"
+                android:textSize="40sp"
+                android:gravity="center"
+                android:layout_weight="6"
+                android:textColor="#FFFFFF" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginLeft="20dp"
-            android:layout_gravity="center_horizontal"
-            android:text="訊號 未知"
-            android:textSize="25sp"
-            android:textColor="#FFFFFF" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="裝置 未連線"
+                android:gravity="center"
+                android:textSize="25sp"
+                android:layout_weight="3"
+                android:textColor="#FFFFFF" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginTop="25dp"
-            android:layout_marginBottom="25dp"
-            android:layout_alignParentRight="true"
-            android:scaleType="fitEnd"
-            android:src="@drawable/bg_wristband"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="電量 0%"
+                android:gravity="top"
+                android:textSize="25sp"
+                android:layout_weight="3"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+
+        <Button
+            android:layout_marginRight="30dp"
+            android:id="@+id/ring_btn"
+            android:drawableLeft="@drawable/scale_power"
+            android:text="關閉"
+            android:textColor="#0047B2"
+            android:textSize="19sp"
+            android:adjustViewBounds="true"
+            android:layout_width="103dp"
+            android:minWidth="103dp"
+            android:layout_height="53dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:layout_weight="3"
+            android:drawablePadding="-33dp"
+            android:paddingLeft="9dp"
+            android:background="@drawable/btn_shape"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:contentDescription="@string/layout_search_device"

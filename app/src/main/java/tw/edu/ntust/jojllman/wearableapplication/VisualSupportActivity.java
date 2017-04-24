@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -33,8 +35,8 @@ public class VisualSupportActivity extends BlunoLibrary {
     private Handler handler=new Handler();
 //    private DeviceInfoView btn_device_glass;
 //    private DeviceInfoView btn_device_bracelet;
-    private RelativeLayout layout_glass_dev;
-    private RelativeLayout layout_bracelet_dev;
+    private LinearLayout layout_glass_dev;
+    private LinearLayout layout_bracelet_dev;
 //    private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private boolean m_braceletConnected = false;
     private int click_count=0;
@@ -178,8 +180,8 @@ public class VisualSupportActivity extends BlunoLibrary {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                ((TextView)layout_glass_dev.getChildAt(1)).setText("訊號 " + getTxtSignal(BlunoService.getGlass_RSSI()));        //get glass rssi
-                ((TextView)layout_bracelet_dev.getChildAt(1)).setText("訊號 " + getTxtSignal(BlunoService.getBracelet_RSSI()));     //get bracelet rssi
+//                ((TextView)layout_glass_dev.getChildAt(1)).setText("訊號 " + getTxtSignal(BlunoService.getGlass_RSSI()));        //get glass rssi
+//                ((TextView)layout_bracelet_dev.getChildAt(1)).setText("訊號 " + getTxtSignal(BlunoService.getBracelet_RSSI()));     //get bracelet rssi
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView
@@ -193,10 +195,14 @@ public class VisualSupportActivity extends BlunoLibrary {
     }
 
     private void findView(){
-        layout_glass_dev = (RelativeLayout) findViewById(R.id.layout_glass_dev);
-        layout_bracelet_dev = (RelativeLayout) findViewById(R.id.layout_bracelet_dev);
+        layout_glass_dev = (LinearLayout) findViewById(R.id.layout_glass_dev);
+        layout_bracelet_dev = (LinearLayout) findViewById(R.id.layout_bracelet_dev);
         layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，訊號 未知");
         layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，訊號 未知");
+        Button ring = (Button) findViewById(R.id.ring_btn);
+        ring.getCompoundDrawables()[0].setLevel(1);
+        Button glass = (Button) findViewById(R.id.glass_btn);
+        glass.getCompoundDrawables()[0].setLevel(1);
     }
 
     public void onPause(){
