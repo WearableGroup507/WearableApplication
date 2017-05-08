@@ -293,6 +293,7 @@ public class BluetoothLeService extends Service {
             Intent intent = new Intent(ON_READ_REMOTE_RSSI);
             intent.putExtra("DEVICE", device);
             intent.putExtra("RSSI", rssi);
+            intent.putExtra("Name", device.getName());
             sendBroadcast(intent);
         }
     };

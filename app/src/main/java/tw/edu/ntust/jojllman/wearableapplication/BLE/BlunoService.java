@@ -99,8 +99,10 @@ public class BlunoService extends Service {
     static public int Bracelet_R, Bracelet_G, Bracelet_B;
     static public int Bracelet_DT;      //mm
     private static int Bracelet_RSSI;
+    private static String BraceletName = "未連線";
     static public int Bracelet_BAT;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
+    public static String getBraceletName(){return BraceletName;}
     public static int distance_rssi;
     private static int[] data = new int[3];
     private static int index=0;
@@ -129,7 +131,9 @@ public class BlunoService extends Service {
     public static boolean getReadUltraSound(){return readUltraSound;}
     private Runnable readUltraSoundRunnable;
     private static int Glass_RSSI;
+    private static String GlassName = "未連線";
     public static int getGlass_RSSI(){return Glass_RSSI;}
+    public static String getGlassName(){return GlassName;}
     private int move_direction;
     private int pre_avoid_state;
     private int front  = 100;
@@ -429,6 +433,7 @@ public class BlunoService extends Service {
 //                    }
                 }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
                     Glass_RSSI=intent.getIntExtra("RSSI",0);
+                    GlassName = intent.getStringExtra("Name");
                 }
             }
             else if(device.equals(mBraceletDevice)) {
@@ -528,6 +533,7 @@ public class BlunoService extends Service {
                     braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                     sendBroadcast(braceletStateIntent);
                 }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
+                    BraceletName = intent.getStringExtra("Name");
                     Bracelet_RSSI=intent.getIntExtra("RSSI",0);
                     calculateAccuracy(Bracelet_RSSI+100);
                 }

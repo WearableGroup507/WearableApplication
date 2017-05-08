@@ -14,7 +14,7 @@
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="@drawable/button_with_border_new"
-        android:id="@+id/layout_glass_dev"
+
         android:onClick="OnDeviceClick"
         android:orientation="horizontal"
         >
@@ -26,6 +26,7 @@
             android:paddingLeft="26dp"
             android:layout_alignParentLeft="true"
             android:layout_weight="3"
+            android:id="@+id/layout_glass_dev"
             android:paddingBottom="20dp">
             <TextView
                 android:layout_width="wrap_content"
@@ -41,6 +42,7 @@
                 android:layout_height="wrap_content"
                 android:text="裝置 未連線"
                 android:gravity="center"
+                android:ellipsize="end"
                 android:textSize="25sp"
                 android:layout_weight="3"
                 android:textColor="#FFFFFF" />
@@ -80,7 +82,7 @@
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="@drawable/button_with_border_new"
-        android:id="@+id/layout_bracelet_dev"
+
         android:orientation="horizontal"
         android:onClick="OnDeviceClick"
         >
@@ -92,6 +94,8 @@
             android:paddingLeft="26dp"
             android:layout_alignParentLeft="true"
             android:layout_weight="3"
+            android:gravity="left"
+            android:id="@+id/layout_bracelet_dev"
             android:paddingBottom="20dp">
             <TextView
                 android:layout_width="wrap_content"
@@ -106,7 +110,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="裝置 未連線"
-                android:gravity="center"
+                android:gravity="left"
+                android:width="200dp"
+                android:maxLines="2"
                 android:textSize="25sp"
                 android:layout_weight="3"
                 android:textColor="#FFFFFF" />

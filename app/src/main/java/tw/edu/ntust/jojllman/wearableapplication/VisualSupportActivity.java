@@ -180,8 +180,8 @@ public class VisualSupportActivity extends BlunoLibrary {
         handler.post(new Runnable() {
             @Override
             public void run() {
-//                ((TextView)layout_glass_dev.getChildAt(1)).setText("訊號 " + getTxtSignal(BlunoService.getGlass_RSSI()));        //get glass rssi
-//                ((TextView)layout_bracelet_dev.getChildAt(1)).setText("訊號 " + getTxtSignal(BlunoService.getBracelet_RSSI()));     //get bracelet rssi
+                ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
+                ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView
