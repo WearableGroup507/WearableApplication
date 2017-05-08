@@ -487,6 +487,17 @@ public class BluetoothLeService extends Service {
 
         mBluetoothGatts.clear();
     }
+    public void disconnect(BluetoothGatt gatt) {
+        System.out.println("BluetoothLeService disconnect");
+        if (mBluetoothGatts == null || mBluetoothGatts.size() == 0) {
+            Log.w(TAG, "BluetoothGatts has nothing.");
+            return;
+        }
+        mBluetoothGatts.remove(gatt.getDevice().getAddress());
+
+        gatt.disconnect();
+
+    }
 
     /**
      * After using a given BLE device, the app must call this method to ensure resources are

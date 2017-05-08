@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BluetoothLeService;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
@@ -37,14 +38,15 @@ public class VisualSupportActivity extends BlunoLibrary {
 //    private DeviceInfoView btn_device_bracelet;
     private LinearLayout layout_glass_dev;
     private LinearLayout layout_bracelet_dev;
-//    private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private boolean m_braceletConnected = false;
     private int click_count=0;
+
+    private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
 
     private Runnable autoConnectRunnable;
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
-
+    private Button ring_btn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -132,7 +134,14 @@ public class VisualSupportActivity extends BlunoLibrary {
                 }
             }
         };
-
+        ring_btn = (Button) findViewById(R.id.ring_btn);
+        ring_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                braceletControlIntent.putExtra("BraceletDisconnect",true);
+                sendBroadcast(braceletControlIntent);
+            }
+        });
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         registerReceiver(braceletReceiver, intentFilter);
@@ -182,6 +191,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             public void run() {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
+                ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView

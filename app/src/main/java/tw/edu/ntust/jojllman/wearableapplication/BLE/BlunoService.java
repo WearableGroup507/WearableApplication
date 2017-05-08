@@ -101,9 +101,11 @@ public class BlunoService extends Service {
     private static int Bracelet_RSSI;
     private static String BraceletName = "未連線";
     static public int Bracelet_BAT;
+    private BluetoothGatt BraceletGatt;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
     public static String getBraceletName(){return BraceletName;}
     public static int distance_rssi;
+    public static String BraceletPower;
     private static int[] data = new int[3];
     private static int index=0;
 //    private static boolean bSendingBraceletDistance = false;
@@ -523,13 +525,14 @@ public class BlunoService extends Service {
                             mTTSService.speak("關閉尋找手環");
                         }
                     }
-                        if(PW.startsWith("ae")){
+                    if(PW.startsWith("ae")){
                         if(aestart!=-1) {
                             final StringBuilder stringBAT = new StringBuilder();
-                            Bracelet_BAT = Integer.valueOf(stringBAT.append(datastring, aastart + 2, aastart + 5).toString());
+                            Bracelet_BAT = Integer.valueOf(stringBAT.append(datastring.substring(2,5)).toString());
                             Log.d(TAG, "BAT:" + Bracelet_BAT);
                         }
                     }
+
                     braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                     sendBroadcast(braceletStateIntent);
                 }else if(BluetoothLeService.ON_READ_REMOTE_RSSI.equals(action)){
@@ -576,6 +579,7 @@ public class BlunoService extends Service {
                 final boolean braceletDistance =intent.getBooleanExtra("BraceletDistance",false);
                 final boolean braceletColor =intent.getBooleanExtra("BraceletColor",false);
                 final boolean braceletSearch = intent.getBooleanExtra("BraceletSearch",false);
+                final boolean braceletDisconnect = intent.getBooleanExtra("BraceletDisconnect", false);
                 Log.i(TAG,"braceletDistance " + braceletDistance);
                 Log.i(TAG,"braceletColor " + braceletColor);
                 Log.i(TAG,"braceletSearch " + braceletSearch);
@@ -637,6 +641,9 @@ public class BlunoService extends Service {
                                 Thread.sleep(100);
                             }else if(m_braceletState == BraceletState.search){
                                 m_braceletState = BraceletState.none;
+                            }
+                            if(braceletDisconnect){
+                                disConnect(getBraceletDevice());
                             }
                             braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                             sendBroadcast(braceletStateIntent);
@@ -905,6 +912,8 @@ public class BlunoService extends Service {
                                 Thread.sleep(200);
                                 String edtSend4 = "aw1";
                                 WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend4);
+                                Thread.sleep(100);
+                                WriteValue(mBraceletDevice, mWriteCharacteristic, "ae");
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -1361,7 +1370,7 @@ public class BlunoService extends Service {
         return mGloveDeviceRight;
     }
 
-    private void removeDevice(BluetoothDevice device) {
+    public void removeDevice(BluetoothDevice device) {
         mBluetoothLeService.removeDeviceGatt(device);
 
         if(device == mGlassDevice) {
@@ -1572,5 +1581,20 @@ public class BlunoService extends Service {
                 distance_rssi = data[1];
             index = 0;
         }
+    }
+    public static int getBraceletPower() {
+        return Bracelet_BAT;
+    }
+    public void disConnect(BluetoothDevice device){
+        if(mConnected_Bracelet){
+            mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
+            mConnected_Bracelet = false;
+//            mBraceletDevice = null;
+//            mBraceletGattCharacteristics.clear();
+//            mBluetoothLeService.setBraceletGatt(null);
+            BraceletName = "未連線";
+            Bracelet_BAT = 0;
+        }
+
     }
 }
