@@ -3,6 +3,7 @@ package tw.edu.ntust.jojllman.wearableapplication;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.view.ContextThemeWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -31,7 +32,6 @@ public class VisualSettingActivity extends AppCompatActivity {
     private boolean mConnected_Bracelet = false;
     private boolean mConnected_Glove_Left = false;
     private boolean mConnected_Glove_Right = false;
-
     private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
     private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private MsgReceiver mMsgReceiver;
@@ -52,6 +52,7 @@ public class VisualSettingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.SettingTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visual_setting);
 
@@ -73,6 +74,7 @@ public class VisualSettingActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        actionBar.setTitle("設定");
         findView();
         initialize();
     }

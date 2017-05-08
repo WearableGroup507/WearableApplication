@@ -50,8 +50,8 @@ public class ChooseClassActivity extends AppCompatActivity {
                         ContextCompat.getDrawable(ChooseClassActivity.this.getApplicationContext(), R.drawable.bg_eye);
                         Button btn_eye = (Button) findViewById(R.id.img_btn_visual);
                         btn_eye.getCompoundDrawables()[2].setLevel(1);
-                        Button btn_ear = (Button) findViewById(R.id.img_btn_hearing);
-                        btn_ear.getCompoundDrawables()[2].setLevel(1);
+//                        Button btn_ear = (Button) findViewById(R.id.img_btn_hearing);
+//                        btn_ear.getCompoundDrawables()[2].setLevel(1);
 
 //                        Drawable img = ChooseClassActivity.this.getApplicationContext().getResources().getDrawable(
 //                                R.drawable.blue_line);
@@ -60,8 +60,8 @@ public class ChooseClassActivity extends AppCompatActivity {
 //                        textView1.removeOnLayoutChangeListener(this);
                     }
                 });
-        Button btn_ear = (Button) findViewById(R.id.img_btn_hearing);
-        btn_ear.getLayoutParams().height = (int)(metrics.heightPixels*0.4);
+//        Button btn_ear = (Button) findViewById(R.id.img_btn_hearing);
+//        btn_ear.getLayoutParams().height = (int)(metrics.heightPixels*0.4);
 
         Button btnHelp = (Button) findViewById(R.id.btn_help);
         btnHelp.getLayoutParams().height = (int)(metrics.heightPixels*0.1);
