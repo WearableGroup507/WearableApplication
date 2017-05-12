@@ -132,7 +132,7 @@ public class BlunoService extends Service {
     public static void setReadUltraSound(boolean b){readUltraSound = b;}
     public static boolean getReadUltraSound(){return readUltraSound;}
     private Runnable readUltraSoundRunnable;
-    private static int Glass_RSSI;
+    public static int Glass_RSSI;
     private static String GlassName = "未連線";
     public static int getGlass_RSSI(){return Glass_RSSI;}
     public static String getGlassName(){return GlassName;}
@@ -656,6 +656,7 @@ public class BlunoService extends Service {
                 final boolean braceletColor =intent.getBooleanExtra("BraceletColor",false);
                 final boolean braceletSearch = intent.getBooleanExtra("BraceletSearch",false);
                 final boolean braceletDisconnect = intent.getBooleanExtra("BraceletDisconnect", false);
+                final boolean glassDissconnect = intent.getBooleanExtra("GlassDisconnect",false);
                 Log.i(TAG,"braceletDistance " + braceletDistance);
                 Log.i(TAG,"braceletColor " + braceletColor);
                 Log.i(TAG,"braceletSearch " + braceletSearch);
@@ -713,6 +714,9 @@ public class BlunoService extends Service {
                             }
                             if(braceletDisconnect){
                                 disConnect(getBraceletDevice());
+                            }
+                            if(glassDissconnect){
+                                disConnect(getGlassDevice());
                             }
                             braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                             sendBroadcast(braceletStateIntent);
@@ -1663,6 +1667,9 @@ public class BlunoService extends Service {
 //            mBluetoothLeService.setBraceletGatt(null);
             Bracelet_BAT = 0;
         }
-
+        if(mConnected_Glass){
+            mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
+            mConnected_Glass= false;
+        }
     }
 }

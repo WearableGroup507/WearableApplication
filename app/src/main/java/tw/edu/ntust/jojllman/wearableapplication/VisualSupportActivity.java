@@ -47,7 +47,7 @@ public class VisualSupportActivity extends BlunoLibrary {
     private int click_count=0;
 
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
-
+    private Intent glassControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Runnable autoConnectRunnable;
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
@@ -57,6 +57,7 @@ public class VisualSupportActivity extends BlunoLibrary {
     private boolean killRunnable = false;
     private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private TextToSpeech tts;
+    private Button glass_btn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -170,6 +171,32 @@ public class VisualSupportActivity extends BlunoLibrary {
 
             }
         });
+        glass_btn = (Button) findViewById(R.id.glass_btn);
+        glass_btn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                if(BlunoService.Glass_RSSI>0) {
+                    braceletControlIntent.putExtra("GlassDisconnect",true);
+                    sendBroadcast(braceletControlIntent);
+                    glass_btn.setText("開啟");
+                    ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
+                    for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+                        ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
+                    }
+                }
+                else {
+                    mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.glassesAddress);
+                    mTransferIntent.putExtra("connectionState", connectionState);
+                    sendBroadcast(mTransferIntent);
+                    glass_btn.setText("關閉");
+                    ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+                    for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+                        ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+                    }
+                }
+            }
+        });
+
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         registerReceiver(braceletReceiver, intentFilter);
