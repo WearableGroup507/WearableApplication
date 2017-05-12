@@ -83,7 +83,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         short auto = getIntent().getShortExtra("AutoEnter", (short) 0);
         if(auto == 0) {
             ActionBar actionBar = getSupportActionBar();
-            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
         if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {

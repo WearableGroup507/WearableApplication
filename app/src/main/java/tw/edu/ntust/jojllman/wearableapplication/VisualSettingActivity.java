@@ -74,7 +74,7 @@ public class VisualSettingActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        actionBar.setTitle("設定");
+        actionBar.setTitle("裝置設定");
         findView();
         initialize();
     }
