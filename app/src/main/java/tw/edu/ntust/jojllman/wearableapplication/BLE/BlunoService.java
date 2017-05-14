@@ -580,6 +580,11 @@ public class BlunoService extends Service {
                 final boolean braceletColor =intent.getBooleanExtra("BraceletColor",false);
                 final boolean braceletSearch = intent.getBooleanExtra("BraceletSearch",false);
                 final boolean braceletDisconnect = intent.getBooleanExtra("BraceletDisconnect", false);
+                final boolean glassDisconnect = intent.getBooleanExtra("GlassDisconnect", false);
+                final boolean bondBraceletAddress = intent.getBooleanExtra("BondBracelet",false);
+                final boolean bondGlassAddress = intent.getBooleanExtra("BondGlass",false);
+                final String glassAddress = intent.getStringExtra("BondGlassAddress");
+                final String braceletAddress = intent.getStringExtra("BondBraceletAddress");
                 Log.i(TAG,"braceletDistance " + braceletDistance);
                 Log.i(TAG,"braceletColor " + braceletColor);
                 Log.i(TAG,"braceletSearch " + braceletSearch);
@@ -645,6 +650,24 @@ public class BlunoService extends Service {
                             if(braceletDisconnect){
                                 disConnect(getBraceletDevice());
                             }
+                            if(glassDisconnect){
+                                disConnect(getGlassDevice());
+                            }
+                            if (bondBraceletAddress){
+                                if(mBluetoothLeService.connect(braceletAddress)){
+                                    System.out.println("bonded bracelet connected");
+                                }else{
+                                    System.out.println("bonded bracelet connect fail");
+                                }
+                            }
+                            if(bondGlassAddress){
+                                if(mBluetoothLeService.connect(glassAddress)){
+                                    System.out.println("bonded glass connected");
+                                }else{
+                                    System.out.println("bonded glass connect fail");
+                                }
+                            }
+
                             braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                             sendBroadcast(braceletStateIntent);
                         } catch (InterruptedException e) {
@@ -1592,6 +1615,10 @@ public class BlunoService extends Service {
 //            mBraceletDevice = null;
 //            mBraceletGattCharacteristics.clear();
 //            mBluetoothLeService.setBraceletGatt(null);
+        }
+        if(mConnected_Glass){
+            mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
+            mConnected_Glass = false;
         }
 
     }

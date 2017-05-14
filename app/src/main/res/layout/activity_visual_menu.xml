@@ -183,6 +183,15 @@
             android:layout_centerVertical="true"
             android:text="@string/layout_app_setting"
             android:textSize="40sp"
-            android:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF"
+            android:id="@+id/textView" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="bond"
+            android:id="@+id/bond_test"
+            android:layout_alignTop="@+id/textView"
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
 </LinearLayout>

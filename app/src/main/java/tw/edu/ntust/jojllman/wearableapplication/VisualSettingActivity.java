@@ -1,8 +1,12 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 import android.view.ContextThemeWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,11 +17,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import java.util.Set;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
@@ -176,6 +183,7 @@ public class VisualSettingActivity extends AppCompatActivity {
                 break;
         }
     }
+
 
 //    public void OnGloveSettingClick(View view){
 //        if(mConnected_Glove_Left && mConnected_Glove_Right) {

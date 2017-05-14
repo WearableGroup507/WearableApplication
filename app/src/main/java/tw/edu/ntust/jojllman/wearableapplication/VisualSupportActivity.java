@@ -1,5 +1,6 @@
 package tw.edu.ntust.jojllman.wearableapplication;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BluetoothLeService;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
@@ -43,12 +45,19 @@ public class VisualSupportActivity extends BlunoLibrary {
     private boolean m_braceletConnected = false;
     private int click_count=0;
 
+
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
 
     private Runnable autoConnectRunnable;
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
     private Button ring_btn;
+    private Button bond_test;
+
+    public static final String defaultNameGlove = "GloveBLE";
+    public static final String defaultNameGlass = "UltraSound";
+    public static final String defaultNameBracelet = "Nordic_Bracelet";
+
 
     private Handler mHandler = new Handler();
     private boolean killRunnable = false;
@@ -62,7 +71,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         globalVariable = (GlobalVariable)getApplicationContext();
 
         findView();
-
+        setbonddevice();
 //        btn_device_glass = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_glass);
 //        btn_device_bracelet = (DeviceInfoView)findViewById(R.id.dev_info_btn_visual_bracelet);
 //
@@ -141,6 +150,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 }
             }
         };
+
         ring_btn = (Button) findViewById(R.id.ring_btn);
         ring_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,9 +159,21 @@ public class VisualSupportActivity extends BlunoLibrary {
                 sendBroadcast(braceletControlIntent);
             }
         });
+        bond_test = (Button) findViewById(R.id.bond_test);
+        bond_test.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+                Set<BluetoothDevice> devices = adapter.getBondedDevices();
+                for (BluetoothDevice device : devices) {
+                    System.out.println(device.getName() + " : " + device.getAddress());
+                }
+            }
+        });
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         registerReceiver(braceletReceiver, intentFilter);
+
     }
     private void createLanguageTTS()
     {
@@ -540,6 +562,25 @@ public class VisualSupportActivity extends BlunoLibrary {
             case isDisconnecting:
 //                buttonScan.setText("isDisconnecting");
                 break;
+        }
+    }
+    public void setbonddevice(){
+
+        System.out.println("get bond list");
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> devices = adapter.getBondedDevices();
+        for (BluetoothDevice device : devices) {
+            System.out.println(device.getName() + " : " + device.getAddress());
+            if(defaultNameBracelet.equals(device.getName())){
+                braceletControlIntent.putExtra("BondBracelet",true);
+                braceletControlIntent.putExtra("BondBraceletAddress",device.getAddress());
+                sendBroadcast(braceletControlIntent);
+            }
+            if(defaultNameGlass.equals(device.getName())){
+                braceletControlIntent.putExtra("BondGlass",true);
+                braceletControlIntent.putExtra("BondGlassAddress",device.getAddress());
+                sendBroadcast(braceletControlIntent);
+            }
         }
     }
 }
