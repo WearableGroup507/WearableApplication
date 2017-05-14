@@ -159,7 +159,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
                 }
-                else {
+                else if(GlobalVariable.braceletAddress != "") {
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.braceletAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
@@ -186,7 +186,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
                 }
-                else {
+                else if(GlobalVariable.glassesAddress != ""){
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.glassesAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
