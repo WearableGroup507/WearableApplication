@@ -703,11 +703,11 @@ public class BlunoService extends Service {
                                 String edtSend = "ai1";
                                 WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
                                 Thread.sleep(100);
-                                if(distance_rssi < 33){
-                                    edtSend = "ag001001";
-                                }else{
+//                                if(distance_rssi < 33){
+//                                    edtSend = "ag001001";
+//                                }else{
                                     edtSend = "ag001002";
-                                }
+//                                }
                                 WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
                                 Thread.sleep(100);
                             }else if(m_braceletState == BraceletState.search){
@@ -1663,6 +1663,7 @@ public class BlunoService extends Service {
 //            mBraceletDevice = null;
 //            mBraceletGattCharacteristics.clear();
 //            mBluetoothLeService.setBraceletGatt(null);
+            Bracelet_BAT = 0;
         }
 
     }
