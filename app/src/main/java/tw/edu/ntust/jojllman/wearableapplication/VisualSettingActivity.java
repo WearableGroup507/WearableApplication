@@ -72,9 +72,10 @@ public class VisualSettingActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(false);
 
         actionBar.setTitle("裝置設定");
+
         findView();
         initialize();
     }

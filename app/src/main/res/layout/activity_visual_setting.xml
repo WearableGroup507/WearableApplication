@@ -161,20 +161,25 @@
         android:paddingLeft="53dp">
 
         <TextView
+            android:id="@+id/front_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:text="調整前方偵測距離"
             android:textColor="#000000"
+            android:paddingTop="5dp"
             android:textSize="15sp" />
 
         <SeekBar
             android:id="@+id/seekBar_glass_front"
             android:layout_width="109dp"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="128.5dp"
+            android:minHeight="6dip"
+            android:maxHeight="6dip"
+            android:layout_alignTop="@id/front_text"
             android:max="350" />
 
         <TextView
@@ -202,20 +207,23 @@
         android:paddingLeft="53dp">
 
         <TextView
+            android:id="@+id/side_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:text="調整側邊偵測距離"
             android:textColor="#000000"
+            android:paddingTop="5dp"
             android:textSize="15sp" />
 
         <SeekBar
             android:id="@+id/seekBar_glass_side"
             android:layout_width="109dp"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="128.5dp"
+            android:minHeight="6dip"
+            android:maxHeight="6dip"
+            android:layout_alignTop="@id/side_text"
             android:max="350" />
 
         <TextView
@@ -238,16 +246,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-
         android:layout_weight="12">
 
         <Button
             android:contentDescription="系統重置"
-            android:background="#0047b2"
             android:text="系統重置"
+            android:background="@drawable/reset"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:textColor="#ffffff"
+            android:textSize = "17sp"
             android:layout_gravity="bottom" />
     </LinearLayout>
 
