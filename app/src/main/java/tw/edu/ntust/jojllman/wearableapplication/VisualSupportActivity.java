@@ -342,7 +342,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         }
     };
 
-    public void OnDeviceClick(final View view) {
+    public void OnDeviceClick(View view) {
         sendBroadcast(mREQUEST_CONNECTED_DEVICES);
         if (view.getId() == R.id.layout_glass_dev) {
             // 增加眼鏡按下動作
@@ -363,9 +363,14 @@ public class VisualSupportActivity extends BlunoLibrary {
                 startActivity(intent);
             }
         }else if (view.getId() == R.id.layout_visual_search_dev){
-            Intent intent = new Intent();
-            intent.setClass(this  , VisualSearchActivity.class);
-            startActivity(intent);
+            if(BlunoService.getBraceletPower() == 0){
+                Intent intent = new Intent();
+                intent.setClass(this  , VisualSearchActivity.class);
+                startActivity(intent);
+            }
+            else {
+                OnSearchClick(view);
+            }
         }else if (view.getId() == R.id.layout_setting){
             Intent intent = new Intent();
             intent.setClass(this  , VisualSettingActivity.class);
@@ -390,7 +395,12 @@ public class VisualSupportActivity extends BlunoLibrary {
             view.announceForAccessibility("關閉手環顏色辨識，開啟手環距離偵測");
         }
     }
-
+    public void OnSearchClick(View view){
+        Log.i(TAG,"OnSearchClick");
+        braceletControlIntent.putExtra("BraceletSearch", true);
+        sendBroadcast(braceletControlIntent);
+        view.announceForAccessibility("尋找手環");
+    }
     public void OnColorClick(final View view){
         Log.i(TAG,"OnColorClick");
         if(m_braceletState == BlunoService.BraceletState.none){

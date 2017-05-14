@@ -96,7 +96,7 @@ public class BlunoService extends Service {
 //    public boolean mConnected = false;
     private final static String TAG = BlunoService.class.getSimpleName();
 
-    static public int Bracelet_R, Bracelet_G, Bracelet_B;
+    static public int Bracelet_R, Bracelet_G, Bracelet_B, Bracelet_C, Bracelet_P;
     static public int Bracelet_DT;      //mm
     private static int Bracelet_RSSI;
     private static String BraceletName = "未連線";
@@ -448,6 +448,7 @@ public class BlunoService extends Service {
                     String PW=datastring;
                     int aastart = datastring.indexOf("aa");
                     int abstart = datastring.indexOf("ab");
+                    int ajstart = datastring.indexOf("aj");
                     int aestart = datastring.indexOf("ae");
                     Log.d(TAG, "aastart=" + aastart + ", abstart=" + abstart);
 //                    Log.d(TAG, "PW=" + PW);
@@ -511,11 +512,22 @@ public class BlunoService extends Service {
                                 final StringBuilder stringR= new StringBuilder();
                                 final StringBuilder stringG= new StringBuilder();
                                 final StringBuilder stringB= new StringBuilder();
-                                Bracelet_R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
-                                Bracelet_G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
-                                Bracelet_B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
-                                Log.d(TAG, "R:" + Bracelet_R + ", G:" + Bracelet_G + ", B:" + Bracelet_B);
+//                                Bracelet_R = Integer.valueOf(stringR.append(datastring, abstart+2, abstart+5).toString());
+//                                Bracelet_G = Integer.valueOf(stringG.append(datastring, abstart+5, abstart+8).toString());
+//                                Bracelet_B = +Integer.valueOf(stringB.append(datastring, abstart+8, abstart+11).toString());
+//                                Log.d(TAG, "R:" + Bracelet_R + ", G:" + Bracelet_G + ", B:" + Bracelet_B);
                                 //Log.e("test", stringR.append(s, abstart+2, abstart+4).toString());
+                            }
+                        }
+                        else if (data != null && data.length == 7) {
+                            if(ajstart != -1) {
+                                final StringBuilder stringC= new StringBuilder();
+                                final StringBuilder stringP= new StringBuilder();
+                                final StringBuilder stringB= new StringBuilder();
+                                Bracelet_C = Integer.valueOf(stringC.append(datastring, ajstart+2, ajstart+4).toString());
+                                Bracelet_P = Integer.valueOf(stringP.append(datastring, ajstart+4, ajstart+5).toString());
+                                Bracelet_B = +Integer.valueOf(stringB.append(datastring, ajstart+5, ajstart+6).toString());
+                                mTTSService.speak(getColorName());
                             }
                         }
                     }else if(m_braceletState == BraceletState.search){
@@ -553,22 +565,81 @@ public class BlunoService extends Service {
     };
 
     public static String getColorName(){
-        if(Bracelet_R>150 && Bracelet_G<80 && Bracelet_B<80)
-            return "這是紅色";
-        else if(Bracelet_G>Bracelet_R && (Bracelet_G-30)>Bracelet_B)
-            return "這是綠色";
-        else if(Bracelet_G>Bracelet_R && Bracelet_B>100)
-            return "這是藍色";
-        else if(Bracelet_B<140 && (Bracelet_R-Bracelet_G)<70&& Bracelet_B>5)  // && (Bracelet_R-20)>Bracelet_G
-            return "這是黃色";
-//else if(Math.abs(Bracelet_R-Bracelet_B)<20 && (Bracelet_R+20)>Bracelet_G && Bracelet_G>50)
-//	return "這是紫色";
-        else if(Bracelet_R>200 && Bracelet_G>80 && Bracelet_G<130 && Bracelet_B<70)
-            return "這是橘色";
-        else if(Bracelet_R>240 && Bracelet_G>240 && Bracelet_B>240)
-            return "這是白色";
-        else if(Bracelet_R<5 && Bracelet_G<5 && Bracelet_B<5)
-            return "這是黑色";
+        if(Bracelet_P == 1){
+            if(Bracelet_B == 0) {
+                return "這是灰色";
+            }
+            if(Bracelet_B == 1) {
+                return "這是白色";
+            }
+            if(Bracelet_B == 2) {
+                return "這是黑色";
+            }
+        }
+        else {
+            String prefix = "";
+            if(Bracelet_B == 0) {
+                prefix = "";
+            }
+            if(Bracelet_B == 1) {
+                prefix = "亮";
+            }
+            if(Bracelet_B == 2) {
+                prefix = "暗";
+            }
+            if(Bracelet_C == 0) {
+                return "這是" + prefix + "紅色";
+            }
+            if(Bracelet_C == 1) {
+                return "這是" + prefix + "橙色";
+            }
+            if(Bracelet_C == 2) {
+                return "這是" + prefix + "黃色";
+            }
+            if(Bracelet_C == 3) {
+                return "這是" + prefix + "黃綠色";
+            }
+            if(Bracelet_C == 4) {
+                return "這是" + prefix + "綠色";
+            }
+            if(Bracelet_C == 5) {
+                return "這是" + prefix + "青綠色";
+            }
+            if(Bracelet_C == 6) {
+                return "這是" + prefix + "青色";
+            }
+            if(Bracelet_C == 7) {
+                return "這是" + prefix + "藍清色";
+            }
+            if(Bracelet_C == 8) {
+                return "這是" + prefix + "藍色";
+            }
+            if(Bracelet_C == 9) {
+                return "這是" + prefix + "藍紫色";
+            }
+            if(Bracelet_C == 10) {
+                return "這是" + prefix + "紫色";
+            }
+            if(Bracelet_C == 11) {
+                return "這是" + prefix + "洋紅色";
+            }
+        }
+//        if(Bracelet_R>150 && Bracelet_G<80 && Bracelet_B<80)
+//            return "這是紅色";
+//        else if(Bracelet_G>Bracelet_R && (Bracelet_G-30)>Bracelet_B)
+//            return "這是綠色";
+//        else if(Bracelet_G>Bracelet_R && Bracelet_B>100)
+//            return "這是藍色";
+//        else if(Bracelet_B<140 && (Bracelet_R-Bracelet_G)<70&& Bracelet_B>5)  // && (Bracelet_R-20)>Bracelet_G
+//            return "這是黃色";
+////else if(Math.abs(Bracelet_R-Bracelet_B)<20 && (Bracelet_R+20)>Bracelet_G && Bracelet_G>50)
+////	return "這是紫色";
+//        else if(Bracelet_R>200 && Bracelet_G>80 && Bracelet_G<130 && Bracelet_B<70)
+//            return "這是橘色";
+//        else if(Bracelet_R>240 && Bracelet_G>240 && Bracelet_B>240)
+//            return "這是白色";
+//        else if(Bracelet_R<5 && Bracelet_G<5 && Bracelet_B<5)
+//            return "這是黑色";
         return "未知的顏色";
     }
 
