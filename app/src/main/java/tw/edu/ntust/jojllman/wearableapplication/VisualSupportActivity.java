@@ -158,7 +158,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }
                 }
                 else {
-                    mTransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
+                    mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.braceletAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
                     ring_btn.setText("關閉");
