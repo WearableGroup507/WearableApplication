@@ -1592,8 +1592,6 @@ public class BlunoService extends Service {
 //            mBraceletDevice = null;
 //            mBraceletGattCharacteristics.clear();
 //            mBluetoothLeService.setBraceletGatt(null);
-            BraceletName = "未連線";
-            Bracelet_BAT = 0;
         }
 
     }
