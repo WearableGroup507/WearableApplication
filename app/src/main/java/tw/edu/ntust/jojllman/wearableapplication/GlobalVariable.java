@@ -28,6 +28,8 @@ public class GlobalVariable extends Application {
     public static final int VIBRATE_LIGHT=1;
     public static final int VIBRATE_MID=2;
     public static final int VIBRATE_STRONG=4;
+    public static String braceletAddress = "";
+    public static String glassesAddress = "";
 
     private boolean _isSettingChanged=false;
     private int vibrate_level=VIBRATE_MID;

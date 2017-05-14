@@ -493,6 +493,11 @@ public class BlunoService extends Service {
                                 //	Log.w("dt", Integer.valueOf(stringDT.append(s, aastart+2, aastart+6).toString())+"");
                                 Bracelet_DT = Integer.valueOf(stringDT.append(datastring, aastart+2, aastart+6).toString());
                                 Log.d(TAG, "DT:" + Bracelet_DT + "mm");
+                                if(Bracelet_DT < 200){
+                                    String edtSend = "ag001001";
+                                    WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
+                                }
+
                                 //	DT=String.valueOf(dt);
                             }
                         }
@@ -660,16 +665,9 @@ public class BlunoService extends Service {
                         try {
                             if(braceletDistance){
                                 m_braceletState = BraceletState.distance;
-                                Thread.sleep(100);
-                                String edtSend4 = "aw1";
-                                WriteValue(mBraceletDevice, mWriteCharacteristic, edtSend4);
-                                Thread.sleep(100);
-                                String edtSend = "aa1";
+                                String edtSend = "ag001001";
+
                                 WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend);
-                                Thread.sleep(100);
-                                String edtSend3 = "ac1";
-                                WriteValue(mBraceletDevice,mWriteCharacteristic,edtSend3);
-                                Thread.sleep(100);
                             }else if(m_braceletState == BraceletState.distance){
                                 m_braceletState = BraceletState.none;
                                 Thread.sleep(100);

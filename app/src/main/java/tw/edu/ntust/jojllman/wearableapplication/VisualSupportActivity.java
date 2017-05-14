@@ -8,13 +8,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -145,8 +148,26 @@ public class VisualSupportActivity extends BlunoLibrary {
         ring_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                braceletControlIntent.putExtra("BraceletDisconnect",true);
-                sendBroadcast(braceletControlIntent);
+                if(BlunoService.getBraceletPower()>0) {
+                    braceletControlIntent.putExtra("BraceletDisconnect",true);
+                    sendBroadcast(braceletControlIntent);
+                    ring_btn.setText("開啟");
+                    ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
+                    for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+                        ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
+                    }
+                }
+                else {
+                    mTransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
+                    mTransferIntent.putExtra("connectionState", connectionState);
+                    sendBroadcast(mTransferIntent);
+                    ring_btn.setText("關閉");
+                    ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+                    for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+                        ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+                    }
+                }
+
             }
         });
         IntentFilter intentFilter = new IntentFilter();
@@ -216,6 +237,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 break;
         }
         killRunnable = false;
+
         mHandler.post(new Runnable() {
             @Override
             public void run() {

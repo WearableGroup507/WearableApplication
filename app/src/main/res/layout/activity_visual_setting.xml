@@ -5,6 +5,7 @@
     android:weightSum="32"
     android:orientation="vertical"
     android:fadingEdge="vertical"
+    android:paddingTop="20dp"
     android:scrollbars="vertical">
 
 

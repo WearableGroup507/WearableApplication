@@ -162,6 +162,7 @@ public class VisualSearchActivity extends BlunoLibrary {
                 break;
             case isConnecting:
 //                buttonScan.setText("Connecting");
+                GlobalVariable.braceletAddress = mDeviceAddress;
                 mTransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
                 mTransferIntent.putExtra("connectionState", connectionState);
 //                mThresholdIntent.putExtra("frontThreshold", mThresholdIntent);
