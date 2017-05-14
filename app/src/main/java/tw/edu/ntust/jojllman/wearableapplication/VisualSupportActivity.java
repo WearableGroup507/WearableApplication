@@ -153,6 +153,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     braceletControlIntent.putExtra("BraceletDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     ring_btn.setText("開啟");
+                    ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 關閉中");
                     ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
                     for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
                         ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
@@ -179,6 +180,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     glass_btn.setText("開啟");
+                    ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 關閉中");
                     ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
