@@ -5,7 +5,7 @@
     android:weightSum="32"
     android:orientation="vertical"
     android:fadingEdge="vertical"
-    android:paddingTop="20dp"
+    android:paddingTop="10dp"
     android:scrollbars="vertical">
 
 
@@ -44,7 +44,6 @@
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_marginLeft="21.5dp"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="15dp"
         android:background="#DDDDDD" />
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -52,7 +51,7 @@
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
-        android:layout_weight="4"
+        android:layout_weight="3"
         android:paddingLeft="53dp">
 
         <TextView
@@ -150,7 +149,6 @@
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_marginLeft="21.5dp"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="15dp"
         android:background="#DDDDDD" />
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -158,7 +156,7 @@
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
-        android:layout_weight="3"
+        android:layout_weight="2"
         android:paddingLeft="53dp">
 
         <TextView
@@ -204,7 +202,7 @@
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
-        android:layout_weight="3"
+        android:layout_weight="2"
         android:paddingLeft="53dp">
 
         <TextView
@@ -242,12 +240,100 @@
             android:textSize="15sp" />
 
     </RelativeLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="35dp"
+        android:layout_weight="1"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/icon_setting_ble"
+            android:layout_width="23.5dp"
+            android:layout_height="23.5dp"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="21.5dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/icon_set_glass" />
+
+        <TextView
+            android:id="@+id/ble_init"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:layout_alignStart="@id/icon_setting_phone"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="8dp"
+            android:text="藍芽初始設定"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="21.5dp"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:background="#DDDDDD" />
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:layout_weight="2"
+        android:paddingLeft="53dp">
+
+        <TextView
+            android:id="@+id/ble_bracelet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="智慧手環"
+            android:textColor="#000000"
+            android:paddingTop="5dp"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/ble_bracelet_btn"
+            android:layout_width="109dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="128.5dp"
+            android:layout_alignTop="@id/ble_bracelet"
+            android:max="350"
+            android:text="搜尋手環藍芽"/>
+    </RelativeLayout>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:layout_weight="2"
+        android:paddingLeft="53dp">
+
+        <TextView
+            android:id="@+id/ble_glass"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="智慧眼鏡"
+            android:textColor="#000000"
+            android:paddingTop="5dp"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/ble_glass_btn"
+            android:layout_width="109dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="128.5dp"
+            android:layout_alignTop="@id/ble_glass"
+            android:max="350"
+            android:text="搜尋眼鏡藍芽"/>
+    </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_weight="12">
+        android:layout_weight="3">
 
         <Button
             android:contentDescription="系統重置"
