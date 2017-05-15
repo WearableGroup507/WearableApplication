@@ -283,6 +283,23 @@ public class GlobalVariable extends Application {
         }
     }
 
+    public boolean initDevice(){
+        FileOutputStream outDev;
+        try {
+            System.out.println("start saving devices.");
+            outDev = openFileOutput("device.txt", Context.MODE_PRIVATE);
+
+            outDev.write(Integer.parseInt(""));
+
+            outDev.close();
+        }catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
     public static boolean isServiceRunning(Context context, String serviceClassName){
         final ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
         final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
