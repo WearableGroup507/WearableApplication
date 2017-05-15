@@ -36,6 +36,7 @@ public class VisualSupportActivity extends BlunoLibrary {
     private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
 //    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Intent mREQUEST_CONNECTED_DEVICES = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
+    private Intent mRESET_REQUEST = new Intent("tw.ntust.jollman.wearbleapplication.RESET_REQUEST");
     private GlobalVariable globalVariable;
     private GlobalVariable.SavedDevices saveddevice;
 
@@ -64,10 +65,13 @@ public class VisualSupportActivity extends BlunoLibrary {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visual_menu);
 
-        final GlobalVariable dglobalVariable = (GlobalVariable)getApplicationContext();
-        dglobalVariable.readSetting();
+        //final GlobalVariable dglobalVariable = (GlobalVariable)getApplicationContext();
+        //dglobalVariable.readSetting();
+
+
 
         globalVariable = (GlobalVariable)getApplicationContext();
+        globalVariable.readSetting();
 
         findView();
 
@@ -95,7 +99,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         createLanguageTTS();
-        short auto = getIntent().getShortExtra("AutoEnter", (short) 0);
+        short auto = getIntent().getShortExtra("AutoEnter", (short) 1);
         if(auto == 0) {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
@@ -105,6 +109,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             Intent intent = new Intent(this, BlunoService.class);
             startService(intent);
         }
+
 
 
 
@@ -421,14 +426,8 @@ public class VisualSupportActivity extends BlunoLibrary {
                 startActivity(intent);
             }
         }else if (view.getId() == R.id.layout_visual_search_dev){
-            if(BlunoService.getBraceletPower() == 0){
-                Intent intent = new Intent();
-                intent.setClass(this  , VisualSearchActivity.class);
-                startActivity(intent);
-            }
-            else {
+            if(BlunoService.getBraceletPower() > 0)
                 OnSearchClick(view);
-            }
         }else if (view.getId() == R.id.layout_setting){
             Intent intent = new Intent();
             intent.setClass(this  , VisualSettingActivity.class);

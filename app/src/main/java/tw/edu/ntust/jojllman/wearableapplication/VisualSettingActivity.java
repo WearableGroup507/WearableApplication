@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
@@ -27,6 +28,11 @@ public class VisualSettingActivity extends AppCompatActivity {
     private SeekBar mSeekBar_side;
     private TextView mtxt_threshold_front;
     private TextView mtxt_threshold_side;
+    private Button system_reset;
+    private Button search_bracelet;
+    private Button search_glass;
+
+
 
     private boolean mConnected_Glass = false;
     private boolean mConnected_Bracelet = false;
@@ -34,6 +40,8 @@ public class VisualSettingActivity extends AppCompatActivity {
     private boolean mConnected_Glove_Right = false;
     private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
     private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
+    private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
+
     private MsgReceiver mMsgReceiver;
 
     public class MsgReceiver extends BroadcastReceiver {
@@ -78,6 +86,42 @@ public class VisualSettingActivity extends AppCompatActivity {
 
         findView();
         initialize();
+
+        system_reset = (Button) findViewById(R.id.system_reset);
+        system_reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mGlobalVariable.initDevice();
+                System.out.println("Device log file init().");
+                braceletControlIntent.putExtra("BraceletDisconnect",true);
+                braceletControlIntent.putExtra("GlassDisconnect",true);
+                sendBroadcast(braceletControlIntent);
+                mGlobalVariable.braceletAddress= null;
+                mGlobalVariable.glassesAddress=null;
+            }
+        });
+        search_bracelet = (Button) findViewById(R.id.ble_bracelet_btn);
+        search_bracelet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("brace here");
+                Intent intent = new Intent();
+                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
+                startActivity(intent);
+                VisualSettingActivity.this.finish();
+            }
+        });
+        search_glass = (Button) findViewById(R.id.ble_glass_btn);
+        search_glass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("glass here");
+                Intent intent = new Intent();
+                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
+                startActivity(intent);
+                VisualSettingActivity.this.finish();
+            }
+        });
     }
 
     @Override

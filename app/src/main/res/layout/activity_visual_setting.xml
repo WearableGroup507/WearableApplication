@@ -345,7 +345,8 @@
             android:layout_height="60dp"
             android:textColor="#ffffff"
             android:textSize = "17sp"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="bottom"
+            android:id="@+id/system_reset" />
     </LinearLayout>
 
 

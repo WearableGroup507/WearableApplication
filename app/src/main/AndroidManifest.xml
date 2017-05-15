@@ -20,8 +20,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ChooseClassActivity"/>
+        <!--<activity android:name=".ChooseClassActivity">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
         <activity android:name=".AppManageActivity" />
         <activity android:name=".AppSettingActivity" />
+        <!--<activity android:name=".VisualSupportActivity" />-->
         <activity android:name=".VisualSupportActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

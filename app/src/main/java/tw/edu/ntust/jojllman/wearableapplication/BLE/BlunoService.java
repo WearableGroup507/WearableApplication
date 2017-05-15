@@ -289,6 +289,9 @@ public class BlunoService extends Service {
         braceletControlIntentFilter.addAction(braceletControlIntent.getAction());
         registerReceiver(mBraceletControlReceiver, braceletControlIntentFilter);
 
+
+
+
         Log.d(TAG,"Start reading RSSI.");
         startReadingRssi();
 
@@ -656,7 +659,8 @@ public class BlunoService extends Service {
                 final boolean braceletColor =intent.getBooleanExtra("BraceletColor",false);
                 final boolean braceletSearch = intent.getBooleanExtra("BraceletSearch",false);
                 final boolean braceletDisconnect = intent.getBooleanExtra("BraceletDisconnect", false);
-                final boolean glassDissconnect = intent.getBooleanExtra("GlassDisconnect",false);
+                final boolean glassDisconnect = intent.getBooleanExtra("GlassDisconnect",false);
+
                 Log.i(TAG,"braceletDistance " + braceletDistance);
                 Log.i(TAG,"braceletColor " + braceletColor);
                 Log.i(TAG,"braceletSearch " + braceletSearch);
@@ -713,10 +717,22 @@ public class BlunoService extends Service {
                                 m_braceletState = BraceletState.none;
                             }
                             if(braceletDisconnect){
-                                disConnect(getBraceletDevice());
+                                if(getBraceletDevice()==null) {
+                                    System.out.println("Disconnect error:Bracelet Device not set.");
+                                    mConnected_Bracelet = false;
+                                }
+                                else {
+                                    disConnect(getBraceletDevice());
+                                }
                             }
-                            if(glassDissconnect){
-                                disConnect(getGlassDevice());
+                            if(glassDisconnect){
+                                if(getGlassDevice()==null){
+                                    System.out.println("Disconnect error: Glass Device not set.");
+                                    mConnected_Glass = false;
+                                }
+                                else{
+                                    disConnect(getGlassDevice());
+                                }
                             }
                             braceletStateIntent.putExtra("BraceletState", m_braceletState.name());
                             sendBroadcast(braceletStateIntent);
