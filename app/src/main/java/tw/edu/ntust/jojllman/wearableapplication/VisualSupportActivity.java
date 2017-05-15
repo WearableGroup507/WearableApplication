@@ -37,6 +37,7 @@ public class VisualSupportActivity extends BlunoLibrary {
 //    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Intent mREQUEST_CONNECTED_DEVICES = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private GlobalVariable globalVariable;
+    private GlobalVariable.SavedDevices saveddevice;
 
     private Handler handler=new Handler();
 //    private DeviceInfoView btn_device_glass;
@@ -62,6 +63,9 @@ public class VisualSupportActivity extends BlunoLibrary {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visual_menu);
+
+        final GlobalVariable dglobalVariable = (GlobalVariable)getApplicationContext();
+        dglobalVariable.readSetting();
 
         globalVariable = (GlobalVariable)getApplicationContext();
 
@@ -101,6 +105,9 @@ public class VisualSupportActivity extends BlunoLibrary {
             Intent intent = new Intent(this, BlunoService.class);
             startService(intent);
         }
+
+
+
 
         m_braceletConnected = false;
         killAutoConnectRunnable = false;
