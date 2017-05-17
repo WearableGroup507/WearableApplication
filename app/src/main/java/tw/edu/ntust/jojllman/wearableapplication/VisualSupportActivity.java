@@ -125,7 +125,11 @@ public class VisualSupportActivity extends BlunoLibrary {
 
                             mDeviceName = device.getName();
                             mDeviceAddress = device.getAddress();
-
+                            if(mDeviceName.startsWith("Nordic_Bracelet"))
+                                GlobalVariable.braceletAddress = mDeviceAddress;
+                            else {
+                                GlobalVariable.glassesAddress = mDeviceAddress;
+                            }
                             if (mDeviceName == null)
                                 mDeviceName = getString(R.string.unknown_device);
 
@@ -138,6 +142,30 @@ public class VisualSupportActivity extends BlunoLibrary {
                                 mConnectionState = theConnectionState.valueOf(connectionState);
                                 onConnectionStateChange(mConnectionState);
                             }
+                            if(GlobalVariable.braceletAddress != ""){
+                                ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+                                for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+                                    ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+                                }
+                            }
+                            else {
+                                ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
+                                for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+                                    ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
+                                }
+                            }
+                            if(GlobalVariable.glassesAddress != ""){
+                                ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+                                for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+                                    ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+                                }
+                            }
+                            else {
+                                ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
+                                for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+                                    ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
+                                }
+                            }
                         }
                     }
                     handler.postDelayed(this, 2000);
@@ -146,6 +174,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     Log.d(TAG,"removeCallbacksAndMessages autoConnectRunnable");
                     sendBroadcast(mREQUEST_CONNECTED_DEVICES);
                 }
+
             }
         };
         ring_btn = (Button) findViewById(R.id.ring_btn);
