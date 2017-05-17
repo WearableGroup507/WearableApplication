@@ -158,6 +158,8 @@ public class BlunoService extends Service {
     private boolean onNotification = false;
     private static final int mWarningCountThreshold = 40;
     private Uri soundUri;
+    static boolean played = false;
+
     private long[] vibrate = {0, 500};
     //private doNotification notify;
     //private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
@@ -382,6 +384,7 @@ public class BlunoService extends Service {
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
 //                    handler.removeCallbacks(mBraceletDistanceNotifyRunnable);
                     mTTSService.speak("手環裝置已斷線。");
+                    played = false;
                     mBraceletDevice=null;
                 }
                 if(device.equals(mGloveDeviceLeft)){
@@ -1009,7 +1012,10 @@ public class BlunoService extends Service {
                         }
                     }.start();
 //                    initBraceletRunnable();
-                    mTTSService.speak("手環裝置已連線。");
+                    if(!played){
+                        mTTSService.speak("手環裝置已連線。");
+                        played = true;
+                    }
                     Log.d(TAG, "Connected to bracelet device.");
                     break;
                 case 2:

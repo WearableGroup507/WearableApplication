@@ -460,7 +460,10 @@ public class BluetoothLeService extends Service {
 		synchronized(this)
 		{
 			BluetoothGatt gatt = device.connectGatt(this, false, mGattCallback);
-            mBluetoothGatts.put(device.getAddress(), gatt);
+            if(getSupportedGattServices(device) == null)
+                mBluetoothGatts.put(device.getAddress(), gatt);
+            else if(!(getSupportedGattServices(device).contains(gatt)))
+                mBluetoothGatts.put(device.getAddress(), gatt);
 		}
         Log.d(TAG, "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
