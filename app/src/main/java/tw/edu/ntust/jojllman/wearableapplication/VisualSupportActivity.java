@@ -483,6 +483,7 @@ public class VisualSupportActivity extends BlunoLibrary {
     }
     public void OnSearchClick(View view){
         Log.i(TAG,"OnSearchClick");
+        braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
         braceletControlIntent.putExtra("BraceletSearch", true);
         sendBroadcast(braceletControlIntent);
         view.announceForAccessibility("尋找手環");
