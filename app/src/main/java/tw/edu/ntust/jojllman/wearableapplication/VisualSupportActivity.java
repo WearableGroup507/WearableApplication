@@ -217,7 +217,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         glass_btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(BlunoService.Glass_RSSI>0) {
+                if(BlunoService.getGlassbattery()>0) {
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     glass_btn.setText("開啟");
@@ -347,6 +347,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
                 ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
+                ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView

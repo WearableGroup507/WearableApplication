@@ -101,6 +101,7 @@ public class BlunoService extends Service {
     private static int Bracelet_RSSI;
     private static String BraceletName = "未連線";
     static public int Bracelet_BAT;
+    static public int glass_battery =0;
     private BluetoothGatt BraceletGatt;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
     public static String getBraceletName(){return BraceletName;}
@@ -1109,7 +1110,8 @@ public class BlunoService extends Service {
             int front_distance = Integer.parseInt(tokens[0]);
             int left_distance = Integer.parseInt(tokens[1]);
             int right_distance = Integer.parseInt(tokens[2]);
-
+            glass_battery = Integer.parseInt(tokens[3]);
+            Log.i(TAG, "front:"+front_distance+"\tleft:"+left_distance+"\tright"+right_distance+"\tpower:"+glass_battery);
             int avoid_state_now = 0;
 
             if(left_distance<sidesThreshold && right_distance<sidesThreshold && front_distance<frontThreshold) {
@@ -1680,6 +1682,7 @@ public class BlunoService extends Service {
     public static int getBraceletPower() {
         return Bracelet_BAT;
     }
+    public static int getGlassbattery() {return  glass_battery;}
     public void disConnect(BluetoothDevice device){
         if(mConnected_Bracelet){
             mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
