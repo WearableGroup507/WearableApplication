@@ -53,13 +53,13 @@ public class VisualSupportActivity extends BlunoLibrary {
     private Runnable autoConnectRunnable;
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
-    private Button ring_btn;
+    private static Button ring_btn;
 
     private Handler mHandler = new Handler();
     private boolean killRunnable = false;
     private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private TextToSpeech tts;
-    private Button glass_btn;
+    private static Button glass_btn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +71,7 @@ public class VisualSupportActivity extends BlunoLibrary {
 
 
         globalVariable = (GlobalVariable)getApplicationContext();
-        //globalVariable.readSetting();
+        globalVariable.readSetting();
 
         findView();
 
@@ -99,7 +99,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         createLanguageTTS();
-        short auto = getIntent().getShortExtra("AutoEnter", (short) 0);
+        short auto = getIntent().getShortExtra("AutoEnter", (short) 1);
         if(auto == 0) {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
@@ -660,5 +660,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
             ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
         }
+        ring_btn.setText("關閉");
+        glass_btn.setText("關閉");
     }
 }
