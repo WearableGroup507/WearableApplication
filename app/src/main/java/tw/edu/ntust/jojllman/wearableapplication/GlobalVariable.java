@@ -30,7 +30,7 @@ public class GlobalVariable extends Application {
     public static final int VIBRATE_STRONG=4;
     public static String braceletAddress = "";
     public static String glassesAddress = "";
-
+    public static String glassesIPAddress ="";
     private boolean _isSettingChanged=false;
     private int vibrate_level=VIBRATE_MID;
     private int glass_front_threshold = 100;

@@ -95,6 +95,10 @@ public class BluetoothLeService extends Service {
             "tw.edu.ntust.jojllman.wearableapplication.EXTRA_DATA";
     public final static String ON_READ_REMOTE_RSSI =
             "tw.edu.ntust.jojllman.wearableapplication.ON_READ_REMOTE_RSSI";
+    public final static String ACTION_ULTRASOUND_DATA =
+            "tw.edu.ntust.jojllman.wearableapplication.ULTRASOUND_DATA";
+    public final static String ACTION_GLASS_IP =
+            "tw.edu.ntust.jojllman.wearableapplication.ACTION_GLASS_IP";
 //    public final static UUID UUID_HEART_RATE_MEASUREMENT =
 //            UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
@@ -266,9 +270,17 @@ public class BluetoothLeService extends Service {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (characteristic.getUuid().toString().contains("0000aaa1-0000-1000-8000-00805f9b34fb")){
+                    System.out.println("onUltrasoundDataRead  " + characteristic.getUuid().toString() + "  true");
+                    broadcastUpdate(gatt, ACTION_ULTRASOUND_DATA, characteristic);
+                }else if(characteristic.getUuid().toString().contains("0000aaa2-0000-1000-8000-00805f9b34fb")){
+                    System.out.println("onGlassIPRead  " + characteristic.getUuid().toString() + "  true");
+                    broadcastUpdate(gatt, ACTION_GLASS_IP, characteristic);
+                }else{
             	System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + "  true");
 //            	broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
                 broadcastUpdate(gatt, ACTION_DATA_AVAILABLE, characteristic);
+                }
             }else System.out.println("onCharacteristicRead  " + characteristic.getUuid().toString() + "  false");
         }
         @Override

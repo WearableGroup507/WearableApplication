@@ -71,7 +71,7 @@ public class VisualSupportActivity extends BlunoLibrary {
 
 
         globalVariable = (GlobalVariable)getApplicationContext();
-        globalVariable.readSetting();
+        //globalVariable.readSetting();
 
         findView();
 
@@ -99,7 +99,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         createLanguageTTS();
-        short auto = getIntent().getShortExtra("AutoEnter", (short) 1);
+        short auto = getIntent().getShortExtra("AutoEnter", (short) 0);
         if(auto == 0) {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
@@ -217,7 +217,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         glass_btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(BlunoService.getGlassbattery()>0) {
+                /*if(BlunoService.getGlassbattery()>0) {
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     glass_btn.setText("開啟");
@@ -236,6 +236,14 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
+                }*/
+                Log.d(TAG, "layout_glass_dev pressed");
+                if (!BlunoService.getReadUltraSound()) {
+                    BlunoService.setReadUltraSound(true);
+                    //view.announceForAccessibility("開啟眼鏡避障功能");
+                } else {
+                    BlunoService.setReadUltraSound(false);
+                    //view.announceForAccessibility("關閉眼鏡避障功能");
                 }
             }
         });

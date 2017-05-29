@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -40,6 +41,8 @@ public class BlunoService extends Service {
             UUID.fromString("0000AAAF-0000-1000-8000-00805F9B34FB");
     public final static UUID UUID_GLASS_CHARACTERISTIC =
             UUID.fromString("0000AAA1-0000-1000-8000-00805F9B34FB");
+    public final static UUID UUID_GLASS_CHARACTERISTIC_IP =
+            UUID.fromString("0000AAA2-0000-1000-8000-00805F9B34FB");
     public final static UUID UUID_BRACELET_NOTIFY =
             UUID.fromString(BraceletGattAttributes.NOTIFY);
     public final static UUID UUID_BRACELET_SERVICE =
@@ -84,6 +87,7 @@ public class BlunoService extends Service {
     private HashMap<String, BluetoothGattCharacteristic> mSendCommandCharacteristics;
     private HashMap<String, BluetoothGattCharacteristic> mSetNotificationCharacteristics;
     private BluetoothGattCharacteristic mUltraSoundCharacteristic;
+    private BluetoothGattCharacteristic mUltraSoundCharacteristic_IP;
 //    private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
 //                    mSerialPortCharacteristic, mCommandCharacteristic;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
@@ -101,7 +105,7 @@ public class BlunoService extends Service {
     private static int Bracelet_RSSI;
     private static String BraceletName = "未連線";
     static public int Bracelet_BAT;
-    static public int glass_battery =0;
+    static public int glass_battery;
     private BluetoothGatt BraceletGatt;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
     public static String getBraceletName(){return BraceletName;}
@@ -129,7 +133,8 @@ public class BlunoService extends Service {
     private final static int MOVE_LEFT = 21;
     private final static int MOVE_RIGHT = 22;
 
-    private static boolean readUltraSound = false;
+    //private static boolean readUltraSound = false;
+    private static boolean readUltraSound = true;
     public static void setReadUltraSound(boolean b){readUltraSound = b;}
     public static boolean getReadUltraSound(){return readUltraSound;}
     private Runnable readUltraSoundRunnable;
@@ -296,7 +301,7 @@ public class BlunoService extends Service {
 
 
         Log.d(TAG,"Start reading RSSI.");
-        startReadingRssi();
+        //startReadingRssi();
 
         gloveInit();
 
@@ -407,9 +412,11 @@ public class BlunoService extends Service {
 
             if(device.equals(mGlassDevice)) {
                 Log.d(TAG, "Device is glass");
-                if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                if (BluetoothLeService.ACTION_ULTRASOUND_DATA.equals(action)) {
                     displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
+                    displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
 //                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -936,6 +943,10 @@ public class BlunoService extends Service {
                         deviceType = 0;
                         System.out.println("mUltraSoundCharacteristic  " + mUltraSoundCharacteristic.getUuid().toString());
                     }
+                    if(gattCharacteristic.getUuid().equals(UUID_GLASS_CHARACTERISTIC_IP)) {
+                        mUltraSoundCharacteristic_IP = gattCharacteristic;
+                        System.out.println("mUltraSoundCharacteristic_IP  " + mUltraSoundCharacteristic_IP.getUuid().toString());
+                    }
                     //uuid = gattCharacteristic.getUuid().toString();
 //                    if (uuid.equals(ModelNumberStringUUID)) {
 //                        mModelNumberCharacteristic = gattCharacteristic;
@@ -973,6 +984,7 @@ public class BlunoService extends Service {
                         onConectionStateChange(mConnectionState);
                     }else{
                         readUltraSound();
+                        readIP();
                     }
 
 //                    if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
@@ -1059,6 +1071,8 @@ public class BlunoService extends Service {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_ULTRASOUND_DATA);
+        intentFilter.addAction(BluetoothLeService.ACTION_GLASS_IP);
         intentFilter.addAction(BluetoothLeService.ON_READ_REMOTE_RSSI);
         return intentFilter;
     }
@@ -1102,6 +1116,13 @@ public class BlunoService extends Service {
             handler.post(readUltraSoundRunnable);
         }
     }
+    private void readIP(){
+        if (mBluetoothLeService == null || mUltraSoundCharacteristic_IP == null || mGlassDevice == null) {
+            Log.d(TAG, "Glass not initialized");
+            return;
+        }
+        mBluetoothLeService.readCharacteristic(mGlassDevice, mUltraSoundCharacteristic_IP);
+    }
 
     private void displayData(String data) {
         if (data != null) {
@@ -1110,7 +1131,7 @@ public class BlunoService extends Service {
             int front_distance = Integer.parseInt(tokens[0]);
             int left_distance = Integer.parseInt(tokens[1]);
             int right_distance = Integer.parseInt(tokens[2]);
-            glass_battery = Integer.parseInt(tokens[3]);
+            glass_battery = Integer.parseInt(tokens[3].trim());
             Log.i(TAG, "front:"+front_distance+"\tleft:"+left_distance+"\tright"+right_distance+"\tpower:"+glass_battery);
             int avoid_state_now = 0;
 
@@ -1696,5 +1717,9 @@ public class BlunoService extends Service {
             mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
             mConnected_Glass= false;
         }
+    }
+    private void displayIP(String ip_data){
+        Log.d(TAG,"displayIP ip_data="+ip_data);
+        mGlobalVariable.glassesIPAddress=ip_data;
     }
 }
