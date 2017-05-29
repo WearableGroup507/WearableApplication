@@ -51,7 +51,7 @@ public class BlunoService extends Service {
             UUID.fromString(BraceletGattAttributes.WRITE);
     private final static int NUM_DEVICE = 2;
     private GlobalVariable mGlobalVariable;
-    private Handler handler = new Handler();
+    private static Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
     private Intent braceletStateIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
@@ -134,10 +134,10 @@ public class BlunoService extends Service {
     private final static int MOVE_RIGHT = 22;
 
     //private static boolean readUltraSound = false;
-    private static boolean readUltraSound = true;
+    private static boolean readUltraSound = false;
     public static void setReadUltraSound(boolean b){readUltraSound = b;}
     public static boolean getReadUltraSound(){return readUltraSound;}
-    private Runnable readUltraSoundRunnable;
+    private static Runnable readUltraSoundRunnable;
     public static int Glass_RSSI;
     private static String GlassName = "未連線";
     public static int getGlass_RSSI(){return Glass_RSSI;}
@@ -301,7 +301,7 @@ public class BlunoService extends Service {
 
 
         Log.d(TAG,"Start reading RSSI.");
-        //startReadingRssi();
+        startReadingRssi();  //fuck you rssi noise
 
         gloveInit();
 
@@ -383,8 +383,10 @@ public class BlunoService extends Service {
                 //mBluetoothLeService.close();
                 if(device.equals(mGlassDevice)){
                     handler.removeCallbacks(readUltraSoundRunnable);
+                    readUltraSoundRunnable=null;
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
+                    glass_battery = 0;
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
@@ -1002,6 +1004,7 @@ public class BlunoService extends Service {
 //                    }
                     mTTSService.speak("眼鏡裝置已連線。");
                     Log.d(TAG, "Connected to glass device.");
+                    setReadUltraSound(true);
                     break;
                 case 1:
                     mConnected_Bracelet = true;

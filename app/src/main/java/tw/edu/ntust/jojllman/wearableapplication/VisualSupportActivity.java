@@ -217,7 +217,8 @@ public class VisualSupportActivity extends BlunoLibrary {
         glass_btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                /*if(BlunoService.getGlassbattery()>0) {
+                if(BlunoService.getGlassbattery()>0) {
+                    BlunoService.setReadUltraSound(false);
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     glass_btn.setText("開啟");
@@ -228,6 +229,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }
                 }
                 else if(GlobalVariable.glassesAddress != ""){
+                    System.out.println("glassaddress = "+GlobalVariable.glassesAddress);
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.glassesAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
@@ -236,15 +238,16 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
-                }*/
-                Log.d(TAG, "layout_glass_dev pressed");
+                    BlunoService.setReadUltraSound(true);
+                }
+                /*Log.d(TAG, "layout_glass_dev pressed");
                 if (!BlunoService.getReadUltraSound()) {
                     BlunoService.setReadUltraSound(true);
                     //view.announceForAccessibility("開啟眼鏡避障功能");
                 } else {
                     BlunoService.setReadUltraSound(false);
                     //view.announceForAccessibility("關閉眼鏡避障功能");
-                }
+                }*/
             }
         });
 
