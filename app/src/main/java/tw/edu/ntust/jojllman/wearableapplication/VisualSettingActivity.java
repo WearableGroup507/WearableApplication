@@ -21,6 +21,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.TextToSpeechService;
+import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
 
 public class VisualSettingActivity extends AppCompatActivity {
     private GlobalVariable mGlobalVariable;
@@ -31,7 +33,6 @@ public class VisualSettingActivity extends AppCompatActivity {
     private Button system_reset;
     private Button search_bracelet;
     private Button search_glass;
-
 
 
     private boolean mConnected_Glass = false;
@@ -96,8 +97,11 @@ public class VisualSettingActivity extends AppCompatActivity {
                 braceletControlIntent.putExtra("BraceletDisconnect",true);
                 braceletControlIntent.putExtra("GlassDisconnect",true);
                 sendBroadcast(braceletControlIntent);
+                BlunoService.initName();
                 mGlobalVariable.braceletAddress= null;
                 mGlobalVariable.glassesAddress=null;
+                VisualSupportActivity.colorInit();
+                BlunoService.speak("系統已重置。");
             }
         });
         search_bracelet = (Button) findViewById(R.id.ble_bracelet_btn);

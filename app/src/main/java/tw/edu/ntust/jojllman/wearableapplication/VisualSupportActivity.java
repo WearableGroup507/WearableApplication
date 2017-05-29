@@ -43,8 +43,8 @@ public class VisualSupportActivity extends BlunoLibrary {
     private Handler handler=new Handler();
 //    private DeviceInfoView btn_device_glass;
 //    private DeviceInfoView btn_device_bracelet;
-    private LinearLayout layout_glass_dev;
-    private LinearLayout layout_bracelet_dev;
+    private static LinearLayout layout_glass_dev;
+    private static LinearLayout layout_bracelet_dev;
     private boolean m_braceletConnected = false;
     private int click_count=0;
 
@@ -649,6 +649,16 @@ public class VisualSupportActivity extends BlunoLibrary {
             case isDisconnecting:
 //                buttonScan.setText("isDisconnecting");
                 break;
+        }
+    }
+    public static void colorInit(){
+        ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+            ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+            ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
         }
     }
 }

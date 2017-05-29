@@ -1725,4 +1725,11 @@ public class BlunoService extends Service {
         Log.d(TAG,"displayIP ip_data="+ip_data);
         mGlobalVariable.glassesIPAddress=ip_data;
     }
+    public static void initName(){
+        BraceletName="未連線";
+        GlassName="未連線";
+    }
+    public static void speak(String s){
+        mTTSService.speak(s);
+    }
 }
