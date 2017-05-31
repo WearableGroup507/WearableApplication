@@ -96,7 +96,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             Canvas c = null;
             Paint p = new Paint();
             boolean rs_init = false;
-            while (mRun) {
+            while (!mRun) {
                 if(surfaceDone) {
                     try {
                         c = mSurfaceHolder.lockCanvas();
@@ -110,8 +110,10 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                 }
                                 destRect = destRect(input.getWidth(), input.getHeight());
                                 switchstate(input, output);
-                                c.drawColor(Color.BLACK);
-                                c.drawBitmap(output, null, destRect, p);
+                                if(c!=null) {
+                                    c.drawColor(Color.BLACK);
+                                    c.drawBitmap(output, null, destRect, p);
+                                }
                             } catch (IOException e) {
                                 e.getStackTrace();
                                 Log.d(TAG, "catch IOException hit in run", e);
@@ -123,11 +125,10 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                         }
                     }
                 }
-                try {
-                    thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            }
+            if(mRun){
+                System.out.println("thread interrupt");
+                this.interrupt();
             }
         }
 
@@ -187,24 +188,26 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public void startPlayback() {
         Log.i(TAG2,"startPlayback()");
         if(mIn != null) {
-            mRun = true;
-            thread.start();
+            mRun = false;
+            if(thread.getState() == MjpegViewThread.State.NEW){
+                thread.start();
+            }
         }
     }
 
     public void stopPlayback() {
         Log.i(TAG2,"stopPlayback()");
-        mRun = false;
-        boolean retry = true;
-        while(retry) {
-            try {
-                thread.join();
-                retry = false;
-            } catch (InterruptedException e) {
-                e.getStackTrace();
-                Log.d(TAG, "catch IOException hit in stopPlayback", e);
-            }
-        }
+        mRun = true;
+//        boolean retry = true;
+//        while(retry) {
+//            try {
+//                thread.join();
+//                retry = false;
+//            } catch (InterruptedException e) {
+//                e.getStackTrace();
+//                Log.d(TAG, "catch IOException hit in stopPlayback", e);
+//            }
+//        }
     }
 
     public MjpegView(Context context, AttributeSet attrs) {

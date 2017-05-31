@@ -47,7 +47,7 @@ public class VisualSupportActivity extends BlunoLibrary {
 
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Intent glassControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
-    private Runnable autoConnectRunnable;
+    private static Runnable autoConnectRunnable;
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
     private static Button ring_btn;
@@ -218,6 +218,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     BlunoService.setReadUltraSound(false);
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
+                    globalVariable.mv.setState(MjpegView.STATE_NORMAL);
                     glass_btn.setText("開啟");
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 關閉中");
                     ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));

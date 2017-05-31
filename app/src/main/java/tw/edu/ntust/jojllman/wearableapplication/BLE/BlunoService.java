@@ -404,6 +404,7 @@ public class BlunoService extends Service {
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
                     glass_battery = 0;
+                    mGlobalVariable.mv.setState(MjpegView.STATE_BLANK);
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);

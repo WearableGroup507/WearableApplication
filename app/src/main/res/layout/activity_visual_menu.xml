@@ -78,8 +78,8 @@
 
     <tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView
         android:id="@+id/mv"
-        android:layout_width="wrap_content"
-        android:layout_height="63dp" />
+        android:layout_width="1dp"
+        android:layout_height="1dp" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:contentDescription="@string/layout_bracelet"
