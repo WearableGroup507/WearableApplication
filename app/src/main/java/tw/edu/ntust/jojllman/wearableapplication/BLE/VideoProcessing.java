@@ -169,7 +169,7 @@ public class VideoProcessing {
             mScriptProcessing.set_blockRight(centerX+tagSide);
             mScriptProcessing.set_blockTop(centerY-tagSide);
             mScriptProcessing.set_blockBottom(centerY+tagSide);
-            if(!onProcess && !MainActivity.mTTSService.isSpeaking()){
+            if(!onProcess && !BlunoService.mTTSService.isSpeaking()){
                 colorTagProcess process = new colorTagProcess();
                 process.getInput(src);
                 process.getValue(centerX, centerY, width, height);
@@ -201,7 +201,7 @@ public class VideoProcessing {
             mScriptProcessing.set_blockRight(centerX+tagSide);
             mScriptProcessing.set_blockTop(centerY-tagSide);
             mScriptProcessing.set_blockBottom(centerY+tagSide);
-            if(!onProcess && !MainActivity.mTTSService.isSpeaking()){
+            if(!onProcess && !BlunoService.mTTSService.isSpeaking()){
                 qrTagProcess process = new qrTagProcess();
                 process.getInput(src);
                 process.initailPoint(findTagWidth(), centerX, centerY, width, height);
@@ -217,7 +217,7 @@ public class VideoProcessing {
 
     public void render_qrdetect(Bitmap src, Bitmap dst){
         mInputRgbAllocation = Allocation.createFromBitmap(mRS, src);
-        if(!onProcess && !MainActivity.mTTSService.isSpeaking()){
+        if(!onProcess && !BlunoService.mTTSService.isSpeaking()){
             qrDetect detect = new qrDetect();
             detect.getInput(src);
             detect.start();
@@ -399,7 +399,7 @@ public class VideoProcessing {
             } else {
                 Log.i(TAG, "Black or White");
             }
-            MainActivity.mTTSService.speak(tagPos() + tagContents);
+            BlunoService.mTTSService.speak(tagPos() + tagContents);
 
             onProcess = false;
         }
@@ -486,11 +486,11 @@ public class VideoProcessing {
                 contents = result.getText();
                 Log.i(TAG, "QR code contents is " + contents);
                 Log.i(TAG2,"0. " + contents );
-                MainActivity.mTTSService.speak(contents);
+                BlunoService.mTTSService.speak(contents);
             } catch (NotFoundException e) {
                 Log.i(TAG, "Not found");
                 Log.i(TAG2,"1. " + tagPos() );
-                MainActivity.mTTSService.speak(tagPos());
+                BlunoService.mTTSService.speak(tagPos());
             } catch (ChecksumException e) {
                 Log.e(TAG, "hecksum error");
                 Log.i(TAG2,"2. hecksum error");
@@ -498,7 +498,7 @@ public class VideoProcessing {
             } catch (FormatException e) {
                 Log.e(TAG, "Format error");
                 Log.i(TAG2,"3. " + tagPos() );
-                MainActivity.mTTSService.speak(tagPos());
+                BlunoService.mTTSService.speak(tagPos());
             }
 
             onProcess = false;
@@ -538,7 +538,7 @@ public class VideoProcessing {
                 Result result = reader.decode(binary);
                 contents = result.getText();
                 Log.i(TAG, "QR code contents is " + contents);
-                MainActivity.mTTSService.speak(contents);
+                BlunoService.mTTSService.speak(contents);
                 Thread.sleep(1500);
             }catch (NotFoundException e){
                 Log.i(TAG, "Not found");
