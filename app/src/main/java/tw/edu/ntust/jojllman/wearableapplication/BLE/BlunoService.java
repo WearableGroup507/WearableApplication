@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
+import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
 
 /**
  * This is a service class for manipulating data from bracelet and glass
@@ -1004,6 +1005,7 @@ public class BlunoService extends Service {
 //                    }
                     mTTSService.speak("眼鏡裝置已連線。");
                     Log.d(TAG, "Connected to glass device.");
+                    VisualSupportActivity.glassConnected();
                     setReadUltraSound(true);
                     break;
                 case 1:
@@ -1033,6 +1035,7 @@ public class BlunoService extends Service {
                         played = true;
                     }
                     Log.d(TAG, "Connected to bracelet device.");
+                    VisualSupportActivity.braceletConnect();
                     break;
                 case 2:
                     if(!mConnected_GloveLeft && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlove.toLowerCase() + "l"))
@@ -1671,9 +1674,9 @@ public class BlunoService extends Service {
                         try
                         {
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(200);
+                            Thread.sleep(2000);
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(200);
+                            Thread.sleep(2000);
                         }
                         catch (Exception e)
                         {

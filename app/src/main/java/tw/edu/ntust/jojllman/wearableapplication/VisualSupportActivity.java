@@ -663,4 +663,18 @@ public class VisualSupportActivity extends BlunoLibrary {
         ring_btn.setText("關閉");
         glass_btn.setText("關閉");
     }
+    public static void glassConnected(){
+        ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+            ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        glass_btn.setText("關閉");
+    }
+    public static void braceletConnect(){
+        ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+            ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        ring_btn.setText("關閉");
+    }
 }

@@ -150,7 +150,6 @@ public class VisualSettingActivity extends BlunoLibrary {
                 mGlobalVariable.glassesAddress=null;
                 VisualSupportActivity.colorInit();
                 BlunoService.speak("系統已重置。");
-                //BlunoLibrary.
             }
         });
         search_bracelet = (Button) findViewById(R.id.ble_bracelet_btn);
