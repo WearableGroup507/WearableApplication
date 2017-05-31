@@ -10,26 +10,23 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 import java.util.Locale;
 
-import tw.edu.ntust.jojllman.wearableapplication.BLE.BluetoothLeService;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView;
 
 public class VisualSupportActivity extends BlunoLibrary {
     private static String TAG = VisualSupportActivity.class.getSimpleName();
@@ -104,7 +101,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
-
+        globalVariable.mv = ((MjpegView) findViewById(R.id.mv));
         if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
             Intent intent = new Intent(this, BlunoService.class);
             startService(intent);

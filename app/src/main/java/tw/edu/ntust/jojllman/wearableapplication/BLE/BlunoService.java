@@ -12,14 +12,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.net.Uri;
-import android.nfc.Tag;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -171,8 +177,16 @@ public class BlunoService extends Service {
     //private doNotification notify;
     //private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
 
+    private String URL ;
+    DoRead_url doRead_url;
+    private static Runnable readMjpegrunnable;
+
+
     private Thread			    mReadRssiThread;
     private boolean				mReadRssiThreadRunning;
+
+
+
 
     private Runnable mConnectingOverTimeRunnable=new Runnable(){
 
@@ -302,7 +316,7 @@ public class BlunoService extends Service {
 
 
         Log.d(TAG,"Start reading RSSI.");
-        startReadingRssi();  //fuck you rssi noise
+        //startReadingRssi();  //fuck you rssi noise
 
         gloveInit();
 
@@ -384,7 +398,9 @@ public class BlunoService extends Service {
                 //mBluetoothLeService.close();
                 if(device.equals(mGlassDevice)){
                     handler.removeCallbacks(readUltraSoundRunnable);
+                    handler.removeCallbacks(readMjpegrunnable);
                     readUltraSoundRunnable=null;
+                    readMjpegrunnable=null;
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
                     glass_battery = 0;
@@ -420,6 +436,7 @@ public class BlunoService extends Service {
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
                     displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
 //                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -1006,7 +1023,8 @@ public class BlunoService extends Service {
                     mTTSService.speak("眼鏡裝置已連線。");
                     Log.d(TAG, "Connected to glass device.");
                     VisualSupportActivity.glassConnected();
-                    setReadUltraSound(true);
+                    //setReadUltraSound(true);
+
                     break;
                 case 1:
                     mConnected_Bracelet = true;
@@ -1724,9 +1742,58 @@ public class BlunoService extends Service {
             mConnected_Glass= false;
         }
     }
+    public class DoRead_url extends AsyncTask<String, Void, MjpegInputStream> {
+        protected MjpegInputStream doInBackground(String... url) {
+            URL httpURL ;
+            try {
+                Log.d(TAG, "1. Sending http request");
+                httpURL = new URL(url[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) httpURL.openConnection();
+                Log.d(TAG, "2. Request finished, status = " + urlConnection.getResponseMessage());
+                return new MjpegInputStream(new BufferedInputStream(urlConnection.getInputStream()));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                Log.d(TAG, "Request failed-ClientProtocolException", e);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(TAG, "Request failed-IOException", e);
+            }
+
+            return null;
+        }
+
+        protected void onPostExecute(MjpegInputStream result) {
+            mGlobalVariable.mv.setSource(result);
+            mGlobalVariable.mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+        }
+    }
     private void displayIP(String ip_data){
         Log.d(TAG,"displayIP ip_data="+ip_data);
         mGlobalVariable.glassesIPAddress=ip_data;
+        if (mGlobalVariable.glassesIPAddress != null) {
+            if (readMjpegrunnable == null) {
+                readMjpegrunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        mGlobalVariable.mv.setState(0);
+                        SharedPreferences settings = getSharedPreferences("Preference", 0);
+                        frontThreshold = settings.getInt("Front_Threshold", 100);
+                        sidesThreshold = settings.getInt("Sides_Threshold", 50);
+
+                        mGlobalVariable.mv.setState(4);
+                        //mv.setState(MjpegView.STATE_NORMAL);
+                        //String IP = settings.getString("IP", "192.168.1.25:9000");
+                        URL = "http://" + mGlobalVariable.glassesIPAddress + ":9000/?action=stream";
+
+                        Log.d(TAG, "URL =" + URL);
+                        doRead_url = new DoRead_url();
+                        doRead_url.execute(URL);
+                    }
+                };
+                handler.post(readMjpegrunnable);
+            }
+        }
+        return;
     }
     public static void initName(){
         BraceletName="未連線";
@@ -1735,4 +1802,7 @@ public class BlunoService extends Service {
     public static void speak(String s){
         mTTSService.speak(s);
     }
+
+
 }
+

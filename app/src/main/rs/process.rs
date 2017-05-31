@@ -1,5 +1,6 @@
 #pragma version(1)
-#pragma rs java_package_name(ntust.lps.smartglasses_rs)
+//#pragma rs java_package_name(ntust.lps.smartglasses_rs)
+#pragma rs java_package_name(tw.edu.ntust.jojllman.wearableapplication.BLE)
 #pragma rs_fp_relaxed
 
 rs_allocation ProcessFrame;
