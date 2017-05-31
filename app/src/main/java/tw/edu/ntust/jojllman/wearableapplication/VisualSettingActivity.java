@@ -3,24 +3,19 @@ package tw.edu.ntust.jojllman.wearableapplication;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.os.Handler;
-import android.view.ContextThemeWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
-
 
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
@@ -173,6 +168,7 @@ public class VisualSettingActivity extends BlunoLibrary {
     @Override
     protected void onDestroy() {
         unregisterReceiver(mMsgReceiver);
+        unregisterReceiver(scan_MsgReceiver);
         super.onDestroy();
     }
 

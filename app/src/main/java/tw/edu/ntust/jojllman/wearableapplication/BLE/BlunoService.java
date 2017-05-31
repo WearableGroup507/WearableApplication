@@ -316,7 +316,7 @@ public class BlunoService extends Service {
 
 
         Log.d(TAG,"Start reading RSSI.");
-        //startReadingRssi();  //fuck you rssi noise
+        startReadingRssi();  //fuck you rssi noise
 
         gloveInit();
 
@@ -1023,7 +1023,7 @@ public class BlunoService extends Service {
                     mTTSService.speak("眼鏡裝置已連線。");
                     Log.d(TAG, "Connected to glass device.");
                     VisualSupportActivity.glassConnected();
-                    //setReadUltraSound(true);
+                    setReadUltraSound(true);
 
                     break;
                 case 1:
@@ -1151,11 +1151,19 @@ public class BlunoService extends Service {
     private void displayData(String data) {
         if (data != null) {
             String tokens[] = data.split(",");
-
-            int front_distance = Integer.parseInt(tokens[0]);
-            int left_distance = Integer.parseInt(tokens[1]);
-            int right_distance = Integer.parseInt(tokens[2]);
-            glass_battery = Integer.parseInt(tokens[3].trim());
+            Log.i(TAG, "Rec data:"+tokens[0]+","+tokens[1]+","+tokens[2]+","+tokens[3]);
+            int front_distance=0;
+            int left_distance=0;
+            int right_distance =0;
+            try {
+                front_distance = Integer.parseInt(tokens[0]);
+                left_distance = Integer.parseInt(tokens[1]);
+                right_distance = Integer.parseInt(tokens[2]);
+                glass_battery = Integer.parseInt(tokens[3].trim());
+            }
+            catch (NumberFormatException e){
+                System.out.println("NumberFormatException");
+            };
             Log.i(TAG, "front:"+front_distance+"\tleft:"+left_distance+"\tright"+right_distance+"\tpower:"+glass_battery);
             int avoid_state_now = 0;
 
@@ -1692,9 +1700,9 @@ public class BlunoService extends Service {
                         try
                         {
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(2000);
+                            Thread.sleep(10000);
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(2000);
+                            Thread.sleep(10000);
                         }
                         catch (Exception e)
                         {
@@ -1775,12 +1783,11 @@ public class BlunoService extends Service {
                 readMjpegrunnable = new Runnable() {
                     @Override
                     public void run() {
-                        mGlobalVariable.mv.setState(0);
+                        mGlobalVariable.mv.setState(MjpegView.STATE_NORMAL);
                         SharedPreferences settings = getSharedPreferences("Preference", 0);
-                        frontThreshold = settings.getInt("Front_Threshold", 100);
-                        sidesThreshold = settings.getInt("Sides_Threshold", 50);
 
-                        mGlobalVariable.mv.setState(4);
+
+                        mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
                         //mv.setState(MjpegView.STATE_NORMAL);
                         //String IP = settings.getString("IP", "192.168.1.25:9000");
                         URL = "http://" + mGlobalVariable.glassesIPAddress + ":9000/?action=stream";
@@ -1793,7 +1800,6 @@ public class BlunoService extends Service {
                 handler.post(readMjpegrunnable);
             }
         }
-        return;
     }
     public static void initName(){
         BraceletName="未連線";

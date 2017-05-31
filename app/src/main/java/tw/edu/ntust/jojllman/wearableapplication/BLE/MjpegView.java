@@ -71,9 +71,11 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 tempx = (dispWidth / 2) - (bmw / 2);
                 tempy = (dispHeight / 2) - (bmh / 2);
                 return new Rect(tempx, tempy, bmw + tempx, bmh + tempy);
+                //return new Rect(0,0,100,100);
             }
             if (displayMode == MjpegView.SIZE_FULLSCREEN){
                 return new Rect(0, 0, dispWidth, dispHeight);
+                //return new Rect(0,0,100,100);
             }
             return null;
         }
@@ -120,6 +122,11 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                             mSurfaceHolder.unlockCanvasAndPost(c);
                         }
                     }
+                }
+                try {
+                    thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
