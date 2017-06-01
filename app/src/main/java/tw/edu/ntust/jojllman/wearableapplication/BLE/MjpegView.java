@@ -191,6 +191,12 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             mRun = false;
             if(thread.getState() == MjpegViewThread.State.NEW){
                 thread.start();
+            }else{
+                MjpegViewThread tmpthread=thread;
+                tmpthread.interrupt();
+                SurfaceHolder holder = getHolder();
+                thread = new MjpegViewThread(holder, ActivityContext);
+                this.thread.start();
             }
         }
     }
@@ -246,6 +252,6 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setDisplayMode(int s) {
         displayMode = s;
-        Log.i(TAG2,"setDisplayMode(int s)");
+        Log.i(TAG2,"setDisplayMode(int "+s+")");
     }
 }
