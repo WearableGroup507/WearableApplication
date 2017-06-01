@@ -34,6 +34,7 @@ public class VisualSupportActivity extends BlunoLibrary {
 //    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Intent mREQUEST_CONNECTED_DEVICES = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private Intent mRESET_REQUEST = new Intent("tw.ntust.jollman.wearbleapplication.RESET_REQUEST");
+    private Intent displayIPIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISPLAYIP");
     private GlobalVariable globalVariable;
     private GlobalVariable.SavedDevices saveddevice;
 
@@ -377,6 +378,9 @@ public class VisualSupportActivity extends BlunoLibrary {
         handler.post(autoConnectRunnable);
 
         sendBroadcast(mREQUEST_CONNECTED_DEVICES);
+        displayIPIntent.putExtra("DisplayIP",true);
+        displayIPIntent.putExtra("DisplayString","Fuck intent");
+        sendBroadcast(displayIPIntent);
     }
 
     private void findView(){
@@ -396,6 +400,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         if(BlunoService.getReadUltraSound()){
             BlunoService.setReadUltraSound(false);
         }
+        BlunoService.initReadMjpegrunnable();
 //        braceletDistanceIntent.putExtra("sendDistance",false);
 //        sendBroadcast(braceletDistanceIntent);
         super.onPause();
@@ -475,6 +480,10 @@ public class VisualSupportActivity extends BlunoLibrary {
                 startActivity(intent);
             }
         }else if (view.getId() == R.id.layout_visual_search_dev){
+            System.out.println("here");
+            displayIPIntent.putExtra("DisplayIP",true);
+            displayIPIntent.putExtra("DisplayString","Fuck intent");
+            sendBroadcast(displayIPIntent);
             if(BlunoService.getBraceletPower() > 0)
                 OnSearchClick(view);
         }else if (view.getId() == R.id.layout_setting){

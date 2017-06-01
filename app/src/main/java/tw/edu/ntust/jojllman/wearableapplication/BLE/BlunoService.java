@@ -63,6 +63,7 @@ public class BlunoService extends Service {
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
     private Intent braceletStateIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
+    private Intent displayIPIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISPLAYIP");
     private Context serviceContext=this;
     private MsgReceiver msgReceiver;
     private ThresholdReceiver thresholdReceiver;
@@ -179,7 +180,7 @@ public class BlunoService extends Service {
 
     private String URL ;
     DoRead_url doRead_url;
-    private static Runnable readMjpegrunnable;
+    public static Runnable readMjpegrunnable;
 
 
     private Thread			    mReadRssiThread;
@@ -312,7 +313,11 @@ public class BlunoService extends Service {
         braceletControlIntentFilter.addAction(braceletControlIntent.getAction());
         registerReceiver(mBraceletControlReceiver, braceletControlIntentFilter);
 
-
+        //0602
+        IntentFilter DisplayIPIntentFilter = new IntentFilter();
+        braceletControlIntentFilter.addAction(displayIPIntent.getAction());
+        deleteIntentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.DISPLAYIP");
+        registerReceiver(displayipReceiver, DisplayIPIntentFilter);
 
 
         Log.d(TAG,"Start reading RSSI.");
@@ -355,6 +360,7 @@ public class BlunoService extends Service {
         unregisterReceiver(thresholdReceiver);
         unregisterReceiver(deleteReceiver);
         unregisterReceiver(mBraceletControlReceiver);
+        unregisterReceiver(displayipReceiver);
 
         if(mBluetoothLeService!=null)
         {
@@ -1505,6 +1511,19 @@ public class BlunoService extends Service {
         }
     }
 
+    private final BroadcastReceiver displayipReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+                final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
+                final String displaystring = intent.getStringExtra("Displaystring");
+                System.out.println("Displayflag:"+Displayipflag);
+                System.out.println("Dispplaystring:"+displaystring);
+
+
+        }
+    };
+
+
     public class DeleteReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -1796,7 +1815,7 @@ public class BlunoService extends Service {
                         //mv.setState(MjpegView.STATE_NORMAL);
                         //String IP = settings.getString("IP", "192.168.1.25:9000");
                         URL = "http://" + mGlobalVariable.glassesIPAddress + ":9000/?action=stream";
-
+                        mGlobalVariable.glassesURL = URL;
                         Log.d(TAG, "URL =" + URL);
                         doRead_url = new DoRead_url();
                         doRead_url.execute(URL);
@@ -1813,7 +1832,10 @@ public class BlunoService extends Service {
     public static void speak(String s){
         mTTSService.speak(s);
     }
-
+    public static void initReadMjpegrunnable(){
+        handler.removeCallbacks(readMjpegrunnable);
+        readMjpegrunnable=null;
+    }
 
 }
 
