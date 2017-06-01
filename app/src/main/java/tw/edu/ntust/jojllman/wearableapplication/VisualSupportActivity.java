@@ -51,12 +51,15 @@ public class VisualSupportActivity extends BlunoLibrary {
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
     private static Button ring_btn;
+    private boolean ring_btn_enable = false;
 
     private Handler mHandler = new Handler();
     private boolean killRunnable = false;
     private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private TextToSpeech tts;
     private static Button glass_btn;
+    private boolean glass_btn_enable = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -196,6 +199,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
                         ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
+                    ring_btn_enable = true;
                 }
                 else if(GlobalVariable.braceletAddress != "") {
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.braceletAddress);
@@ -206,6 +210,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
                         ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
+                    ring_btn_enable = false;
                 }
 
             }
@@ -225,6 +230,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
+                    glass_btn_enable = true;
                 }
                 else if(GlobalVariable.glassesAddress != ""){
                     System.out.println("glassaddress = "+GlobalVariable.glassesAddress);
@@ -237,6 +243,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
                     BlunoService.setReadUltraSound(true);
+                    glass_btn_enable = false;
                 }
                 /*Log.d(TAG, "layout_glass_dev pressed");
                 if (!BlunoService.getReadUltraSound()) {
@@ -356,8 +363,10 @@ public class VisualSupportActivity extends BlunoLibrary {
             public void run() {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
-                ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
-                ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
+                if(BlunoService.getBraceletName()!="未連線" && !ring_btn_enable)
+                    ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
+                if(BlunoService.getGlassName()!="未連線" && !glass_btn_enable)
+                    ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView

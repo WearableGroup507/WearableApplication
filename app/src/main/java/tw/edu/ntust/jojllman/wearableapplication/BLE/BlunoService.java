@@ -1163,6 +1163,8 @@ public class BlunoService extends Service {
                 right_distance = Integer.parseInt(tokens[2]);
                 BAT_tmp = tokens[3].replace("%","");
                 glass_battery = Integer.parseInt(BAT_tmp.trim());
+                if(glass_battery==0)
+                    glass_battery=1; //防止電量低 飄到0 產生開關無法運作之情形
             }
             catch (NumberFormatException e){
                 System.out.println("NumberFormatException");
