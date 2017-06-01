@@ -350,6 +350,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 mHandler.postDelayed(this, 500);
             }
         });
+        BlunoService.setReadUltraSound(true);
         handler.post(new Runnable() {
             @Override
             public void run() {
