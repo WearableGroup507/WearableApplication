@@ -1518,7 +1518,9 @@ public class BlunoService extends Service {
                 final String displaystring = intent.getStringExtra("Displaystring");
                 System.out.println("Displayflag:"+Displayipflag);
                 System.out.println("Dispplaystring:"+displaystring);
-
+            if(Displayipflag){
+                displayIP(mGlobalVariable.glassesURL);
+            }
 
         }
     };
