@@ -1156,11 +1156,13 @@ public class BlunoService extends Service {
             int front_distance=0;
             int left_distance=0;
             int right_distance =0;
+            String BAT_tmp;
             try {
                 front_distance = Integer.parseInt(tokens[0]);
                 left_distance = Integer.parseInt(tokens[1]);
                 right_distance = Integer.parseInt(tokens[2]);
-                glass_battery = Integer.parseInt(tokens[3].trim());
+                BAT_tmp = tokens[3].replace("%","");
+                glass_battery = Integer.parseInt(BAT_tmp.trim());
             }
             catch (NumberFormatException e){
                 System.out.println("NumberFormatException");
