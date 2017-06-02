@@ -349,6 +349,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             Intent intent = new Intent(this, BlunoService.class);
             stopService(intent);
         }
+        if( tts != null ) tts.shutdown();
         super.onDestroy();
         unregisterReceiver(braceletReceiver);
     }
