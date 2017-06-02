@@ -13,19 +13,20 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="7"
+        android:weightSum="10"
         android:background="@drawable/button_with_border_new"
-
         android:onClick="OnDeviceClick"
         android:orientation="horizontal"
         >
         <LinearLayout
-            android:layout_width="231dp"
+            android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:orientation="vertical"
             android:paddingTop="20dp"
             android:paddingLeft="26dp"
             android:layout_alignParentLeft="true"
-            android:layout_weight="3"
+            android:layout_weight="6"
+            android:weightSum="12"
             android:id="@+id/layout_glass_dev"
             android:paddingBottom="20dp">
             <TextView
@@ -56,30 +57,44 @@
                 android:layout_weight="3"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
-        <Button
-            android:layout_marginRight="30dp"
-            android:id="@+id/glass_btn"
-            android:drawableLeft="@drawable/scale_power"
-            android:text="關閉"
-            android:textColor="#0047B2"
-            android:textSize="19sp"
-            android:adjustViewBounds="true"
-            android:layout_width="103dp"
-            android:minWidth="103dp"
-            android:layout_height="53dp"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:layout_weight="3"
-            android:drawablePadding="-33dp"
-            android:paddingLeft="9dp"
-            android:background="@drawable/btn_shape"
-            android:textStyle="bold" />
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
 
-    <tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView
-        android:id="@+id/mv"
-        android:layout_width="150dp"
-        android:layout_height="150dp" />
+            android:layout_weight="4">
+            <Button
+                android:id="@+id/glass_btn"
+                android:text="藍芽斷線"
+                android:textColor="#ffffff"
+                android:textSize="19sp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:layout_weight="3"
+                android:paddingTop="25dp"
+                android:drawablePadding="-20dp"
+                android:drawableTop="@drawable/ic_power_new"
+                android:background="@drawable/support_bg"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/tag_btn"
+                android:text="智慧標籤開啟"
+                android:textColor="#ffffff"
+                android:textSize="19sp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="25dp"
+                android:drawablePadding="-20dp"
+                android:layout_gravity="center"
+                android:layout_weight="3"
+                android:drawableTop="@drawable/ic_power_new"
+                android:background="@drawable/support_bg"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:contentDescription="@string/layout_bracelet"
@@ -87,18 +102,18 @@
         android:layout_height="0dp"
         android:layout_weight="7"
         android:background="@drawable/button_with_border_new"
-
+        android:weightSum="10"
         android:orientation="horizontal"
         android:onClick="OnDeviceClick"
         >
         <LinearLayout
-            android:layout_width="231dp"
+            android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:orientation="vertical"
             android:paddingTop="20dp"
             android:paddingLeft="26dp"
             android:layout_alignParentLeft="true"
-            android:layout_weight="3"
+            android:layout_weight="5"
             android:gravity="left"
             android:id="@+id/layout_bracelet_dev"
             android:paddingBottom="20dp">
@@ -132,25 +147,27 @@
                 android:textColor="#FFFFFF" />
         </LinearLayout>
 
-
-        <Button
-            android:layout_marginRight="30dp"
-            android:id="@+id/ring_btn"
-            android:drawableLeft="@drawable/scale_power"
-            android:text="關閉"
-            android:textColor="#0047B2"
-            android:textSize="19sp"
-            android:adjustViewBounds="true"
-            android:layout_width="103dp"
-            android:minWidth="103dp"
-            android:layout_height="53dp"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:layout_weight="3"
-            android:drawablePadding="-33dp"
-            android:paddingLeft="9dp"
-            android:background="@drawable/btn_shape"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="5">
+            <Button
+                android:id="@+id/ring_btn"
+                android:text="藍芽斷線"
+                android:textColor="#ffffff"
+                android:textSize="19sp"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:paddingTop="55dp"
+                android:drawablePadding="-55dp"
+                android:paddingLeft="9dp"
+                android:drawableTop="@drawable/ic_power_new"
+                android:background="@drawable/support_bg"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"

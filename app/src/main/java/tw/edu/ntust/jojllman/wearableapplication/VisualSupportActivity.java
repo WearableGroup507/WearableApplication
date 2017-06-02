@@ -103,11 +103,11 @@ public class VisualSupportActivity extends BlunoLibrary {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
-        globalVariable.mv = ((MjpegView) findViewById(R.id.mv));
-        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
-            Intent intent = new Intent(this, BlunoService.class);
-            startService(intent);
-        }
+//        globalVariable.mv = ((MjpegView) findViewById(R.id.mv));
+//        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+//            Intent intent = new Intent(this, BlunoService.class);
+//            startService(intent);
+//        }
 
 
 
@@ -385,10 +385,9 @@ public class VisualSupportActivity extends BlunoLibrary {
         layout_bracelet_dev = (LinearLayout) findViewById(R.id.layout_bracelet_dev);
         layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，訊號 未知");
         layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，訊號 未知");
-        Button ring = (Button) findViewById(R.id.ring_btn);
-        ring.getCompoundDrawables()[0].setLevel(1);
-        Button glass = (Button) findViewById(R.id.glass_btn);
-        glass.getCompoundDrawables()[0].setLevel(1);
+//        Button ring = (Button) findViewById(R.id.ring_btn);
+//        ring.getCompoundDrawables()[0].setLevel(1);
+//        Button glass = (Button) findViewById(R.id.glass_btn);
     }
 
     public void onPause(){
