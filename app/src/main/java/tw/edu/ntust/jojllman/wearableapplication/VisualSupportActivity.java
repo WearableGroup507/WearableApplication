@@ -103,11 +103,11 @@ public class VisualSupportActivity extends BlunoLibrary {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
-//        globalVariable.mv = ((MjpegView) findViewById(R.id.mv));
-//        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
-//            Intent intent = new Intent(this, BlunoService.class);
-//            startService(intent);
-//        }
+        globalVariable.mv = ((MjpegView) findViewById(R.id.mv));
+        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
+            Intent intent = new Intent(this, BlunoService.class);
+            startService(intent);
+        }
 
 
 

@@ -153,10 +153,10 @@ public class VisualSettingActivity extends BlunoLibrary {
             @Override
             public void onClick(View v) {
                 System.out.println("brace here");
-                Intent intent = new Intent();
-                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
-                startActivity(intent);
-                VisualSettingActivity.this.finish();
+//                Intent intent = new Intent();
+//                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
+//                startActivity(intent);
+//                VisualSettingActivity.this.finish();
                 scanlist();
             }
         });
@@ -165,10 +165,10 @@ public class VisualSettingActivity extends BlunoLibrary {
             @Override
             public void onClick(View v) {
                 System.out.println("glass here");
-                Intent intent = new Intent();
-                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
-                startActivity(intent);
-                VisualSettingActivity.this.finish();
+//                Intent intent = new Intent();
+//                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
+//                startActivity(intent);
+//                VisualSettingActivity.this.finish();
                 scanlist();
             }
         });
