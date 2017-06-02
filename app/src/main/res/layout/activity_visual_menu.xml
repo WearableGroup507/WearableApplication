@@ -76,6 +76,11 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView
+        android:id="@+id/mv"
+        android:layout_width="150dp"
+        android:layout_height="150dp" />
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:contentDescription="@string/layout_bracelet"
         android:layout_width="fill_parent"

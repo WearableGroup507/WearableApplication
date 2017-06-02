@@ -10,26 +10,23 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 import java.util.Locale;
 
-import tw.edu.ntust.jojllman.wearableapplication.BLE.BluetoothLeService;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
+import tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView;
 
 public class VisualSupportActivity extends BlunoLibrary {
     private static String TAG = VisualSupportActivity.class.getSimpleName();
@@ -37,33 +34,40 @@ public class VisualSupportActivity extends BlunoLibrary {
 //    private Intent braceletDistanceIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Intent mREQUEST_CONNECTED_DEVICES = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private Intent mRESET_REQUEST = new Intent("tw.ntust.jollman.wearbleapplication.RESET_REQUEST");
+    private Intent displayIPIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISPLAYIP");
     private GlobalVariable globalVariable;
+    private GlobalVariable.SavedDevices saveddevice;
 
     private Handler handler=new Handler();
 //    private DeviceInfoView btn_device_glass;
 //    private DeviceInfoView btn_device_bracelet;
-    private LinearLayout layout_glass_dev;
-    private LinearLayout layout_bracelet_dev;
+    private static LinearLayout layout_glass_dev;
+    private static LinearLayout layout_bracelet_dev;
     private boolean m_braceletConnected = false;
     private int click_count=0;
 
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
     private Intent glassControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
-    private Runnable autoConnectRunnable;
+    private static Runnable autoConnectRunnable;
     private boolean killAutoConnectRunnable = false;
     private boolean useTextSignal = false;
-    private Button ring_btn;
+    private static Button ring_btn;
+    private boolean ring_btn_enable = false;
 
     private Handler mHandler = new Handler();
     private boolean killRunnable = false;
     private BlunoService.BraceletState m_braceletState= BlunoService.BraceletState.none;
     private TextToSpeech tts;
-    private Button glass_btn;
+    private static Button glass_btn;
+    private boolean glass_btn_enable = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visual_menu);
 
+        //final GlobalVariable dglobalVariable = (GlobalVariable)getApplicationContext();
+        //dglobalVariable.readSetting();
 
         globalVariable = (GlobalVariable)getApplicationContext();
         globalVariable.readSetting();
@@ -99,11 +103,15 @@ public class VisualSupportActivity extends BlunoLibrary {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
-
+        globalVariable.mv = ((MjpegView) findViewById(R.id.mv));
         if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
             Intent intent = new Intent(this, BlunoService.class);
             startService(intent);
         }
+
+
+
+
 
         m_braceletConnected = false;
         killAutoConnectRunnable = false;
@@ -190,6 +198,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
                         ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
+                    ring_btn_enable = true;
                 }
                 else if(GlobalVariable.braceletAddress != "") {
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.braceletAddress);
@@ -200,6 +209,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
                         ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
+                    ring_btn_enable = false;
                 }
 
             }
@@ -208,17 +218,21 @@ public class VisualSupportActivity extends BlunoLibrary {
         glass_btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(BlunoService.Glass_RSSI>0) {
+                if(BlunoService.getGlassbattery()>0) {
+                    BlunoService.setReadUltraSound(false);
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
+                    globalVariable.mv.setState(MjpegView.STATE_NORMAL);
                     glass_btn.setText("開啟");
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 關閉中");
                     ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
+                    glass_btn_enable = true;
                 }
                 else if(GlobalVariable.glassesAddress != ""){
+                    System.out.println("glassaddress = "+GlobalVariable.glassesAddress);
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.glassesAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
@@ -227,7 +241,17 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
+                    BlunoService.setReadUltraSound(true);
+                    glass_btn_enable = false;
                 }
+                /*Log.d(TAG, "layout_glass_dev pressed");
+                if (!BlunoService.getReadUltraSound()) {
+                    BlunoService.setReadUltraSound(true);
+                    //view.announceForAccessibility("開啟眼鏡避障功能");
+                } else {
+                    BlunoService.setReadUltraSound(false);
+                    //view.announceForAccessibility("關閉眼鏡避障功能");
+                }*/
             }
         });
 
@@ -332,12 +356,16 @@ public class VisualSupportActivity extends BlunoLibrary {
                 mHandler.postDelayed(this, 500);
             }
         });
+        BlunoService.setReadUltraSound(true);
         handler.post(new Runnable() {
             @Override
             public void run() {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
-                ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
+                if(BlunoService.getBraceletName()!="未連線" && !ring_btn_enable)
+                    ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
+                if(BlunoService.getGlassName()!="未連線" && !glass_btn_enable)
+                    ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView
@@ -348,6 +376,8 @@ public class VisualSupportActivity extends BlunoLibrary {
         handler.post(autoConnectRunnable);
 
         sendBroadcast(mREQUEST_CONNECTED_DEVICES);
+        displayIPIntent.putExtra("DisplayIP",true);
+        sendBroadcast(displayIPIntent);
     }
 
     private void findView(){
@@ -367,8 +397,10 @@ public class VisualSupportActivity extends BlunoLibrary {
         if(BlunoService.getReadUltraSound()){
             BlunoService.setReadUltraSound(false);
         }
+        BlunoService.initReadMjpegrunnable();
 //        braceletDistanceIntent.putExtra("sendDistance",false);
 //        sendBroadcast(braceletDistanceIntent);
+
         super.onPause();
     }
 
@@ -474,6 +506,7 @@ public class VisualSupportActivity extends BlunoLibrary {
     }
     public void OnSearchClick(View view){
         Log.i(TAG,"OnSearchClick");
+        braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
         braceletControlIntent.putExtra("BraceletSearch", true);
         sendBroadcast(braceletControlIntent);
         view.announceForAccessibility("尋找手環");
@@ -628,5 +661,31 @@ public class VisualSupportActivity extends BlunoLibrary {
 //                buttonScan.setText("isDisconnecting");
                 break;
         }
+    }
+    public static void colorInit(){
+        ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+            ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+            ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        ring_btn.setText("關閉");
+        glass_btn.setText("關閉");
+    }
+    public static void glassConnected(){
+        ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+            ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        glass_btn.setText("關閉");
+    }
+    public static void braceletConnect(){
+        ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+        for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+            ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+        }
+        ring_btn.setText("關閉");
     }
 }

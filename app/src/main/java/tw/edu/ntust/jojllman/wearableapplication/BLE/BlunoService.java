@@ -12,13 +12,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -27,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
+import tw.edu.ntust.jojllman.wearableapplication.VisualSupportActivity;
 
 /**
  * This is a service class for manipulating data from bracelet and glass
@@ -40,6 +48,8 @@ public class BlunoService extends Service {
             UUID.fromString("0000AAAF-0000-1000-8000-00805F9B34FB");
     public final static UUID UUID_GLASS_CHARACTERISTIC =
             UUID.fromString("0000AAA1-0000-1000-8000-00805F9B34FB");
+    public final static UUID UUID_GLASS_CHARACTERISTIC_IP =
+            UUID.fromString("0000AAA2-0000-1000-8000-00805F9B34FB");
     public final static UUID UUID_BRACELET_NOTIFY =
             UUID.fromString(BraceletGattAttributes.NOTIFY);
     public final static UUID UUID_BRACELET_SERVICE =
@@ -48,11 +58,12 @@ public class BlunoService extends Service {
             UUID.fromString(BraceletGattAttributes.WRITE);
     private final static int NUM_DEVICE = 2;
     private GlobalVariable mGlobalVariable;
-    private Handler handler = new Handler();
+    private static Handler handler = new Handler();
     private Intent transferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
     private Intent disonnectIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
     private Intent braceletStateIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_STATE");
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
+    private Intent displayIPIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.DISPLAYIP");
     private Context serviceContext=this;
     private MsgReceiver msgReceiver;
     private ThresholdReceiver thresholdReceiver;
@@ -64,6 +75,7 @@ public class BlunoService extends Service {
     private boolean mConnected_Bracelet = false;
     private boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
+    private boolean firstdisplayIP = false;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDeviceLeft, mGloveDeviceRight;
@@ -84,6 +96,7 @@ public class BlunoService extends Service {
     private HashMap<String, BluetoothGattCharacteristic> mSendCommandCharacteristics;
     private HashMap<String, BluetoothGattCharacteristic> mSetNotificationCharacteristics;
     private BluetoothGattCharacteristic mUltraSoundCharacteristic;
+    private BluetoothGattCharacteristic mUltraSoundCharacteristic_IP;
 //    private static BluetoothGattCharacteristic mSCharacteristic, mModelNumberCharacteristic,
 //                    mSerialPortCharacteristic, mCommandCharacteristic;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
@@ -101,6 +114,7 @@ public class BlunoService extends Service {
     private static int Bracelet_RSSI;
     private static String BraceletName = "未連線";
     static public int Bracelet_BAT;
+    static public int glass_battery;
     private BluetoothGatt BraceletGatt;
     public static int getBracelet_RSSI(){return Bracelet_RSSI;}
     public static String getBraceletName(){return BraceletName;}
@@ -128,10 +142,11 @@ public class BlunoService extends Service {
     private final static int MOVE_LEFT = 21;
     private final static int MOVE_RIGHT = 22;
 
+    //private static boolean readUltraSound = false;
     private static boolean readUltraSound = false;
     public static void setReadUltraSound(boolean b){readUltraSound = b;}
     public static boolean getReadUltraSound(){return readUltraSound;}
-    private Runnable readUltraSoundRunnable;
+    private static Runnable readUltraSoundRunnable;
     public static int Glass_RSSI;
     private static String GlassName = "未連線";
     public static int getGlass_RSSI(){return Glass_RSSI;}
@@ -164,8 +179,16 @@ public class BlunoService extends Service {
     //private doNotification notify;
     //private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
 
+    private String URL ;
+    DoRead_url doRead_url;
+    public static Runnable readMjpegrunnable;
+
+
     private Thread			    mReadRssiThread;
     private boolean				mReadRssiThreadRunning;
+
+
+
 
     private Runnable mConnectingOverTimeRunnable=new Runnable(){
 
@@ -291,11 +314,13 @@ public class BlunoService extends Service {
         braceletControlIntentFilter.addAction(braceletControlIntent.getAction());
         registerReceiver(mBraceletControlReceiver, braceletControlIntentFilter);
 
-
+        IntentFilter DisplayIPIntentFilter = new IntentFilter();
+        DisplayIPIntentFilter.addAction(displayIPIntent.getAction());
+        registerReceiver(displayipReceiver, DisplayIPIntentFilter);
 
 
         Log.d(TAG,"Start reading RSSI.");
-        startReadingRssi();
+        startReadingRssi();  //fuck you rssi noise
 
         gloveInit();
 
@@ -334,6 +359,7 @@ public class BlunoService extends Service {
         unregisterReceiver(thresholdReceiver);
         unregisterReceiver(deleteReceiver);
         unregisterReceiver(mBraceletControlReceiver);
+        unregisterReceiver(displayipReceiver);
 
         if(mBluetoothLeService!=null)
         {
@@ -377,8 +403,13 @@ public class BlunoService extends Service {
                 //mBluetoothLeService.close();
                 if(device.equals(mGlassDevice)){
                     handler.removeCallbacks(readUltraSoundRunnable);
+                    handler.removeCallbacks(readMjpegrunnable);
+                    readUltraSoundRunnable=null;
+                    readMjpegrunnable=null;
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
+                    glass_battery = 0;
+                    mGlobalVariable.mv.setState(MjpegView.STATE_BLANK);
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
@@ -406,9 +437,12 @@ public class BlunoService extends Service {
 
             if(device.equals(mGlassDevice)) {
                 Log.d(TAG, "Device is glass");
-                if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                if (BluetoothLeService.ACTION_ULTRASOUND_DATA.equals(action)) {
                     displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
+                    displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    firstdisplayIP = true;
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
 //                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -935,6 +969,10 @@ public class BlunoService extends Service {
                         deviceType = 0;
                         System.out.println("mUltraSoundCharacteristic  " + mUltraSoundCharacteristic.getUuid().toString());
                     }
+                    if(gattCharacteristic.getUuid().equals(UUID_GLASS_CHARACTERISTIC_IP)) {
+                        mUltraSoundCharacteristic_IP = gattCharacteristic;
+                        System.out.println("mUltraSoundCharacteristic_IP  " + mUltraSoundCharacteristic_IP.getUuid().toString());
+                    }
                     //uuid = gattCharacteristic.getUuid().toString();
 //                    if (uuid.equals(ModelNumberStringUUID)) {
 //                        mModelNumberCharacteristic = gattCharacteristic;
@@ -972,6 +1010,7 @@ public class BlunoService extends Service {
                         onConectionStateChange(mConnectionState);
                     }else{
                         readUltraSound();
+                        readIP();
                     }
 
 //                    if (mModelNumberCharacteristic==null || mSerialPortCharacteristic==null || mCommandCharacteristic==null) {
@@ -989,6 +1028,9 @@ public class BlunoService extends Service {
 //                    }
                     mTTSService.speak("眼鏡裝置已連線。");
                     Log.d(TAG, "Connected to glass device.");
+                    VisualSupportActivity.glassConnected();
+                    setReadUltraSound(true);
+
                     break;
                 case 1:
                     mConnected_Bracelet = true;
@@ -1017,6 +1059,7 @@ public class BlunoService extends Service {
                         played = true;
                     }
                     Log.d(TAG, "Connected to bracelet device.");
+                    VisualSupportActivity.braceletConnect();
                     break;
                 case 2:
                     if(!mConnected_GloveLeft && device.getName().toLowerCase().startsWith(GlobalVariable.defaultNameGlove.toLowerCase() + "l"))
@@ -1058,6 +1101,8 @@ public class BlunoService extends Service {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_ULTRASOUND_DATA);
+        intentFilter.addAction(BluetoothLeService.ACTION_GLASS_IP);
         intentFilter.addAction(BluetoothLeService.ON_READ_REMOTE_RSSI);
         return intentFilter;
     }
@@ -1101,15 +1146,35 @@ public class BlunoService extends Service {
             handler.post(readUltraSoundRunnable);
         }
     }
+    private void readIP(){
+        if (mBluetoothLeService == null || mUltraSoundCharacteristic_IP == null || mGlassDevice == null) {
+            Log.d(TAG, "Glass not initialized");
+            return;
+        }
+        mBluetoothLeService.readCharacteristic(mGlassDevice, mUltraSoundCharacteristic_IP);
+    }
 
     private void displayData(String data) {
         if (data != null) {
             String tokens[] = data.split(",");
-
-            int front_distance = Integer.parseInt(tokens[0]);
-            int left_distance = Integer.parseInt(tokens[1]);
-            int right_distance = Integer.parseInt(tokens[2]);
-
+            Log.i(TAG, "Rec data:"+tokens[0]+","+tokens[1]+","+tokens[2]+","+tokens[3]);
+            int front_distance=0;
+            int left_distance=0;
+            int right_distance =0;
+            String BAT_tmp;
+            try {
+                front_distance = Integer.parseInt(tokens[0]);
+                left_distance = Integer.parseInt(tokens[1]);
+                right_distance = Integer.parseInt(tokens[2]);
+                BAT_tmp = tokens[3].replace("%","");
+                glass_battery = Integer.parseInt(BAT_tmp.trim());
+                if(glass_battery==0)
+                    glass_battery=1; //防止電量低 飄到0 產生開關無法運作之情形
+            }
+            catch (NumberFormatException e){
+                System.out.println("NumberFormatException");
+            };
+            Log.i(TAG, "front:"+front_distance+"\tleft:"+left_distance+"\tright"+right_distance+"\tpower:"+glass_battery);
             int avoid_state_now = 0;
 
             if(left_distance<sidesThreshold && right_distance<sidesThreshold && front_distance<frontThreshold) {
@@ -1445,6 +1510,19 @@ public class BlunoService extends Service {
         }
     }
 
+    private final BroadcastReceiver displayipReceiver = new BroadcastReceiver(){
+        @Override
+        public void onReceive(Context context, Intent intent) {
+                final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
+                System.out.println("Displayflag:"+Displayipflag);
+            if(Displayipflag && firstdisplayIP){
+                displayIP(mGlobalVariable.glassesIPAddress);
+            }
+
+        }
+    };
+
+
     public class DeleteReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -1645,9 +1723,9 @@ public class BlunoService extends Service {
                         try
                         {
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(200);
+                            Thread.sleep(10000);
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(200);
+                            Thread.sleep(10000);
                         }
                         catch (Exception e)
                         {
@@ -1680,6 +1758,7 @@ public class BlunoService extends Service {
     public static int getBraceletPower() {
         return Bracelet_BAT;
     }
+    public static int getGlassbattery() {return  glass_battery;}
     public void disConnect(BluetoothDevice device){
         if(mConnected_Bracelet){
             mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
@@ -1694,4 +1773,67 @@ public class BlunoService extends Service {
             mConnected_Glass= false;
         }
     }
+    public class DoRead_url extends AsyncTask<String, Void, MjpegInputStream> {
+        protected MjpegInputStream doInBackground(String... url) {
+            URL httpURL ;
+            try {
+                Log.d(TAG, "1. Sending http request");
+                httpURL = new URL(url[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) httpURL.openConnection();
+                Log.d(TAG, "2. Request finished, status = " + urlConnection.getResponseMessage());
+                return new MjpegInputStream(new BufferedInputStream(urlConnection.getInputStream()));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                Log.d(TAG, "Request failed-ClientProtocolException", e);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(TAG, "Request failed-IOException", e);
+            }
+
+            return null;
+        }
+
+        protected void onPostExecute(MjpegInputStream result) {
+            mGlobalVariable.mv.setSource(result);
+            mGlobalVariable.mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+        }
+    }
+    private void displayIP(String ip_data){
+        Log.d(TAG,"displayIP ip_data="+ip_data);
+        mGlobalVariable.glassesIPAddress=ip_data;
+        if (mGlobalVariable.glassesIPAddress != null) {
+            if (readMjpegrunnable == null) {
+                readMjpegrunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        mGlobalVariable.mv.setState(MjpegView.STATE_NORMAL);
+                        SharedPreferences settings = getSharedPreferences("Preference", 0);
+
+
+                        mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+                        //mv.setState(MjpegView.STATE_NORMAL);
+                        //String IP = settings.getString("IP", "192.168.1.25:9000");
+                        URL = "http://" + mGlobalVariable.glassesIPAddress + ":9000/?action=stream";
+                        Log.d(TAG, "URL =" + URL);
+                        doRead_url = new DoRead_url();
+                        doRead_url.execute(URL);
+                    }
+                };
+                handler.post(readMjpegrunnable);
+            }
+        }
+    }
+    public static void initName(){
+        BraceletName="未連線";
+        GlassName="未連線";
+    }
+    public static void speak(String s){
+        mTTSService.speak(s);
+    }
+    public static void initReadMjpegrunnable(){
+        handler.removeCallbacks(readMjpegrunnable);
+        readMjpegrunnable=null;
+    }
+
 }
+

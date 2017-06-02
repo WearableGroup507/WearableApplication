@@ -84,7 +84,7 @@ public class ChooseClassActivity extends AppCompatActivity {
 
         Intent intent = new Intent(ChooseClassActivity.this, BlunoService.class);
         startService(intent);
-
+        mAutoEnter=1;
         if(mAutoEnter == 1){
             Intent intentVisual = new Intent(ChooseClassActivity.this  , VisualSupportActivity.class);
             intentVisual.putExtra("AutoEnter", mAutoEnter);

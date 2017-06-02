@@ -3,26 +3,24 @@ package tw.edu.ntust.jojllman.wearableapplication;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.view.ContextThemeWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
+import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
-public class VisualSettingActivity extends AppCompatActivity {
+public class VisualSettingActivity extends BlunoLibrary {
     private GlobalVariable mGlobalVariable;
     private SeekBar mSeekBar_front;
     private SeekBar mSeekBar_side;
@@ -33,7 +31,6 @@ public class VisualSettingActivity extends AppCompatActivity {
     private Button search_glass;
 
 
-
     private boolean mConnected_Glass = false;
     private boolean mConnected_Bracelet = false;
     private boolean mConnected_Glove_Left = false;
@@ -41,8 +38,47 @@ public class VisualSettingActivity extends AppCompatActivity {
     private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
     private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
+    private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
 
     private MsgReceiver mMsgReceiver;
+    private MsgReceiver scan_MsgReceiver;
+    private Handler mHandler = new Handler();
+    private boolean killRunnable = false;
+
+    @Override
+    public void onConnectionStateChange(theConnectionState mConnectionState) {
+        switch (mConnectionState) {
+            case isConnected:
+//                buttonScan.setText("Connected");
+                break;
+            case isConnecting:
+//                buttonScan.setText("Connecting");
+                if(mDeviceName.startsWith("Nordic_Bracelet"))
+                    GlobalVariable.braceletAddress = mDeviceAddress;
+                else {
+                    GlobalVariable.glassesAddress = mDeviceAddress;
+                }
+                mTransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
+                mTransferIntent.putExtra("connectionState", connectionState);
+//                mThresholdIntent.putExtra("frontThreshold", mThresholdIntent);
+//                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
+                sendBroadcast(mTransferIntent);
+                ((GlobalVariable)getApplicationContext()).getSaved_devices().addDevice(mDeviceName, mDeviceAddress);
+                this.finish();
+//                sendBroadcast(mThresholdIntent);
+                //TODO: move to app setting
+                break;
+            case isToScan:
+//                buttonScan.setText("Scan");
+                break;
+            case isScanning:
+//                buttonScan.setText("Scanning");
+                break;
+            case isDisconnecting:
+//                buttonScan.setText("isDisconnecting");
+                break;
+        }
+    }
 
     public class MsgReceiver extends BroadcastReceiver {
         @Override
@@ -55,6 +91,7 @@ public class VisualSettingActivity extends AppCompatActivity {
                 mConnected_Glove_Left = intent.getBooleanExtra("Connected_Glove_Left", false);
                 mConnected_Glove_Right = intent.getBooleanExtra("Connected_Glove_Right", false);
             }
+
         }
     }
 
@@ -87,6 +124,13 @@ public class VisualSettingActivity extends AppCompatActivity {
         findView();
         initialize();
 
+        scan_MsgReceiver = new MsgReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
+        registerReceiver(scan_MsgReceiver, intentFilter);
+
+
+
         system_reset = (Button) findViewById(R.id.system_reset);
         system_reset.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,8 +140,12 @@ public class VisualSettingActivity extends AppCompatActivity {
                 braceletControlIntent.putExtra("BraceletDisconnect",true);
                 braceletControlIntent.putExtra("GlassDisconnect",true);
                 sendBroadcast(braceletControlIntent);
+
+                BlunoService.initName();
                 mGlobalVariable.braceletAddress= null;
                 mGlobalVariable.glassesAddress=null;
+                VisualSupportActivity.colorInit();
+                BlunoService.speak("系統已重置。");
             }
         });
         search_bracelet = (Button) findViewById(R.id.ble_bracelet_btn);
@@ -109,6 +157,7 @@ public class VisualSettingActivity extends AppCompatActivity {
                 intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
                 startActivity(intent);
                 VisualSettingActivity.this.finish();
+                scanlist();
             }
         });
         search_glass = (Button) findViewById(R.id.ble_glass_btn);
@@ -120,6 +169,7 @@ public class VisualSettingActivity extends AppCompatActivity {
                 intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
                 startActivity(intent);
                 VisualSettingActivity.this.finish();
+                scanlist();
             }
         });
     }
@@ -127,6 +177,7 @@ public class VisualSettingActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(mMsgReceiver);
+        unregisterReceiver(scan_MsgReceiver);
         super.onDestroy();
     }
 
@@ -308,6 +359,54 @@ public class VisualSettingActivity extends AppCompatActivity {
 
         sendBroadcast(mRequestConnectedIntent);
     }
+    public void scanlist(){
+        if(!GlobalVariable.isServiceRunning(getApplicationContext(), "tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService")) {
 
+            Intent intent = new Intent(VisualSettingActivity.this, BlunoService.class);
+            startService(intent);
+        }
 
+        onCreateProcess();
+        switch (mConnectionState) {
+            case isNull:
+                connectionState="isScanning";
+                mConnectionState = theConnectionState.valueOf(connectionState);
+                onConnectionStateChange(mConnectionState);
+                scanLeDevice(true);
+                break;
+            case isToScan:
+                connectionState="isScanning";
+                mConnectionState = theConnectionState.valueOf(connectionState);
+                onConnectionStateChange(mConnectionState);
+                scanLeDevice(true);
+                break;
+            case isScanning:
+                break;
+            case isConnecting:
+                break;
+            case isConnected:
+                break;
+            case isDisconnecting:
+                break;
+            default:
+                break;
+        }
+        killRunnable = false;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(!isFinishing()) {
+                    if (!killRunnable) {
+                        if (getScannedDevices().length > 0) {
+                            mScanDeviceDialog.show();
+                            killRunnable = true;
+                        }
+                    } else {
+                        mHandler.removeCallbacksAndMessages(this);
+                    }
+                    mHandler.postDelayed(this, 1500);
+                }
+            }
+        });
+    }
 }

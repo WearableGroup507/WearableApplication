@@ -2,7 +2,6 @@ package tw.edu.ntust.jojllman.wearableapplication;
 
 import android.app.ActivityManager;
 import android.app.Application;
-import android.app.Service;
 import android.content.Context;
 import android.os.Vibrator;
 
@@ -11,11 +10,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView;
 
 /**
  * Created by Lian on 2015/11/26.
@@ -30,7 +28,7 @@ public class GlobalVariable extends Application {
     public static final int VIBRATE_STRONG=4;
     public static String braceletAddress = "";
     public static String glassesAddress = "";
-
+    public static String glassesIPAddress ="";
     private boolean _isSettingChanged=false;
     private int vibrate_level=VIBRATE_MID;
     private int glass_front_threshold = 100;
@@ -44,6 +42,10 @@ public class GlobalVariable extends Application {
     public GlobalVariable(){
         saved_devices = new SavedDevices();
     }
+
+    public MjpegView mv = null;
+
+
 
     public void setVibrate_level(int new_vibrate_level){
         if(new_vibrate_level != vibrate_level) {
