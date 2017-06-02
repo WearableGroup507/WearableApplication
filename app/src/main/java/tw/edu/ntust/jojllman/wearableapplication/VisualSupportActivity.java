@@ -351,6 +351,15 @@ public class VisualSupportActivity extends BlunoLibrary {
 //                        layoutSearch.setContentDescription(getString(R.string.btn_bracelet_search));
 //                        ((TextView)layoutSearch.getChildAt(0)).setText(R.string.btn_bracelet_search);
                     }
+                    if(BlunoService.Bracelet_BAT == -1){
+                        ring_btn.setText("開啟");
+                        ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 關閉中");
+                        ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
+                        for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+                            ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
+                        }
+                        ring_btn_enable = true;
+                    }
                 }else{
                     mHandler.removeCallbacksAndMessages(this);
                 }

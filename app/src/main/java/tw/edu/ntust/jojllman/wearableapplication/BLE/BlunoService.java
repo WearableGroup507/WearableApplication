@@ -415,6 +415,7 @@ public class BlunoService extends Service {
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
 //                    handler.removeCallbacks(mBraceletDistanceNotifyRunnable);
                     mTTSService.speak("手環裝置已斷線。");
+                    Bracelet_BAT = -1;
                     played = false;
                     mBraceletDevice=null;
                 }
