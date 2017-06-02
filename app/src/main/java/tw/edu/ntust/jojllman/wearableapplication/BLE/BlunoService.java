@@ -75,6 +75,7 @@ public class BlunoService extends Service {
     private boolean mConnected_Bracelet = false;
     private boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
+    private boolean firstdisplayIP = false;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDeviceLeft, mGloveDeviceRight;
@@ -442,7 +443,7 @@ public class BlunoService extends Service {
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
                     displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-
+                    firstdisplayIP = true;
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
 //                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -1514,11 +1515,9 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
                 final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
-                final String displaystring = intent.getStringExtra("Displaystring");
                 System.out.println("Displayflag:"+Displayipflag);
-                System.out.println("Dispplaystring:"+displaystring);
-            if(Displayipflag){
-                displayIP(mGlobalVariable.glassesURL);
+            if(Displayipflag && firstdisplayIP){
+                displayIP(mGlobalVariable.glassesIPAddress);
             }
 
         }
@@ -1816,7 +1815,6 @@ public class BlunoService extends Service {
                         //mv.setState(MjpegView.STATE_NORMAL);
                         //String IP = settings.getString("IP", "192.168.1.25:9000");
                         URL = "http://" + mGlobalVariable.glassesIPAddress + ":9000/?action=stream";
-                        mGlobalVariable.glassesURL = URL;
                         Log.d(TAG, "URL =" + URL);
                         doRead_url = new DoRead_url();
                         doRead_url.execute(URL);

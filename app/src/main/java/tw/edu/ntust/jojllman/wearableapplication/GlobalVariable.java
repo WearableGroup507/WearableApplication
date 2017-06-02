@@ -29,7 +29,6 @@ public class GlobalVariable extends Application {
     public static String braceletAddress = "";
     public static String glassesAddress = "";
     public static String glassesIPAddress ="";
-    public static String glassesURL ="";
     private boolean _isSettingChanged=false;
     private int vibrate_level=VIBRATE_MID;
     private int glass_front_threshold = 100;

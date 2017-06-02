@@ -379,7 +379,6 @@ public class VisualSupportActivity extends BlunoLibrary {
 
         sendBroadcast(mREQUEST_CONNECTED_DEVICES);
         displayIPIntent.putExtra("DisplayIP",true);
-        displayIPIntent.putExtra("DisplayString","Fuck intent");
         sendBroadcast(displayIPIntent);
     }
 
@@ -403,6 +402,7 @@ public class VisualSupportActivity extends BlunoLibrary {
         BlunoService.initReadMjpegrunnable();
 //        braceletDistanceIntent.putExtra("sendDistance",false);
 //        sendBroadcast(braceletDistanceIntent);
+
         super.onPause();
     }
 
@@ -480,10 +480,6 @@ public class VisualSupportActivity extends BlunoLibrary {
                 startActivity(intent);
             }
         }else if (view.getId() == R.id.layout_visual_search_dev){
-            System.out.println("here");
-            displayIPIntent.putExtra("DisplayIP",true);
-            displayIPIntent.putExtra("DisplayString","Fuck intent");
-            sendBroadcast(displayIPIntent);
             if(BlunoService.getBraceletPower() > 0)
                 OnSearchClick(view);
         }else if (view.getId() == R.id.layout_setting){
