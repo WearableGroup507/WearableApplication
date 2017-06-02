@@ -60,6 +60,10 @@ public class VisualSupportActivity extends BlunoLibrary {
     private TextToSpeech tts;
     private static Button glass_btn;
     private boolean glass_btn_enable = false;
+    private boolean glass_connect_state = false;
+    private static Button tag_btn;
+    private static boolean tag_btn_enable = true;
+    private static boolean resume_event = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,6 +189,9 @@ public class VisualSupportActivity extends BlunoLibrary {
 
             }
         };
+        if(!BlunoService.getGlassName().equals("未連線")){
+            glass_connect_state = true;
+        }
         ring_btn = (Button) findViewById(R.id.ring_btn);
         ring_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -222,14 +229,16 @@ public class VisualSupportActivity extends BlunoLibrary {
                     BlunoService.setReadUltraSound(false);
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
-                    globalVariable.mv.setState(MjpegView.STATE_NORMAL);
                     glass_btn.setText("開啟");
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 關閉中");
                     ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
-                    glass_btn_enable = true;
+
+                    globalVariable.mv.setState(MjpegView.STATE_BLANK);
+                    glass_btn_enable=true;
+                    glass_connect_state = false;
                 }
                 else if(GlobalVariable.glassesAddress != ""){
                     System.out.println("glassaddress = "+GlobalVariable.glassesAddress);
@@ -242,7 +251,13 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
                     BlunoService.setReadUltraSound(true);
-                    glass_btn_enable = false;
+                    glass_btn_enable=false;
+//                    if(!glass_connect_state) {
+//                        displayIPIntent.putExtra("switch",true);
+//                        sendBroadcast(displayIPIntent);
+//                        glass_connect_state=true;
+//                    }
+                    glass_connect_state = true;
                 }
                 /*Log.d(TAG, "layout_glass_dev pressed");
                 if (!BlunoService.getReadUltraSound()) {
@@ -252,6 +267,52 @@ public class VisualSupportActivity extends BlunoLibrary {
                     BlunoService.setReadUltraSound(false);
                     //view.announceForAccessibility("關閉眼鏡避障功能");
                 }*/
+            }
+        });
+        tag_btn = (Button) findViewById(R.id.tag_btn);
+        tag_btn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                if(BlunoService.getGlassName().equals("未連線")|| glass_connect_state)
+                {
+                    return;
+                }else if(tag_btn_enable){
+                    globalVariable.mv.setState(MjpegView.STATE_BLANK);
+                    tag_btn_enable = false;
+                    tag_btn.setText("智慧標籤關閉");
+                }else{
+                    if(!resume_event){
+                        globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+                        tag_btn_enable = true;
+                        tag_btn.setText("智慧標籤開啟");
+                    }else{
+                            displayIPIntent.putExtra("DisplayIP", true);
+                            sendBroadcast(displayIPIntent);
+                            tag_btn_enable = true;
+                            resume_event=false;
+                            tag_btn.setText("智慧標籤開啟");
+                    }
+                }
+
+//                if(globalVariable.glassesIPAddress!="") {
+//                    if(tag_btn_enable){
+//                        globalVariable.mv.setState(MjpegView.STATE_BLANK);
+//                        tag_btn_enable =false;
+//                        tag_btn.setText("智慧標籤關閉");
+//                    }else{
+//                        if(resume_event){
+//                            displayIPIntent.putExtra("DisplayIP", true);
+//                            sendBroadcast(displayIPIntent);
+//                            resume_event=false;
+//                            tag_btn_enable = true;
+//                            tag_btn.setText("智慧標籤開啟");
+//                        }else {
+//                            globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+//                            tag_btn_enable = true;
+//                            tag_btn.setText("智慧標籤開啟");
+//                        }
+//                    }
+//                }
             }
         });
 
@@ -376,8 +437,22 @@ public class VisualSupportActivity extends BlunoLibrary {
         handler.post(autoConnectRunnable);
 
         sendBroadcast(mREQUEST_CONNECTED_DEVICES);
-        displayIPIntent.putExtra("DisplayIP",true);
-        sendBroadcast(displayIPIntent);
+
+        resume_event=true;
+        if(!BlunoService.getGlassName().equals("未連線")) {
+            //if(((TextView)layout_bracelet_dev.getChildAt(2)).getText()=="電量 關閉中"){
+            if(!glass_connect_state){
+                displayIPIntent.putExtra("DisplayIP", true);
+                displayIPIntent.putExtra("switch",true);
+                sendBroadcast(displayIPIntent);
+            }else if(BlunoService.getGlassbattery()==0 || !glass_connect_state){
+                return;
+            }else{
+                displayIPIntent.putExtra("DisplayIP", true);
+                sendBroadcast(displayIPIntent);
+            }
+        }
+        resume_event=true;
     }
 
     private void findView(){
