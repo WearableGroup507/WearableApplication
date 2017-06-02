@@ -410,6 +410,7 @@ public class BlunoService extends Service {
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
                     glass_battery = 0;
+                   GlobalVariable.glass_connect_state=false;
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
@@ -441,6 +442,7 @@ public class BlunoService extends Service {
                     displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
+                    mGlobalVariable.mv.stopPlayback();
                     displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     firstdisplayIP = true;
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
@@ -598,6 +600,7 @@ public class BlunoService extends Service {
                     calculateAccuracy(Bracelet_RSSI+100);
                 }
             }
+
             else if(device.equals(mGloveDeviceLeft) || device.equals(mGloveDeviceRight)) {
                 Log.d(TAG, "Device is glove.");
                 if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
@@ -1027,6 +1030,7 @@ public class BlunoService extends Service {
 //                        mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
 //                    }
                     mTTSService.speak("眼鏡裝置已連線。");
+                    GlobalVariable.glass_connect_state=true;
                     Log.d(TAG, "Connected to glass device.");
                     VisualSupportActivity.glassConnected();
                     setReadUltraSound(true);

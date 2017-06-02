@@ -37,6 +37,8 @@ public class GlobalVariable extends Application {
     private boolean bracelet_distance_enabled = false;
     private boolean bracelet_color_enabled = false;
 
+    public static boolean glass_connect_state = false;
+
     private SavedDevices saved_devices;
 
     public GlobalVariable(){
