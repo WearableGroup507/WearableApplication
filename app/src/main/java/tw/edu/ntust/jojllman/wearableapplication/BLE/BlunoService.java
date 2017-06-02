@@ -315,8 +315,7 @@ public class BlunoService extends Service {
 
         //0602
         IntentFilter DisplayIPIntentFilter = new IntentFilter();
-        braceletControlIntentFilter.addAction(displayIPIntent.getAction());
-        deleteIntentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.DISPLAYIP");
+        DisplayIPIntentFilter.addAction(displayIPIntent.getAction());
         registerReceiver(displayipReceiver, DisplayIPIntentFilter);
 
 
