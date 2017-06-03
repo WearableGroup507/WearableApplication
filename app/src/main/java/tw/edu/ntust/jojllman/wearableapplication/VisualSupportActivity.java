@@ -235,6 +235,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }
 
                     globalVariable.mv.setState(MjpegView.STATE_BLANK);
+                    BlunoService.Tag_enble =false;
                     glass_btn_enable=true;
                     globalVariable.glass_connect_state = false;
                 }
@@ -252,10 +253,10 @@ public class VisualSupportActivity extends BlunoLibrary {
                     glass_btn_enable=false;
 
                     //每次connect 眼鏡 tag default on
-//                    tag_btn_enable=true;
+//                    globalVariable.tag_btn_enable=true;
 //                    tag_btn.setText("智慧標籤開啟");
 
-//                    if(!tag_btn_enable){
+//                    if(!globalVariable.tag_btn_enable){
 //                        displayIPIntent.putExtra("switch",true);
 //                        sendBroadcast(displayIPIntent);
 //                    }
@@ -273,13 +274,15 @@ public class VisualSupportActivity extends BlunoLibrary {
                     if(!globalVariable.glass_connect_state){
                         return;
                     }else{
-                        if(tag_btn_enable){
+                        if(globalVariable.tag_btn_enable){
                             globalVariable.mv.setState(MjpegView.STATE_BLANK);
-                            tag_btn_enable =false;
-                            tag_btn.setText("智慧標籤開啟");
+                            BlunoService.Tag_enble =false;
+                            globalVariable.tag_btn_enable =false;
+                            tag_btn.setText("標籤開啟");
                         }else{
                             globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
-                            tag_btn_enable=true;
+                            BlunoService.Tag_enble =true;
+                            globalVariable.tag_btn_enable=true;
                             tag_btn.setText("智慧標籤關閉");
                         }
                     }
@@ -416,6 +419,8 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 關閉中");
+                }else if(BlunoService.getGlassbattery()==0){
+                    ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
                 }else{
                     glass_btn.setText("關閉");
                     ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
@@ -451,7 +456,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             return;
         }else{
             if(globalVariable.glass_connect_state){
-                if(tag_btn_enable) {
+                if(globalVariable.tag_btn_enable) {
                     displayIPIntent.putExtra("DisplayIP", true);
                     BlunoService.Tag_enble =true;
                     sendBroadcast(displayIPIntent);
@@ -461,7 +466,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     sendBroadcast(displayIPIntent);
                 }
             }else{
-                if(tag_btn_enable){
+                if(globalVariable.tag_btn_enable){
                     BlunoService.Tag_enble =true;
                     return;
                 }else{

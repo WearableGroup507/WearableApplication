@@ -144,6 +144,7 @@ public class VisualSettingActivity extends BlunoLibrary {
                 BlunoService.initName();
                 mGlobalVariable.braceletAddress= null;
                 mGlobalVariable.glassesAddress=null;
+                BlunoService.glass_battery=0;
                 VisualSupportActivity.colorInit();
                 BlunoService.speak("系統已重置。");
             }
