@@ -250,6 +250,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
                     BlunoService.setReadUltraSound(true);
+                    globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
                     glass_btn_enable=false;
 
                     //每次connect 眼鏡 tag default on

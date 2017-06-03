@@ -1819,7 +1819,7 @@ public class BlunoService extends Service {
                         mGlobalVariable.mv.setState(MjpegView.STATE_NORMAL);
                         SharedPreferences settings = getSharedPreferences("Preference", 0);
 
-                        if(Tag_enble) {
+                        if(GlobalVariable.tag_btn_enable) {
                             mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
                         }else{
                             mGlobalVariable.mv.setState(MjpegView.STATE_BLANK);
