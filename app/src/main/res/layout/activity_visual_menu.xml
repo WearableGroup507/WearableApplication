@@ -93,7 +93,7 @@
                 android:drawableTop="@drawable/ic_power_new"
                 android:gravity="center"
                 android:paddingTop="25dp"
-                android:text="智慧標籤開啟"
+                android:text="智慧標籤關閉"
                 android:textColor="#ffffff"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -102,8 +102,8 @@
 
     <tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView
         android:id="@+id/mv"
-        android:layout_width="150dp"
-        android:layout_height="150dp" />
+        android:layout_width="1dp"
+        android:layout_height="1dp" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"

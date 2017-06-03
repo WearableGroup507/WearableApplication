@@ -304,11 +304,11 @@ public class VisualSupportActivity extends BlunoLibrary {
                         if(tag_btn_enable){
                             globalVariable.mv.setState(MjpegView.STATE_BLANK);
                             tag_btn_enable =false;
-                            tag_btn.setText("智慧標籤關閉");
+                            tag_btn.setText("智慧標籤開啟");
                         }else{
                             globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
                             tag_btn_enable=true;
-                            tag_btn.setText("智慧標籤開啟");
+                            tag_btn.setText("智慧標籤關閉");
                         }
                     }
                 }
