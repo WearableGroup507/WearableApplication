@@ -75,7 +75,7 @@ public class BlunoService extends Service {
     private boolean mConnected_Bracelet = false;
     private boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
-    private boolean firstdisplayIP = false;
+    public static boolean firstdisplayIP = false;
     private boolean switchflag =false;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
@@ -442,9 +442,11 @@ public class BlunoService extends Service {
                     displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
-                    mGlobalVariable.mv.stopPlayback();
+                    Log.d(TAG,"Firstdisplay :"+firstdisplayIP +"\tURL connect:"+GlobalVariable.URL_state);
+                    if(!firstdisplayIP || !GlobalVariable.URL_state){
                     displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     firstdisplayIP = true;
+                    }
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
 //                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -1031,6 +1033,7 @@ public class BlunoService extends Service {
 //                    }
                     mTTSService.speak("眼鏡裝置已連線。");
                     GlobalVariable.glass_connect_state=true;
+
                     Log.d(TAG, "Connected to glass device.");
                     VisualSupportActivity.glassConnected();
                     setReadUltraSound(true);

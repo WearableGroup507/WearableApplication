@@ -252,8 +252,8 @@ public class VisualSupportActivity extends BlunoLibrary {
                     glass_btn_enable=false;
 
                     //每次connect 眼鏡 tag default on
-                    tag_btn_enable=true;
-                    tag_btn.setText("智慧標籤開啟");
+//                    tag_btn_enable=true;
+//                    tag_btn.setText("智慧標籤開啟");
 
 //                    if(!tag_btn_enable){
 //                        displayIPIntent.putExtra("switch",true);

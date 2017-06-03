@@ -47,7 +47,7 @@ public class GlobalVariable extends Application {
 
     public MjpegView mv = null;
 
-
+    public static boolean URL_state = false;
 
     public void setVibrate_level(int new_vibrate_level){
         if(new_vibrate_level != vibrate_level) {

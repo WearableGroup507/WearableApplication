@@ -15,6 +15,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
 
+import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
+
 public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     private static final String TAG = "MjpegView";
     private static final String TAG2 = "TestMJ";
@@ -199,6 +201,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 this.thread.start();
             }
         }
+        GlobalVariable.URL_state =true;
     }
 
     public void stopPlayback() {
