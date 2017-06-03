@@ -270,10 +270,10 @@ public class BluetoothLeService extends Service {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (characteristic.getUuid().toString().contains("0000aaa1-0000-1000-8000-00805f9b34fb")){
+                if (characteristic.getUuid().toString().trim().equals("0000aaa1-0000-1000-8000-00805f9b34fb")){
                     System.out.println("onUltrasoundDataRead  " + characteristic.getUuid().toString() + "  true");
                     broadcastUpdate(gatt, ACTION_ULTRASOUND_DATA, characteristic);
-                }else if(characteristic.getUuid().toString().contains("0000aaa2-0000-1000-8000-00805f9b34fb")){
+                }else if(characteristic.getUuid().toString().trim().equals("0000aaa2-0000-1000-8000-00805f9b34fb")){
                     System.out.println("onGlassIPRead  " + characteristic.getUuid().toString() + "  true");
                     broadcastUpdate(gatt, ACTION_GLASS_IP, characteristic);
                 }else{
