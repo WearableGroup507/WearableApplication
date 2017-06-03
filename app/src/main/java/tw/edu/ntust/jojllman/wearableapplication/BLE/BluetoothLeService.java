@@ -634,9 +634,10 @@ public class BluetoothLeService extends Service {
     }
 
     public void removeDeviceGatt(BluetoothDevice device) {
-        BluetoothGatt gatt = getGattFromDevice(device);
-        if(gatt != null)
-            mBluetoothGatts.remove(gatt);
+        //BluetoothGatt gatt = getGattFromDevice(device);
+        //if(gatt != null)
+            mBluetoothGatts.remove(device.getAddress());
+        Log.d(TAG,"裝置端斷線 Gatts remove");
     }
 
     public void readRemoteRssi ()

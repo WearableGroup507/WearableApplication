@@ -409,8 +409,9 @@ public class BlunoService extends Service {
                     readMjpegrunnable=null;
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
-                    glass_battery = 0;
+                    glass_battery = -1;
                    GlobalVariable.glass_connect_state=false;
+                    mBluetoothLeService.removeDeviceGatt(device);
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);

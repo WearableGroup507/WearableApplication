@@ -433,10 +433,24 @@ public class VisualSupportActivity extends BlunoLibrary {
             public void run() {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
-                if(BlunoService.getBraceletName()!="未連線" && !ring_btn_enable)
+                if(!BlunoService.getBraceletName().equals("未連線") && !ring_btn_enable)
                     ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
-                if(BlunoService.getGlassName()!="未連線" && !glass_btn_enable)
+                if(!BlunoService.getGlassName().equals("未連線") && !glass_btn_enable)
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
+                if(!(BlunoService.getGlassbattery()>-1)){
+                    glass_btn.setText("開啟");
+                    ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#092557"));
+                    for(int i=0; i < layout_glass_dev.getChildCount(); i++){
+                        ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
+                    }
+                    ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 關閉中");
+                }else{
+                    glass_btn.setText("關閉");
+                    ((LinearLayout)layout_glass_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+                    for(int i=0; i < layout_glass_dev.getChildCount(); i++) {
+                        ((TextView) (layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+                    }
+                }
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
                 handler.postDelayed(this, 500); // set time here to refresh textView
