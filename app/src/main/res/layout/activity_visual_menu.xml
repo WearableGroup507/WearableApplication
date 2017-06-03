@@ -93,7 +93,7 @@
                 android:drawableTop="@drawable/ic_power_new"
                 android:gravity="center"
                 android:paddingTop="25dp"
-                android:text="智慧標籤開啟"
+                android:text="智慧標籤關閉"
                 android:textColor="#ffffff"
                 android:textSize="19sp"
                 android:textStyle="bold" />

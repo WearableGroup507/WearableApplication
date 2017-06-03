@@ -75,7 +75,8 @@ public class BlunoService extends Service {
     private boolean mConnected_Bracelet = false;
     private boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
-    private boolean firstdisplayIP = false;
+    public static boolean firstdisplayIP = false;
+    private boolean switchflag =false;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDeviceLeft, mGloveDeviceRight;
@@ -409,7 +410,7 @@ public class BlunoService extends Service {
                     mTTSService.speak("眼鏡裝置已斷線。");
                     mGlassDevice=null;
                     glass_battery = 0;
-                    mGlobalVariable.mv.setState(MjpegView.STATE_BLANK);
+                   GlobalVariable.glass_connect_state=false;
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
@@ -442,8 +443,11 @@ public class BlunoService extends Service {
                     displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     System.out.println("displayData " + intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
+                    Log.d(TAG,"Firstdisplay :"+firstdisplayIP +"\tURL connect:"+GlobalVariable.URL_state);
+                    if(!firstdisplayIP || !GlobalVariable.URL_state){
                     displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     firstdisplayIP = true;
+                    }
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
 //                        if (intent.getStringExtra(BluetoothLeService.EXTRA_DATA).toUpperCase().startsWith("DF BLUNO")) {
@@ -599,6 +603,7 @@ public class BlunoService extends Service {
                     calculateAccuracy(Bracelet_RSSI+100);
                 }
             }
+
             else if(device.equals(mGloveDeviceLeft) || device.equals(mGloveDeviceRight)) {
                 Log.d(TAG, "Device is glove.");
                 if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
@@ -1028,6 +1033,8 @@ public class BlunoService extends Service {
 //                        mBluetoothLeService.readCharacteristic(device, mSCharacteristic);
 //                    }
                     mTTSService.speak("眼鏡裝置已連線。");
+                    GlobalVariable.glass_connect_state=true;
+
                     Log.d(TAG, "Connected to glass device.");
                     VisualSupportActivity.glassConnected();
                     setReadUltraSound(true);
@@ -1515,9 +1522,13 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
                 final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
+                final boolean switchonflag = intent.getBooleanExtra("switch",false);
                 System.out.println("Displayflag:"+Displayipflag);
             if(Displayipflag && firstdisplayIP){
                 displayIP(mGlobalVariable.glassesIPAddress);
+            }
+            if(switchonflag){
+                switchflag = true;
             }
 
         }
@@ -1812,15 +1823,22 @@ public class BlunoService extends Service {
 
 
                         mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+                        if(switchflag){
+                            mGlobalVariable.mv.setState(MjpegView.STATE_BLANK);
+                        }
                         //mv.setState(MjpegView.STATE_NORMAL);
                         //String IP = settings.getString("IP", "192.168.1.25:9000");
                         URL = "http://" + mGlobalVariable.glassesIPAddress + ":9000/?action=stream";
                         Log.d(TAG, "URL =" + URL);
                         doRead_url = new DoRead_url();
                         doRead_url.execute(URL);
+                        switchflag=false;
+
                     }
                 };
                 handler.post(readMjpegrunnable);
+            }else{
+                mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
             }
         }
     }

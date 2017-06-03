@@ -37,6 +37,8 @@ public class GlobalVariable extends Application {
     private boolean bracelet_distance_enabled = false;
     private boolean bracelet_color_enabled = false;
 
+    public static boolean glass_connect_state = false;
+
     private SavedDevices saved_devices;
 
     public GlobalVariable(){
@@ -45,7 +47,7 @@ public class GlobalVariable extends Application {
 
     public MjpegView mv = null;
 
-
+    public static boolean URL_state = false;
 
     public void setVibrate_level(int new_vibrate_level){
         if(new_vibrate_level != vibrate_level) {
