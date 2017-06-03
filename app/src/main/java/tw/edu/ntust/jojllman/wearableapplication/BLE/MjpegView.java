@@ -131,6 +131,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             if(mRun){
                 System.out.println("thread interrupt");
                 this.interrupt();
+                GlobalVariable.URL_state=false;
             }
         }
 

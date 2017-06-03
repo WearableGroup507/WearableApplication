@@ -102,8 +102,8 @@
 
     <tw.edu.ntust.jojllman.wearableapplication.BLE.MjpegView
         android:id="@+id/mv"
-        android:layout_width="1dp"
-        android:layout_height="1dp" />
+        android:layout_width="60dp"
+        android:layout_height="60dp" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"

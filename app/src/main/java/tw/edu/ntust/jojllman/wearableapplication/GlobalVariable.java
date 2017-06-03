@@ -38,6 +38,8 @@ public class GlobalVariable extends Application {
     private boolean bracelet_color_enabled = false;
 
     public static boolean glass_connect_state = false;
+    public static boolean tag_btn_enable = true;
+
 
     private SavedDevices saved_devices;
 

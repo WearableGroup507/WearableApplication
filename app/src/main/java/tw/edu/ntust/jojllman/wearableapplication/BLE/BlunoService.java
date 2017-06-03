@@ -76,7 +76,7 @@ public class BlunoService extends Service {
     private boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
     public static boolean firstdisplayIP = false;
-    private boolean switchflag =false;
+    public static boolean Tag_enble =true;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDeviceLeft, mGloveDeviceRight;
@@ -1523,14 +1523,11 @@ public class BlunoService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
                 final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
-                final boolean switchonflag = intent.getBooleanExtra("switch",false);
                 System.out.println("Displayflag:"+Displayipflag);
             if(Displayipflag && firstdisplayIP){
                 displayIP(mGlobalVariable.glassesIPAddress);
             }
-            if(switchonflag){
-                switchflag = true;
-            }
+
 
         }
     };
@@ -1822,9 +1819,9 @@ public class BlunoService extends Service {
                         mGlobalVariable.mv.setState(MjpegView.STATE_NORMAL);
                         SharedPreferences settings = getSharedPreferences("Preference", 0);
 
-
-                        mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
-                        if(switchflag){
+                        if(Tag_enble) {
+                            mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+                        }else{
                             mGlobalVariable.mv.setState(MjpegView.STATE_BLANK);
                         }
                         //mv.setState(MjpegView.STATE_NORMAL);
@@ -1833,7 +1830,6 @@ public class BlunoService extends Service {
                         Log.d(TAG, "URL =" + URL);
                         doRead_url = new DoRead_url();
                         doRead_url.execute(URL);
-                        switchflag=false;
 
                     }
                 };

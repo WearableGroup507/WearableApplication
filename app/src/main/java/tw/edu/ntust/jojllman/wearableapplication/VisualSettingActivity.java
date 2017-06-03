@@ -157,8 +157,8 @@ public class VisualSettingActivity extends BlunoLibrary {
 //                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
 //                startActivity(intent);
 //                VisualSettingActivity.this.finish();
+
                 scanlist();
-                BlunoService.firstdisplayIP=false;
             }
         });
         search_glass = (Button) findViewById(R.id.ble_glass_btn);
@@ -171,7 +171,6 @@ public class VisualSettingActivity extends BlunoLibrary {
 //                startActivity(intent);
 //                VisualSettingActivity.this.finish();
                 scanlist();
-                BlunoService.firstdisplayIP=false;
             }
         });
     }
