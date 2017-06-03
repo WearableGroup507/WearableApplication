@@ -76,7 +76,6 @@ public class BlunoService extends Service {
     private boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
     public static boolean firstdisplayIP = false;
-    public static boolean Tag_enble =true;
     private BluetoothDevice mGlassDevice;
     private BluetoothDevice mBraceletDevice;
     private BluetoothDevice mGloveDeviceLeft, mGloveDeviceRight;

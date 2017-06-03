@@ -233,9 +233,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++){
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#7E7E7E"));
                     }
-
-                    globalVariable.mv.setState(MjpegView.STATE_BLANK);
-                    BlunoService.Tag_enble =false;
+                        globalVariable.mv.setState(MjpegView.STATE_BLANK);
                     glass_btn_enable=true;
                     globalVariable.glass_connect_state = false;
                 }
@@ -250,7 +248,9 @@ public class VisualSupportActivity extends BlunoLibrary {
                         ((TextView)(layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
                     BlunoService.setReadUltraSound(true);
-                    globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+                    if(globalVariable.tag_btn_enable) {
+                        globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+                    }
                     glass_btn_enable=false;
 
                     //每次connect 眼鏡 tag default on
@@ -277,12 +277,10 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }else{
                         if(globalVariable.tag_btn_enable){
                             globalVariable.mv.setState(MjpegView.STATE_BLANK);
-                            BlunoService.Tag_enble =false;
                             globalVariable.tag_btn_enable =false;
                             tag_btn.setText("標籤開啟");
                         }else{
                             globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
-                            BlunoService.Tag_enble =true;
                             globalVariable.tag_btn_enable=true;
                             tag_btn.setText("智慧標籤關閉");
                         }
@@ -459,22 +457,18 @@ public class VisualSupportActivity extends BlunoLibrary {
             if(globalVariable.glass_connect_state){
                 if(globalVariable.tag_btn_enable) {
                     displayIPIntent.putExtra("DisplayIP", true);
-                    BlunoService.Tag_enble =true;
                     sendBroadcast(displayIPIntent);
                 }else{
                     displayIPIntent.putExtra("DisplayIP", true);
-                    BlunoService.Tag_enble=false;
                     sendBroadcast(displayIPIntent);
                 }
             }else{
                 if(globalVariable.tag_btn_enable){
-                    BlunoService.Tag_enble =true;
                     return;
                 }else{
                     /*會讓 重連的device 影像處理失效*/
 //                    displayIPIntent.putExtra("DisplayIP", true);
 //                    displayIPIntent.putExtra("switch",true);
-                    BlunoService.Tag_enble=false;
                     globalVariable.URL_state = false;
 
                     return;
