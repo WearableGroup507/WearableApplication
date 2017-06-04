@@ -251,6 +251,11 @@ public class VisualSupportActivity extends BlunoLibrary {
                     if(globalVariable.tag_btn_enable) {
                         globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
                     }
+                    if(!glass_btn_enable){
+                        Log.d("TAG","藍芽裝置 自身斷線 透過menu開關重連");
+                        displayIPIntent.putExtra("DisplayIP", true);
+                        sendBroadcast(displayIPIntent);
+                    }
                     glass_btn_enable=false;
 
                     //每次connect 眼鏡 tag default on
@@ -426,6 +431,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     for(int i=0; i < layout_glass_dev.getChildCount(); i++) {
                         ((TextView) (layout_glass_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
                     }
+
                 }
                 layout_glass_dev.setContentDescription(getString(R.string.layout_glasses) + "未連線，" + ((TextView)layout_glass_dev.getChildAt(1)).getText());
                 layout_bracelet_dev.setContentDescription(getString(R.string.layout_bracelet) + "未連線，" + ((TextView)layout_bracelet_dev.getChildAt(1)).getText());
@@ -466,11 +472,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                 if(globalVariable.tag_btn_enable){
                     return;
                 }else{
-                    /*會讓 重連的device 影像處理失效*/
-//                    displayIPIntent.putExtra("DisplayIP", true);
-//                    displayIPIntent.putExtra("switch",true);
                     globalVariable.URL_state = false;
-
                     return;
                 }
             }
@@ -576,6 +578,10 @@ public class VisualSupportActivity extends BlunoLibrary {
         }else if (view.getId() == R.id.layout_visual_search_dev){
             if(BlunoService.getBraceletPower() > 0)
                 OnSearchClick(view);
+            Intent intent = new Intent();
+            intent.setClass(VisualSupportActivity.this, VisualSearchActivity.class);
+            startActivity(intent);
+            VisualSupportActivity.this.finish();
         }else if (view.getId() == R.id.layout_setting){
             Intent intent = new Intent();
             intent.setClass(this  , VisualSettingActivity.class);
