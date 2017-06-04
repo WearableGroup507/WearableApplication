@@ -33,6 +33,9 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -487,7 +490,7 @@ public class BluetoothLeService extends Service {
      * callback.
      */
     public void disconnect() {
-    	System.out.println("BluetoothLeService default disconnect");
+    	System.out.println("BluetoothLeService disconnect");
         if (mBluetoothGatts == null || mBluetoothGatts.size() == 0) {
             Log.w(TAG, "BluetoothGatts has nothing.");
             return;
@@ -500,7 +503,7 @@ public class BluetoothLeService extends Service {
         mBluetoothGatts.clear();
     }
     public void disconnect(BluetoothGatt gatt) {
-        System.out.println("BluetoothLeService Gatt disconnect");
+        System.out.println("BluetoothLeService disconnect");
         if (mBluetoothGatts == null || mBluetoothGatts.size() == 0) {
             Log.w(TAG, "BluetoothGatts has nothing.");
             return;

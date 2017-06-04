@@ -1,17 +1,21 @@
 package tw.edu.ntust.jojllman.wearableapplication.BLE;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,9 +26,11 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
+import tw.edu.ntust.jojllman.wearableapplication.AppManageActivity;
+import tw.edu.ntust.jojllman.wearableapplication.GlobalVariable;
 import tw.edu.ntust.jojllman.wearableapplication.R;
+
+import java.util.ArrayList;
 
 public abstract class BlunoLibrary extends AppCompatActivity {
     private Context mainContext = this;
@@ -64,14 +70,12 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 
         if (mBluetoothLeService == null) {
             Log.d(TAG, "Bind BluetoothLeService.");
-            System.out.println("mConnectionState="+mConnectionState);
             Intent gattServiceIntent = new Intent(mainContext, BluetoothLeService.class);
             mainContext.bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
 
-            // Initializes list view adapter.
-            mLeDeviceListAdapter = new LeDeviceListAdapter();
-
+        // Initializes list view adapter.
+        mLeDeviceListAdapter = new LeDeviceListAdapter();
         // Initializes and show the scan Device Dialog
         mScanDeviceDialog = new AlertDialog.Builder(mainContext)
                 .setTitle("BLE Device Scan...")
@@ -152,7 +156,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 
     public void onPause() {
         if (mBluetoothLeService != null) {
-            Log.d(TAG, "onPause() Unbind BluetoothLeService.");
+            Log.d(TAG, "Unbind BluetoothLeService.");
             unbindService(mServiceConnection);
             mBluetoothLeService = null;     //important, because onServiceDisconnected won't call unless something goes wrong.
         }
@@ -208,8 +212,7 @@ public abstract class BlunoLibrary extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            System.out.println("Blunolibrary mServiceConnection onServiceConnected");
-            System.out.println("mConnectionState="+mConnectionState);
+            System.out.println("mServiceConnection onServiceConnected");
             mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
             if (!mBluetoothLeService.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");

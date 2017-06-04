@@ -20,7 +20,6 @@ import android.widget.TextView;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoLibrary;
 import tw.edu.ntust.jojllman.wearableapplication.BLE.BlunoService;
 
-
 public class VisualSettingActivity extends BlunoLibrary {
     private GlobalVariable mGlobalVariable;
     private SeekBar mSeekBar_front;
@@ -39,15 +38,47 @@ public class VisualSettingActivity extends BlunoLibrary {
     private Intent mThresholdIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_THRESHOLD");
     private Intent mRequestConnectedIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.REQUEST_CONNECTED_DEVICES");
     private Intent braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
-    private Intent scan_TransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
+    private Intent mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
 
     private MsgReceiver mMsgReceiver;
+    private MsgReceiver scan_MsgReceiver;
     private Handler mHandler = new Handler();
     private boolean killRunnable = false;
 
-    private boolean scanswitch_enable =false;
-
-
+    @Override
+    public void onConnectionStateChange(theConnectionState mConnectionState) {
+        switch (mConnectionState) {
+            case isConnected:
+//                buttonScan.setText("Connected");
+                break;
+            case isConnecting:
+//                buttonScan.setText("Connecting");
+                if(mDeviceName.startsWith("Nordic_Bracelet"))
+                    GlobalVariable.braceletAddress = mDeviceAddress;
+                else {
+                    GlobalVariable.glassesAddress = mDeviceAddress;
+                }
+                mTransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
+                mTransferIntent.putExtra("connectionState", connectionState);
+//                mThresholdIntent.putExtra("frontThreshold", mThresholdIntent);
+//                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
+                sendBroadcast(mTransferIntent);
+                ((GlobalVariable)getApplicationContext()).getSaved_devices().addDevice(mDeviceName, mDeviceAddress);
+                this.finish();
+//                sendBroadcast(mThresholdIntent);
+                //TODO: move to app setting
+                break;
+            case isToScan:
+//                buttonScan.setText("Scan");
+                break;
+            case isScanning:
+//                buttonScan.setText("Scanning");
+                break;
+            case isDisconnecting:
+//                buttonScan.setText("isDisconnecting");
+                break;
+        }
+    }
 
     public class MsgReceiver extends BroadcastReceiver {
         @Override
@@ -59,17 +90,10 @@ public class VisualSettingActivity extends BlunoLibrary {
                 mConnected_Bracelet = intent.getBooleanExtra("Connected_Bracelet", false);
                 mConnected_Glove_Left = intent.getBooleanExtra("Connected_Glove_Left", false);
                 mConnected_Glove_Right = intent.getBooleanExtra("Connected_Glove_Right", false);
-            }else if (action.compareTo("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE")==0){
-                connectionState = intent.getStringExtra("connectionState");
-                mConnectionState = theConnectionState.valueOf(connectionState);
-                onConnectionStateChange(mConnectionState);
-            }else{
-                System.out.println("WTF is this action="+action);
             }
+
         }
     }
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +124,10 @@ public class VisualSettingActivity extends BlunoLibrary {
         findView();
         initialize();
 
+        scan_MsgReceiver = new MsgReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
+        registerReceiver(scan_MsgReceiver, intentFilter);
 
 
 
@@ -130,7 +158,7 @@ public class VisualSettingActivity extends BlunoLibrary {
 //                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
 //                startActivity(intent);
 //                VisualSettingActivity.this.finish();
-                scanswitch_enable = true;
+
                 scanlist();
             }
         });
@@ -139,32 +167,20 @@ public class VisualSettingActivity extends BlunoLibrary {
             @Override
             public void onClick(View v) {
                 System.out.println("glass here");
-                Intent intent = new Intent();
-                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
-                startActivity(intent);
-                VisualSettingActivity.this.finish();
-                scanswitch_enable =true;
+//                Intent intent = new Intent();
+//                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
+//                startActivity(intent);
+//                VisualSettingActivity.this.finish();
                 scanlist();
             }
         });
     }
 
-    public void onPause(){
-        super.onPause();
-        if(scanswitch_enable){
-            scanLeDevice(false);
-            connectionState="isNull";
-            mConnectionState = theConnectionState.valueOf(connectionState);
-            onConnectionStateChange(mConnectionState);
-            scanswitch_enable=false;
-        }
-    }
-
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        mScanDeviceDialog.dismiss();
         unregisterReceiver(mMsgReceiver);
+        unregisterReceiver(scan_MsgReceiver);
+        super.onDestroy();
     }
 
     @Override
@@ -341,7 +357,6 @@ public class VisualSettingActivity extends BlunoLibrary {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RESPONSE_CONNECTED_DEVICES");
         intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.DISCONNECTED_DEVICES");
-        intentFilter.addAction("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_ACTIVITY");
         registerReceiver(mMsgReceiver, intentFilter);
 
         sendBroadcast(mRequestConnectedIntent);
@@ -395,39 +410,5 @@ public class VisualSettingActivity extends BlunoLibrary {
                 }
             }
         });
-    }
-    @Override
-    public void onConnectionStateChange(theConnectionState mConnectionState) {
-        switch (mConnectionState) {
-            case isConnected:
-//                buttonScan.setText("Connected");
-                break;
-            case isConnecting:
-//                buttonScan.setText("Connecting");
-                if(mDeviceName.startsWith("Nordic_Bracelet"))
-                    GlobalVariable.braceletAddress = mDeviceAddress;
-                else {
-                    GlobalVariable.glassesAddress = mDeviceAddress;
-                }
-                scan_TransferIntent.putExtra("mDeviceAddress", mDeviceAddress);
-                scan_TransferIntent.putExtra("connectionState", connectionState);
-//                mThresholdIntent.putExtra("frontThreshold", mThresholdIntent);
-//                mThresholdIntent.putExtra("sidesThreshold", mThresholdIntent);
-                sendBroadcast(scan_TransferIntent);
-                ((GlobalVariable)getApplicationContext()).getSaved_devices().addDevice(mDeviceName, mDeviceAddress);
-                this.finish();
-//                sendBroadcast(mThresholdIntent);
-                //TODO: move to app setting
-                break;
-            case isToScan:
-//                buttonScan.setText("Scan");
-                break;
-            case isScanning:
-//                buttonScan.setText("Scanning");
-                break;
-            case isDisconnecting:
-//                buttonScan.setText("isDisconnecting");
-                break;
-        }
     }
 }
