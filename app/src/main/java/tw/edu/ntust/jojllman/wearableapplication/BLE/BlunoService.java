@@ -71,9 +71,9 @@ public class BlunoService extends Service {
     private int mBaudrate=115200;
     BluetoothLeService mBluetoothLeService;
 
-    private boolean mConnected_Glass = false;
-    private boolean mConnected_Bracelet = false;
-    private boolean mConnected_GloveLeft = false;
+    private static boolean mConnected_Glass = false;
+    private static boolean mConnected_Bracelet = false;
+    private static boolean mConnected_GloveLeft = false;
     private boolean mConnected_GloveRight = false;
     public static boolean firstdisplayIP = false;
     private BluetoothDevice mGlassDevice;
@@ -412,6 +412,7 @@ public class BlunoService extends Service {
                     mGlassDevice=null;
                     glass_battery = -1;
                    GlobalVariable.glass_connect_state=false;
+                    mConnected_Glass=false;
                   // mBluetoothLeService.removeDeviceGatt(device);
                 }
                 if(device.equals(mBraceletDevice)){
@@ -1770,6 +1771,9 @@ public class BlunoService extends Service {
         return Bracelet_BAT;
     }
     public static int getGlassbattery() {return  glass_battery;}
+    public static boolean getConnected_Bracelet() { return mConnected_Bracelet;}
+    public static boolean getmConnected_Glass() { return mConnected_Glass;}
+
     public void disConnect(BluetoothDevice device){
         if(mConnected_Bracelet||mConnected_Glass){
             if (bracelet_disconnect_enable) {
@@ -1778,11 +1782,12 @@ public class BlunoService extends Service {
 //            mBraceletDevice = null;
 //            mBraceletGattCharacteristics.clear();
 //            mBluetoothLeService.setBraceletGatt(null);
-                Bracelet_BAT = 0;
+                bracelet_disconnect_enable =false;
             }
             if(glass_disconnect_enable){
                 mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
                 mConnected_Glass= false;
+                bracelet_disconnect_enable =false;
             }
         }
 
@@ -1854,6 +1859,5 @@ public class BlunoService extends Service {
         handler.removeCallbacks(readMjpegrunnable);
         readMjpegrunnable=null;
     }
-
 }
 
