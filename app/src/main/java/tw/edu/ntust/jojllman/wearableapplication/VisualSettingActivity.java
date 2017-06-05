@@ -139,10 +139,6 @@ public class VisualSettingActivity extends BlunoLibrary {
             @Override
             public void onClick(View v) {
                 System.out.println("glass here");
-                Intent intent = new Intent();
-                intent.setClass(VisualSettingActivity.this, VisualSearchActivity.class);
-                startActivity(intent);
-                VisualSettingActivity.this.finish();
                 scanswitch_enable =true;
                 scanlist();
             }

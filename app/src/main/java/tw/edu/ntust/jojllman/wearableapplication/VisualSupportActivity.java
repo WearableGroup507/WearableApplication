@@ -283,7 +283,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                         if(globalVariable.tag_btn_enable){
                             globalVariable.mv.setState(MjpegView.STATE_BLANK);
                             globalVariable.tag_btn_enable =false;
-                            tag_btn.setText("標籤開啟");
+                            tag_btn.setText("智慧標籤開啟");
                         }else{
                             globalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
                             globalVariable.tag_btn_enable=true;
@@ -578,10 +578,6 @@ public class VisualSupportActivity extends BlunoLibrary {
         }else if (view.getId() == R.id.layout_visual_search_dev){
             if(BlunoService.getBraceletPower() > 0)
                 OnSearchClick(view);
-            Intent intent = new Intent();
-            intent.setClass(VisualSupportActivity.this, VisualSearchActivity.class);
-            startActivity(intent);
-            VisualSupportActivity.this.finish();
         }else if (view.getId() == R.id.layout_setting){
             Intent intent = new Intent();
             intent.setClass(this  , VisualSettingActivity.class);

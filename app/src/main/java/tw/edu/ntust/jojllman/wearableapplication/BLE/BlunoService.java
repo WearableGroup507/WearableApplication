@@ -445,8 +445,8 @@ public class BlunoService extends Service {
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
                     Log.d(TAG,"Firstdisplay :"+firstdisplayIP +"\tURL connect:"+GlobalVariable.URL_state);
                     if(!firstdisplayIP || !GlobalVariable.URL_state){
-                    displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                    firstdisplayIP = true;
+                        displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                        firstdisplayIP = true;
                     }
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
 //                    {
@@ -1810,11 +1810,11 @@ public class BlunoService extends Service {
     private void displayIP(String ip_data){
         Log.d(TAG,"displayIP ip_data="+ip_data);
         mGlobalVariable.glassesIPAddress=ip_data;
-        if (mGlobalVariable.glassesIPAddress != null) {
-            if (readMjpegrunnable == null) {
-                readMjpegrunnable = new Runnable() {
-                    @Override
-                    public void run() {
+          if (mGlobalVariable.glassesIPAddress != null) {
+//            if (readMjpegrunnable == null) {
+//                readMjpegrunnable = new Runnable() {
+//                    @Override
+//                    public void run() {
                         mGlobalVariable.mv.setState(MjpegView.STATE_NORMAL);
                         SharedPreferences settings = getSharedPreferences("Preference", 0);
 
@@ -1831,12 +1831,12 @@ public class BlunoService extends Service {
                         doRead_url.execute(URL);
 
                     }
-                };
-                handler.post(readMjpegrunnable);
-            }else{
-                mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
-            }
-        }
+//                };
+//                handler.post(readMjpegrunnable);
+//            }else{
+//                mGlobalVariable.mv.setState(MjpegView.STATE_QRTAGDETECT);
+//            }
+//        }
     }
     public static void initName(){
         BraceletName="未連線";
