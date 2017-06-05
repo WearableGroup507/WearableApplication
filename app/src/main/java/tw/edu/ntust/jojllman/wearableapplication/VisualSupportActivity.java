@@ -412,8 +412,18 @@ public class VisualSupportActivity extends BlunoLibrary {
             public void run() {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
-//                if(!BlunoService.getBraceletName().equals("未連線") && !ring_btn_enable)
-                    ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
+                if(!BlunoService.getBraceletName().equals("未連線")) {
+                    if(BlunoService.getBraceletPower()==-1){
+                        ((TextView) layout_bracelet_dev.getChildAt(2)).setText("電量 關閉中");
+                    }else if(BlunoService.getBraceletPower()==0){
+                        ((LinearLayout)layout_bracelet_dev.getParent()).setBackgroundColor(Color.parseColor("#0047b2"));
+                        for(int i=0; i < layout_bracelet_dev.getChildCount(); i++){
+                            ((TextView)(layout_bracelet_dev.getChildAt(i))).setTextColor(Color.parseColor("#ffffff"));
+                        }
+                    }else {
+                        ((TextView) layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
+                    }
+                }
                 if(GlobalVariable.glass_connect_state)
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");
                 if(!(BlunoService.getGlassbattery()>-1)){
