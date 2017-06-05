@@ -174,6 +174,8 @@ public class BlunoService extends Service {
     private static final int mWarningCountThreshold = 40;
     private Uri soundUri;
     static boolean played = false;
+    static boolean bracelet_disconnect_enable =false;
+    static boolean glass_disconnect_enable =false;
 
     private long[] vibrate = {0, 500};
     //private doNotification notify;
@@ -410,7 +412,7 @@ public class BlunoService extends Service {
                     mGlassDevice=null;
                     glass_battery = -1;
                    GlobalVariable.glass_connect_state=false;
-                    mBluetoothLeService.removeDeviceGatt(device);
+                  // mBluetoothLeService.removeDeviceGatt(device);
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
@@ -762,18 +764,18 @@ public class BlunoService extends Service {
                             if(braceletDisconnect){
                                 if(getBraceletDevice()==null) {
                                     System.out.println("Disconnect error:Bracelet Device not set.");
-                                    mConnected_Bracelet = false;
                                 }
                                 else {
+                                    bracelet_disconnect_enable =true;
                                     disConnect(getBraceletDevice());
                                 }
                             }
                             if(glassDisconnect){
                                 if(getGlassDevice()==null){
                                     System.out.println("Disconnect error: Glass Device not set.");
-                                    mConnected_Glass = false;
                                 }
                                 else{
+                                    glass_disconnect_enable =true;
                                     disConnect(getGlassDevice());
                                 }
                             }
@@ -1732,9 +1734,9 @@ public class BlunoService extends Service {
                         try
                         {
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(10000);
+                            Thread.sleep(2000);
                             mBluetoothLeService.readRemoteRssi();
-                            Thread.sleep(10000);
+                            Thread.sleep(2000);
                         }
                         catch (Exception e)
                         {
@@ -1769,18 +1771,21 @@ public class BlunoService extends Service {
     }
     public static int getGlassbattery() {return  glass_battery;}
     public void disConnect(BluetoothDevice device){
-        if(mConnected_Bracelet){
-            mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
-            mConnected_Bracelet = false;
+        if(mConnected_Bracelet||mConnected_Glass){
+            if (bracelet_disconnect_enable) {
+                mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
+                mConnected_Bracelet = false;
 //            mBraceletDevice = null;
 //            mBraceletGattCharacteristics.clear();
 //            mBluetoothLeService.setBraceletGatt(null);
-            Bracelet_BAT = 0;
+                Bracelet_BAT = 0;
+            }
+            if(glass_disconnect_enable){
+                mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
+                mConnected_Glass= false;
+            }
         }
-        if(mConnected_Glass){
-            mBluetoothLeService.disconnect(mBluetoothLeService.getGattFromDevice(device));
-            mConnected_Glass= false;
-        }
+
     }
     public class DoRead_url extends AsyncTask<String, Void, MjpegInputStream> {
         protected MjpegInputStream doInBackground(String... url) {

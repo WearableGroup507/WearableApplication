@@ -412,7 +412,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             public void run() {
                 ((TextView)layout_glass_dev.getChildAt(1)).setText("裝置 " + BlunoService.getGlassName());        //get glass rssi
                 ((TextView)layout_bracelet_dev.getChildAt(1)).setText("裝置 " + BlunoService.getBraceletName());     //get bracelet rssi
-                if(!BlunoService.getBraceletName().equals("未連線") && !ring_btn_enable)
+//                if(!BlunoService.getBraceletName().equals("未連線") && !ring_btn_enable)
                     ((TextView)layout_bracelet_dev.getChildAt(2)).setText("電量 " + BlunoService.getBraceletPower() + "%");
                 if(GlobalVariable.glass_connect_state)
                     ((TextView)layout_glass_dev.getChildAt(2)).setText("電量 " + BlunoService.getGlassbattery() + "%");

@@ -505,6 +505,7 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "BluetoothGatts has nothing.");
             return;
         }
+
         mBluetoothGatts.remove(gatt.getDevice().getAddress());
 
         gatt.disconnect();
