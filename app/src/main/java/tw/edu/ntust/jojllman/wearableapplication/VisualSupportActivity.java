@@ -205,7 +205,8 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }
                     ring_btn_enable = true;
                 }
-                else if(GlobalVariable.braceletAddress != "") {
+                else if(!BlunoService.getConnected_Bracelet()) {
+                    mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.braceletAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
@@ -237,8 +238,9 @@ public class VisualSupportActivity extends BlunoLibrary {
                     glass_btn_enable=true;
                     globalVariable.glass_connect_state = false;
                 }
-                else if(GlobalVariable.glassesAddress != ""){
+                else if(!BlunoService.getmConnected_Glass()){
                     System.out.println("glassaddress = "+GlobalVariable.glassesAddress);
+                    mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.glassesAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);
                     sendBroadcast(mTransferIntent);
