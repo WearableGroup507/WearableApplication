@@ -206,7 +206,7 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }
                     ring_btn_enable = true;
                 }
-                else if(!BlunoService.getConnected_Bracelet() && !BlunoService.getBraceletName().equals("未連線")) {
+                else if(!BlunoService.getConnected_Bracelet() && (!BlunoService.getBraceletName().equals("未連線"))) {
                     mTransferIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.RECEIVER_SERVICE");
                     mTransferIntent.putExtra("mDeviceAddress", GlobalVariable.braceletAddress);
                     mTransferIntent.putExtra("connectionState", connectionState);

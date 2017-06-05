@@ -413,7 +413,7 @@ public class BlunoService extends Service {
                     glass_battery = -1;
                    GlobalVariable.glass_connect_state=false;
                     mConnected_Glass=false;
-                  // mBluetoothLeService.removeDeviceGatt(device);
+                   mBluetoothLeService.removeDeviceGatt(device);
                 }
                 if(device.equals(mBraceletDevice)){
 //                    handler.removeCallbacks(mBraceletNotifyRunnable);
@@ -422,6 +422,8 @@ public class BlunoService extends Service {
                     Bracelet_BAT = -1;
                     played = false;
                     mBraceletDevice=null;
+                    mConnected_Bracelet=false;
+                    mBluetoothLeService.removeDeviceGatt(device);
                 }
                 if(device.equals(mGloveDeviceLeft)){
                     mTTSService.speak("左手手套已斷線。");
