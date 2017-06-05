@@ -445,7 +445,7 @@ public class BlunoService extends Service {
                 }else if(BluetoothLeService.ACTION_GLASS_IP.equals(action)) {
                     Log.d(TAG,"Firstdisplay :"+firstdisplayIP +"\tURL connect:"+GlobalVariable.URL_state);
                     if(!firstdisplayIP || !GlobalVariable.URL_state){
-                    //displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    displayIP(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                     firstdisplayIP = true;
                     }
 //                    if(mSCharacteristic==mModelNumberCharacteristic)
@@ -1524,7 +1524,7 @@ public class BlunoService extends Service {
                 final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
                 System.out.println("Displayflag:"+Displayipflag);
             if(Displayipflag && firstdisplayIP){
-                //displayIP(mGlobalVariable.glassesIPAddress);
+                displayIP(mGlobalVariable.glassesIPAddress);
             }
 
 
