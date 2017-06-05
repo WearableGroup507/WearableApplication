@@ -195,6 +195,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             @Override
             public void onClick(View v) {
                 if(BlunoService.getBraceletPower()>0) {
+                    braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
                     braceletControlIntent.putExtra("BraceletDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     ring_btn.setText("開啟");
@@ -226,6 +227,7 @@ public class VisualSupportActivity extends BlunoLibrary {
             public void onClick(View v) {
                 if(BlunoService.getGlassbattery()>0) {
                     BlunoService.setReadUltraSound(false);
+                    braceletControlIntent = new Intent("tw.edu.ntust.jojllman.wearableapplication.BRACELET_SEND_CONTROL");
                     braceletControlIntent.putExtra("GlassDisconnect",true);
                     sendBroadcast(braceletControlIntent);
                     glass_btn.setText("開啟");
