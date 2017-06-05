@@ -1191,7 +1191,7 @@ public class BlunoService extends Service {
                 avoid_state_now = AVOID_ALLDIRECTION;
             }else if(front_distance < frontThreshold) {
                 avoid_state_now = AVOID_FRONT;
-            }else if(right_distance<sidesThreshold && front_distance>frontThreshold) {
+            }else if(right_distance < sidesThreshold && left_distance < sidesThreshold) {
                 avoid_state_now = AVOID_LEFTANDRIGHT;
             }else if(left_distance<sidesThreshold) {
                 avoid_state_now = AVOID_LEFT;
