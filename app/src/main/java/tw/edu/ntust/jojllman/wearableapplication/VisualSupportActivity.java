@@ -257,8 +257,8 @@ public class VisualSupportActivity extends BlunoLibrary {
                     }
                     if(!glass_btn_enable){
                         Log.d("TAG","藍芽裝置 自身斷線 透過menu開關重連");
-                        displayIPIntent.putExtra("DisplayIP", true);
-                        sendBroadcast(displayIPIntent);
+//                        displayIPIntent.putExtra("DisplayIP", true);
+//                        sendBroadcast(displayIPIntent);
                     }
                     glass_btn_enable=false;
 
@@ -476,11 +476,11 @@ public class VisualSupportActivity extends BlunoLibrary {
         }else{
             if(globalVariable.glass_connect_state){
                 if(globalVariable.tag_btn_enable) {
-                    displayIPIntent.putExtra("DisplayIP", true);
-                    sendBroadcast(displayIPIntent);
+//                    displayIPIntent.putExtra("DisplayIP", true);
+//                    sendBroadcast(displayIPIntent);
                 }else{
-                    displayIPIntent.putExtra("DisplayIP", true);
-                    sendBroadcast(displayIPIntent);
+//                    displayIPIntent.putExtra("DisplayIP", true);
+//                    sendBroadcast(displayIPIntent);
                 }
             }else{
                 if(globalVariable.tag_btn_enable){

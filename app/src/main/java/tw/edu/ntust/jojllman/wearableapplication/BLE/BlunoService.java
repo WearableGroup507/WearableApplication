@@ -1529,7 +1529,7 @@ public class BlunoService extends Service {
                 final boolean Displayipflag = intent.getBooleanExtra("DisplayIP", false);
                 System.out.println("Displayflag:"+Displayipflag);
             if(Displayipflag && firstdisplayIP){
-                displayIP(mGlobalVariable.glassesIPAddress);
+                //displayIP(mGlobalVariable.glassesIPAddress);
             }
 
 
